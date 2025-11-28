@@ -150,14 +150,10 @@ graph TB
 
 ### Control Plane 控制平面
 
+- 仅有一个实例进行作业编排调度。
+
+
 #### 接口定义
-
-##### Work侧
-- 作业注册检测
-用于Worker批量传入作业唯一标识符，返回有哪些未注册的作业，使用作业注册接口注册。
-
-- 作业注册
-批量传入作业定义模型，注册到元数据持久层。
 
 ##### UI层
 通用：
@@ -173,7 +169,6 @@ graph TB
 
 触发式作业特有：
 - 修改触发式作业配置
-
 
 
 ### Worker 执行平面
@@ -192,3 +187,18 @@ graph TB
 ### Message Broker 作业分发层
 
 使用 `IMoEventBus` 作为消息中间件，实现交于该模块管理。
+
+
+
+## 细节设计
+
+### 多控制平面实例更新作业定义
+
+Add a service to manage JobDefinition in - memory for performance.
+
+1. It provides two methods: GetJobDefinitionAsync and GetAllJobDefinitionsAsync. It uses @IMoJobScheduleMetadataStore to initialize. The implementation will check whether the requested job key is updated using `[FromKeyedService]IMoStateStore`. Otherwise, it will reload the definition using IMoJobScheduleMetadataStore (it needs to add a new method to get definitions from given keys).
+2. It provides SaveJobDefinitionAsync, which marks the updated job as updated using IMoStateStore. Then replace all other usages of the SaveJobDefinitionAsync method in IMoJobScheduleMetadataStore.
+3. It subscribes to @JobDefinitionsChangedEvent to mark the job as updated.
+
+
+更新作业定义时写入 `IStateStore` 一个 `PendingUpdateKey`，指示指定 `JobKey` 存在更新，下次控制面板`Leader`进行作业执行时需要先更新作业定义。
