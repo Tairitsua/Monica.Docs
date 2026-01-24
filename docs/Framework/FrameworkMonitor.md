@@ -35,7 +35,7 @@ GET /framework/units/domain-event
 
 #### 测试发布领域事件
 ```http
-POST /framework/units/domain-event/{eventKey}/publish
+POST /framework/units/domain-event/\{eventKey\}/publish
 ```
 
 提供领域事件的测试发布功能，方便开发和调试。
@@ -269,7 +269,7 @@ builder.ConfigMoFrameworkMonitor(options =>
 ]
 ```
 
-#### POST /framework/units/domain-event/{eventKey}/publish
+#### POST /framework/units/domain-event/\{eventKey\}/publish
 测试发布领域事件
 
 **请求参数**：
