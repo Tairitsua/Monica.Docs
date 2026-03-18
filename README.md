@@ -1,8 +1,8 @@
-# MoLibrary 文档站点
+# Monica 文档站点
 
-该仓库包含 MoLibrary 的文档网站，使用 [Docusaurus](https://docusaurus.io/) 构建。
+该仓库包含 Monica 的文档网站，使用 [Docusaurus](https://docusaurus.io/) 构建。
 
-MoLibrary 是一个模块化的 .NET 基础设施库，旨在提供可独立使用的组件，帮助您快速构建高质量的应用程序。
+Monica 是一个模块化的 .NET 基础设施库，旨在提供可独立使用的组件，帮助您快速构建高质量的应用程序。
 
 ## 本地开发
 

@@ -11,18 +11,18 @@
 配置数据采用四层结构，从上到下分别为：
 
 ```
-DtoDomainConfigs (子域配置组)
-  └── DtoServiceConfigs (微服务配置组)
+DtoDomainGroup (子域配置组)
+  └── DtoServiceGroup (微服务配置组)
         └── DtoConfig (配置类)
               └── DtoOptionItem (配置项)
 ```
 
-### 1. DtoDomainConfigs - 子域配置组
+### 1. DtoDomainGroup - 子域配置组
 
 按照领域驱动设计，将微服务按子域进行分组。
 
 ```csharp
-public class DtoDomainConfigs
+public class DtoDomainGroup
 {
     /// <summary>
     /// 显示标题
@@ -37,16 +37,16 @@ public class DtoDomainConfigs
     /// <summary>
     /// 子域内微服务信息
     /// </summary>
-    public List<DtoServiceConfigs> Children { get; set; } = [];
+    public List<DtoServiceGroup> Children { get; set; } = [];
 }
 ```
 
-### 2. DtoServiceConfigs - 微服务配置组
+### 2. DtoServiceGroup - 微服务配置组
 
 每个子域包含多个微服务的配置信息。
 
 ```csharp
-public class DtoServiceConfigs
+public class DtoServiceGroup
 {
     /// <summary>
     /// 显示标题
@@ -298,11 +298,11 @@ public class DtoUpdateConfigRes
 ### 3. 修改粒度
 
 - **配置项级别修改**：直接修改单个DtoOptionItem
-  - AppId：从DtoServiceConfigs获取
+  - AppId：从DtoServiceGroup获取
   - Key：从DtoOptionItem获取
   
 - **配置类级别修改**：批量修改整个DtoConfig
-  - AppId：从DtoServiceConfigs获取
+  - AppId：从DtoServiceGroup获取
   - Key：从DtoConfig获取
 
 ## UI组件选择策略
@@ -364,7 +364,7 @@ public class DtoUpdateConfigRes
 ## 数据流程
 
 1. **获取配置列表**
-   - 客户端请求 → 返回 `List<DtoDomainConfigs>`
+   - 客户端请求 → 返回 `List<DtoDomainGroup>`
    - 包含完整的四层结构数据
 
 2. **修改配置**

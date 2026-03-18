@@ -33,9 +33,9 @@ public class AppSettings
 一般用法是与ASP.NET Core的Option Pattern原生用法一致。
 
 Option Pattern是框架已经注册了如下三种形式的配置接口：
-1. **IOption\<T\>** 是只读取一次的。
-2. **IOptionsSnapshot\<T\>** 类似于服务的Scope，下一次请求会重新读取配置。（无法注册到单例生命周期服务）
-3. **IOptionsMonitor\<T\>** 则会即时读取配置。且支持配置更改通知（注册它的`OnChange`事件实现。
+1. **IOption\<T\>** 是只读取一次的，可以注册到单例。
+2. **IOptionsSnapshot\<T\>** 类似于服务的Scope，下一次请求会重新读取配置。（是Scoped生命周期，无法注册到单例生命周期服务）
+3. **IOptionsMonitor\<T\>** 则会即时读取配置。且支持配置更改通知（注册它的`OnChange`事件实现。它是单例的，可以注册到单例生命周期服务）
 
 > 注意，热配置是Snapshot及Monitor，需要相关的配置源Provider支持TraceTokenChange才可以，比如自带的文件类）
 

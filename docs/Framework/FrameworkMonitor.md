@@ -2,7 +2,7 @@
 
 ## 概述
 
-`ModuleFrameworkMonitor` 是 MoLibrary.Framework 中的核心监控模块，它负责自动分析和监控整个项目的架构组件。该模块基于项目单元（ProjectUnit）设计思想，提供了强大的项目分析、架构治理和运行时监控能力。
+`ModuleFrameworkMonitor` 是 Monica.Framework 中的核心监控模块，它负责自动分析和监控整个项目的架构组件。该模块基于项目单元（ProjectUnit）设计思想，提供了强大的项目分析、架构治理和运行时监控能力。
 
 ## 模块功能
 
@@ -511,7 +511,7 @@ public class CustomRequestFilter : IRequestFilter
 
 ## 总结
 
-`ModuleFrameworkMonitor` 是 MoLibrary.Framework 的核心监控模块，它提供了强大的项目分析和架构治理能力。通过自动识别项目单元、提供丰富的查询 API、支持动态配置等功能，该模块为开发团队提供了：
+`ModuleFrameworkMonitor` 是 Monica.Framework 的核心监控模块，它提供了强大的项目分析和架构治理能力。通过自动识别项目单元、提供丰富的查询 API、支持动态配置等功能，该模块为开发团队提供了：
 
 - **全面的项目架构视图**
 - **便捷的调试和测试工具**

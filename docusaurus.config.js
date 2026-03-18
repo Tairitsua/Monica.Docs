@@ -12,7 +12,7 @@ const createSidebarItemsGenerator = require('./plugins/docusaurus-sidebar-genera
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'MoLibrary',
+  title: 'Monica',
   tagline: '模块化的 .NET 基础设施库',
   favicon: 'img/favicon.ico',
 
@@ -20,12 +20,12 @@ const config = {
   url: 'https://euynac.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  // baseUrl: '/MoLibrary.Docs/',
+  // baseUrl: '/Monica.Docs/',
   baseUrl: '/', //For custom domain
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'Euynac', // Usually your GitHub org/user name.
-  projectName: 'MoLibrary.Docs', // Usually your repo name.
+  projectName: 'Monica.Docs', // Usually your repo name.
   trailingSlash: false,
   deploymentBranch: 'gh-pages',
 
@@ -53,7 +53,7 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/Euynac/MoLibrary/tree/main/docs/',
+            'https://github.com/Euynac/Monica/tree/main/docs/',
           // 设置文档路由基础路径
           routeBasePath: '/docs',
           
@@ -81,7 +81,7 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/Euynac/MoLibrary/tree/main/docs/',
+            'https://github.com/Euynac/Monica/tree/main/docs/',
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -94,7 +94,7 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       // Replace with your project's social card
-      image: 'img/molibrary-social-card.jpg',
+      image: 'img/monica-social-card.jpg',
       // 添加 Algolia DocSearch 配置
       algolia: {
         // Algolia Application ID
@@ -102,16 +102,16 @@ const config = {
         // 公开的搜索API密钥
         apiKey: 'be12a77d2c638c5ebf1e46ae94f52876',
         // 索引名称
-        indexName: 'molibrary-dpdns',
+        indexName: 'monica-dpdns',
         // 可选配置
         contextualSearch: true,
         // 可选：配置搜索页面路径，默认为false
         searchPagePath: 'search',
       },
       navbar: {
-        title: 'MoLibrary',
+        title: 'Monica',
         logo: {
-          alt: 'MoLibrary Logo',
+          alt: 'Monica Logo',
           src: 'img/logo.svg',
         },
         items: [
@@ -123,7 +123,7 @@ const config = {
           },
           {to: '/blog', label: '博客', position: 'left'},
           {
-            href: 'https://github.com/Euynac/MoLibrary',
+            href: 'https://github.com/Euynac/Monica',
             label: 'GitHub',
             position: 'right',
           },
@@ -150,11 +150,11 @@ const config = {
             items: [
               {
                 label: 'GitHub Discussions',
-                href: 'https://github.com/Euynac/MoLibrary/discussions',
+                href: 'https://github.com/Euynac/Monica/discussions',
               },
               {
                 label: 'Issues',
-                href: 'https://github.com/Euynac/MoLibrary/issues',
+                href: 'https://github.com/Euynac/Monica/issues',
               },
             ],
           },
@@ -167,12 +167,12 @@ const config = {
               },
               {
                 label: 'GitHub',
-                href: 'https://github.com/Euynac/MoLibrary',
+                href: 'https://github.com/Euynac/Monica',
               },
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} MoLibrary. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Monica. Built with Docusaurus.`,
       },
       prism: {
         theme: prismThemes.github,

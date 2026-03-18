@@ -2,13 +2,13 @@
 
 ## 概述
 
-项目单元（ProjectUnit）是 MoLibrary.Framework 的核心设计理念，它将项目中的各种基础架构组件抽象成统一的"项目单元"概念。通过这种设计，框架能够自动识别、分析和管理项目中的各种架构组件，为开发团队提供统一的开发规范和架构治理能力。
+项目单元（ProjectUnit）是 Monica.Framework 的核心设计理念，它将项目中的各种基础架构组件抽象成统一的"项目单元"概念。通过这种设计，框架能够自动识别、分析和管理项目中的各种架构组件，为开发团队提供统一的开发规范和架构治理能力。
 
 ## 设计思想
 
 ### 核心理念
 
-当使用 MoLibrary Framework 时，项目的开发模式已经被规范化：
+当使用 Monica Framework 时，项目的开发模式已经被规范化：
 
 - **应用服务**：继承 `MoApplicationService` 基类
 - **领域服务**：继承 `MoDomainService` 基类  
@@ -366,7 +366,7 @@ protected override bool VerifyTypeConstrain()
 
 ## 总结
 
-项目单元系统是 MoLibrary.Framework 架构治理的核心功能，它通过抽象和统一管理项目中的各种组件，为团队提供了：
+项目单元系统是 Monica.Framework 架构治理的核心功能，它通过抽象和统一管理项目中的各种组件，为团队提供了：
 
 - **统一的开发规范**
 - **自动化的架构管理**
