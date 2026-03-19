@@ -1,0 +1,219 @@
+{
+  "main": {
+    "id": "e649c455b865e204",
+    "type": "split",
+    "children": [
+      {
+        "id": "d26f1dd55a7b3ee1",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2bf0c202d6741326",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "DynamicProxy/升级方案.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": false
+              },
+              "icon": "lucide-file",
+              "title": "升级方案"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "5c63b25d3cb69891",
+    "type": "split",
+    "children": [
+      {
+        "id": "5e3b2ad27896b103",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "eb16459223bebb91",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "887abca01d8a41c0",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "a5748247861bf1f1",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 204.5
+  },
+  "right": {
+    "id": "ed9714903e96fa0c",
+    "type": "split",
+    "children": [
+      {
+        "id": "a13335270cd6aad1",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "56cad58149ab417c",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "_待办事项.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for _待办事项"
+            }
+          },
+          {
+            "id": "1c0213cd4f805f86",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "_待办事项.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from _待办事项"
+            }
+          },
+          {
+            "id": "fe9c515682299779",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "fc4766988e2c24fd",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "961a093589e29209",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "_待办事项.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of _待办事项"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "bases:Create new base": false,
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "markdown-table-editor:Open Markdown Table Editor": false,
+      "table-editor-obsidian:Advanced Tables Toolbar": false
+    }
+  },
+  "active": "2bf0c202d6741326",
+  "lastOpenFiles": [
+    "BackgroundJob/MoJobScheduler.md",
+    "DynamicProxy/升级方案.md",
+    "DynamicProxy",
+    "AI-based编程.md",
+    "Repository/UnitOfWork.md",
+    "Repository/MoRepository.md",
+    "DomainDrivenDesign/MoApplicationService.md",
+    "DomainDrivenDesign/DDDIntroduction.md",
+    "DomainDrivenDesign/AutoController.md",
+    "_待办事项.md",
+    "_项目开发.md",
+    "MoModule.md",
+    "DataChannel/MessageDebuggerMiddleware.md",
+    "SignalR/MoSignalR.md",
+    "RegisterCentre/architecture-design.md",
+    "BackgroundJob/Untitled.md",
+    "_服务间调用MoRpcInvocation.md",
+    "EventBus/ModelEventBus.md",
+    "BackgroundJob/BackgroundJob.md",
+    "BackgroundJob/MoTaskSchedule.md",
+    "DependencyInjection/MoDependency.md",
+    "DomainDrivenDesign/MoDomainService.md",
+    "Configuration/MoConfiguration.md",
+    "Configuration/MoConfigurationDashboard.md",
+    "intro.md",
+    "Framework/性能优化.md",
+    "Framework/ProjectUnit.md"
+  ]
+}

@@ -1,12 +1,8 @@
 <Solution>
-  <Configurations>
-    <Configuration Name="Debug" />
-    <Configuration Name="Release" />
-  </Configurations>
-  <Platforms>
-    <Platform Name="Any CPU" />
-  </Platforms>
-  <Projects>
-    <Project Path="Monica.Docs.Web/Monica.Docs.Web.csproj" />
-  </Projects>
+  <Project Path="../Monica/Monica.Core/Monica.Core.csproj" />
+  <Project Path="../Monica/Monica.EventBus/Monica.EventBus.csproj" />
+  <Project Path="../Monica/Monica.Markdown/Monica.Markdown.csproj" />
+  <Project Path="../Monica/Monica.Tool/Monica.Tool.csproj" />
+  <Project Path="../Monica/Monica.UI/Monica.UI.csproj" />
+  <Project Path="Monica.Docs.Web/Monica.Docs.Web.csproj" />
 </Solution>
