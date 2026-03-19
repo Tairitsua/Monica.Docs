@@ -1,11 +1,8 @@
 using Monica.Core;
-using Monica.Core.Modularity.BuilderWrapper;
+using Monica.Core.Modularity;
 using Monica.Docs.Components;
 using Monica.Markdown.UIMarkdown.Models;
 using Monica.Modules;
-
-// Enable Mo module system (Harmony patches).
-Mo.Initialize();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,8 +23,10 @@ Mo.AddMarkdown(o =>
     title: "Monica Docs",
     basePath: Path.Combine(builder.Environment.ContentRootPath, "docs"));
 
+
 Mo.AddMarkdownUI();
 
+builder.UseMonica();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -38,19 +37,11 @@ if (!app.Environment.IsDevelopment())
 }
 
 // Keep routing explicit so module pipeline hooks can attach.
-app.UseRouting();
+app.UseMonica();
 
-// Triggers module endpoint configuration when Harmony patching is unavailable.
-// (Safe no-op when patching is successful.)
-#pragma warning disable CS0618
-app.UseMoEndpoints();
-#pragma warning restore CS0618
-
-app.UseHttpsRedirection();
-app.UseAntiforgery();
-
-app.MapStaticAssets();
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+app.MapMonica();
+// app.MapStaticAssets();
+// app.MapRazorComponents<App>()
+//     .AddInteractiveServerRenderMode();
 
 app.Run();
