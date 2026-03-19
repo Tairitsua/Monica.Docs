@@ -1,0 +1,12 @@
+<Solution>
+  <Configurations>
+    <Configuration Name="Debug" />
+    <Configuration Name="Release" />
+  </Configurations>
+  <Platforms>
+    <Platform Name="Any CPU" />
+  </Platforms>
+  <Projects>
+    <Project Path="Monica.Docs.Web/Monica.Docs.Web.csproj" />
+  </Projects>
+</Solution>
