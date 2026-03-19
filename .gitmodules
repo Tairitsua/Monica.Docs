@@ -1,0 +1,3 @@
+[submodule "Monica"]
+	path = Monica
+	url = https://github.com/molloryn/Monica.git
