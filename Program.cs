@@ -1,6 +1,6 @@
 using Monica.Core;
 using Monica.Core.Modularity.BuilderWrapper;
-using Monica.Docs.Web.Components;
+using Monica.Docs.Components;
 using Monica.Markdown.UIMarkdown.Models;
 using Monica.Modules;
 
@@ -24,7 +24,7 @@ Mo.AddMarkdown(o =>
 .AddDocumentGroup(
     key: "monica",
     title: "Monica Docs",
-    basePath: Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "..", "docs")));
+    basePath: Path.Combine(builder.Environment.ContentRootPath, "docs"));
 
 Mo.AddMarkdownUI();
 

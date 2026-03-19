@@ -1,8 +1,8 @@
 <Solution>
-  <Project Path="../Monica/Monica.Core/Monica.Core.csproj" />
-  <Project Path="../Monica/Monica.EventBus/Monica.EventBus.csproj" />
-  <Project Path="../Monica/Monica.Markdown/Monica.Markdown.csproj" />
-  <Project Path="../Monica/Monica.Tool/Monica.Tool.csproj" />
-  <Project Path="../Monica/Monica.UI/Monica.UI.csproj" />
-  <Project Path="Monica.Docs.Web/Monica.Docs.Web.csproj" />
+  <Project Path="../MoLibrary/Monica.Core/Monica.Core.csproj" />
+  <Project Path="../MoLibrary/Monica.EventBus/Monica.EventBus.csproj" />
+  <Project Path="../MoLibrary/Monica.Markdown/Monica.Markdown.csproj" />
+  <Project Path="../MoLibrary/Monica.Tool/Monica.Tool.csproj" />
+  <Project Path="../MoLibrary/Monica.UI/Monica.UI.csproj" />
+  <Project Path="Monica.Docs.csproj" />
 </Solution>
