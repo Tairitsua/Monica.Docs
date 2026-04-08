@@ -2,9 +2,15 @@
   <Folder Name="/lib/">
     <Project Path="../MoLibrary/Monica.Core/Monica.Core.csproj" />
     <Project Path="../MoLibrary/Monica.EventBus/Monica.EventBus.csproj" />
+    <Project Path="../MoLibrary/Monica.Framework/Monica.Framework.csproj" />
     <Project Path="../MoLibrary/Monica.Markdown/Monica.Markdown.csproj" />
     <Project Path="../MoLibrary/Monica.Tool/Monica.Tool.csproj" />
-    <Project Path="../MoLibrary/Monica.UI/Monica.UI.csproj" />
+    <Project Path="../MoLibrary/Monica.WebApi/Monica.WebApi.csproj" />
   </Folder>
-  <Project Path="Monica.Docs.csproj" />
+  <Project Path="src/AppHost/Api/Api.csproj" />
+  <Project Path="src/Shared/Platform.Protocol/Platform.Protocol.csproj" />
+  <Project Path="src/Shared/Platform.Infrastructure/Platform.Infrastructure.csproj" />
+  <Project Path="src/Domains/Documentation/Documentation.Domain/Documentation.Domain.csproj" />
+  <Project Path="src/Domains/Documentation/Documentation.Application/Documentation.Application.csproj" />
+  <Project Path="src/Domains/Documentation/Documentation.Infrastructure/Documentation.Infrastructure.csproj" />
 </Solution>
