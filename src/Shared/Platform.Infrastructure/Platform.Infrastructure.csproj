@@ -16,13 +16,8 @@
 
   <ItemGroup>
     <ProjectReference Include="../Platform.Protocol/Platform.Protocol.csproj" />
-    <ProjectReference Include="../../Domains/Documentation/Documentation.Application/Documentation.Application.csproj" />
-    <ProjectReference Include="../../Domains/Documentation/Documentation.Domain/Documentation.Domain.csproj" />
-    <ProjectReference Include="../../Domains/Documentation/Documentation.Infrastructure/Documentation.Infrastructure.csproj" />
+    <ProjectReference Include="../../Domains/Documentation/Domains.Documentation.csproj" />
     <ProjectReference Include="../../../../MoLibrary/Monica.Core/Monica.Core.csproj" />
-    <ProjectReference Include="../../../../MoLibrary/Monica.EventBus/Monica.EventBus.csproj" />
-    <ProjectReference Include="../../../../MoLibrary/Monica.Framework/Monica.Framework.csproj" />
-    <ProjectReference Include="../../../../MoLibrary/Monica.Markdown/Monica.Markdown.csproj" />
     <ProjectReference Include="../../../../MoLibrary/Monica.WebApi/Monica.WebApi.csproj" />
   </ItemGroup>
 

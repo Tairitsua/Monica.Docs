@@ -33,9 +33,9 @@ The backend should become a Monica modular monolith that follows the `monica-bus
 
 - Domain-first layout, not global `Application` / `Domain` / `Infrastructure` buckets.
 - Shared language in `Shared/Platform.Protocol/PublishedLanguages`.
-- Thin AppHost entry projects.
+- AppHost entry projects own delivery-facing handlers.
 - Clear persistence ownership per bounded context.
-- No direct cross-domain references to another domain's `Application` or `Infrastructure`.
+- No direct cross-domain references to another domain's internal implementation.
 
 ### Frontend
 
@@ -67,8 +67,12 @@ The backend owns parsing, normalization, and API exposure of that content. The f
 ```text
 src/
 ├── AppHost/
-│   └── Api/
-│       └── Api.csproj
+│   └── Monica.Docs.Api/
+│       ├── Monica.Docs.Api.csproj
+│       ├── HandlersCommand/
+│       ├── HandlersQuery/
+│       ├── EventHandlers/
+│       └── BackgroundWorkers/
 ├── Shared/
 │   ├── Platform.BuildingBlocks/
 │   │   └── Platform.BuildingBlocks.csproj
@@ -84,9 +88,14 @@ src/
 │               └── AppInterfaces/          # optional, only if really needed
 ├── Domains/
 │   └── Documentation/
-│       ├── Documentation.Application/
-│       ├── Documentation.Domain/
-│       └── Documentation.Infrastructure/
+│       ├── Domains.Documentation.csproj
+│       ├── Interfaces/
+│       ├── Services/
+│       ├── Configurations/
+│       ├── DependencyInjection/
+│       ├── Repository/
+│       ├── Persistence/
+│       └── Providers/
 └── Database/
     └── DbMigrator/
         └── DbMigrator.csproj
@@ -101,8 +110,10 @@ docs/
 Notes:
 
 - `frontend/` is intentionally outside the backend `src/` tree.
-- `AppHost/Api` is just the default example. The layout does not require `*.WebHost`, and you can add other entry programs if needed.
+- `AppHost/Monica.Docs.Api` shows the preferred naming style: use the solution-specific project name directly, typically ending with `Api`.
+- AppHost entry projects own delivery handlers such as `HandlersCommand`, `HandlersQuery`, `EventHandlers`, and `BackgroundWorkers`.
 - `Shared/Platform.*` folders own their `Platform.*.csproj` directly. No extra `Monica.Docs.*Platform` nesting is needed there.
+- `Monica.Docs.slnx` should mirror the physical `src/AppHost`, `src/Shared`, and `src/Domains` folders in solution view.
 - `Database/DbMigrator` can exist even if v1 is mostly file-system based. If relational persistence appears later, ownership still stays with the owning domain.
 - Do not create a separate `Documentation.Contracts` project. Shared contracts belong in `Shared/Platform.Protocol/PublishedLanguages/DomainDocumentation`.
 
@@ -122,7 +133,7 @@ Future bounded contexts should only be added when they have distinct language an
 
 ## Documentation Responsibilities
 
-### `Documentation.Domain`
+### `Domains.Documentation`
 
 Own the business concepts and rules for docs:
 
@@ -131,8 +142,10 @@ Own the business concepts and rules for docs:
 - navigation order and grouping rules
 - attachment reference rules
 - visibility or publication rules if introduced later
+- repository implementations
+- markdown providers and other technical integrations that belong only to this bounded context
 
-### `Documentation.Application`
+### `Monica.Docs.Api`
 
 Own use-case level handlers, such as:
 
@@ -141,19 +154,7 @@ Own use-case level handlers, such as:
 - `GetDocAsset`
 - `ListDocBreadcrumbs`
 
-This layer should shape the data returned to clients, but it should still depend only on its own domain and the shared published language.
-
-### `Documentation.Infrastructure`
-
-Own technical delivery details:
-
-- file-system access to `docs/`
-- markdown parsing through Monica components
-- caching
-- attachment path resolution
-- future indexing or persistence implementation
-
-If a database, cache store, or search engine is added later, it still belongs here rather than in the host.
+These handlers shape the data returned to clients and depend on the shared published language plus the owning domain package.
 
 ## Published Language
 
@@ -221,8 +222,8 @@ Not required in v1:
 These rules matter because this repository is also supposed to be a Monica example project:
 
 - Keep the solution domain-first.
-- Keep AppHost entry projects thin.
-- Keep business logic out of the host.
+- Keep AppHost entry projects focused on delivery, orchestration, and handlers.
+- Keep domain models, repositories, providers, and persistence ownership out of AppHost.
 - Keep shared business language in `Platform.Protocol`.
 - Keep persistence ownership inside the owning domain.
 - Do not let the frontend couple to backend implementation details.
@@ -233,7 +234,7 @@ These rules matter because this repository is also supposed to be a Monica examp
 1. Keep `docs/` as the source of truth.
 2. Extract the backend into the domain-first modular-monolith `src/` layout.
 3. Create the `Documentation` domain package and `DomainDocumentation` published language.
-4. Expose the read-only docs API from the AppHost entry project, typically `AppHost/Api`.
+4. Expose the read-only docs API from `AppHost/Monica.Docs.Api`.
 5. Build the separate frontend app in `frontend/monica-docs-web`.
 6. Remove direct backend UI coupling once the frontend is in place.
 

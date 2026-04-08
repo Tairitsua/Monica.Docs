@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Monica.Docs.Api</AssemblyName>
+    <RootNamespace>Monica.Docs.Api</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../Domains/Documentation/Domains.Documentation.csproj" />
+    <ProjectReference Include="../../Shared/Platform.Infrastructure/Platform.Infrastructure.csproj" />
+    <ProjectReference Include="../../Shared/Platform.Protocol/Platform.Protocol.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Core/Monica.Core.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.EventBus/Monica.EventBus.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Framework/Monica.Framework.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Markdown/Monica.Markdown.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.WebApi/Monica.WebApi.csproj" />
+  </ItemGroup>
+
+</Project>

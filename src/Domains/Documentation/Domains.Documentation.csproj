@@ -1,19 +1,22 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>Monica.Docs.AppHost.Api</AssemblyName>
-    <RootNamespace>Monica.Docs.AppHost.Api</RootNamespace>
+    <AssemblyName>Monica.Docs.Domains.Documentation</AssemblyName>
+    <RootNamespace>Monica.Docs.Domains.Documentation</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../Shared/Platform.Infrastructure/Platform.Infrastructure.csproj" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../../Shared/Platform.Protocol/Platform.Protocol.csproj" />
-    <ProjectReference Include="../../../../MoLibrary/Monica.Core/Monica.Core.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Markdown/Monica.Markdown.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
-using Monica.Docs.Domains.Documentation.Domain.Models;
+using Monica.Docs.Domains.Documentation.Models;
 
-namespace Monica.Docs.Domains.Documentation.Domain.Interfaces;
+namespace Monica.Docs.Domains.Documentation.Interfaces;
 
 public interface IDocumentationMarkdownProcessor
 {

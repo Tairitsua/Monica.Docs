@@ -1,5 +1,5 @@
 using Monica.Core.Modularity.Extensions;
-using Monica.Docs.Shared.Platform.Infrastructure;
+using Monica.Docs.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 

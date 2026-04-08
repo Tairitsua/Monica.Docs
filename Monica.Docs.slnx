@@ -7,10 +7,14 @@
     <Project Path="../MoLibrary/Monica.Tool/Monica.Tool.csproj" />
     <Project Path="../MoLibrary/Monica.WebApi/Monica.WebApi.csproj" />
   </Folder>
-  <Project Path="src/AppHost/Api/Api.csproj" />
-  <Project Path="src/Shared/Platform.Protocol/Platform.Protocol.csproj" />
-  <Project Path="src/Shared/Platform.Infrastructure/Platform.Infrastructure.csproj" />
-  <Project Path="src/Domains/Documentation/Documentation.Domain/Documentation.Domain.csproj" />
-  <Project Path="src/Domains/Documentation/Documentation.Application/Documentation.Application.csproj" />
-  <Project Path="src/Domains/Documentation/Documentation.Infrastructure/Documentation.Infrastructure.csproj" />
+  <Folder Name="/src/AppHost/">
+    <Project Path="src/AppHost/Monica.Docs.Api/Monica.Docs.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Shared/">
+    <Project Path="src/Shared/Platform.Protocol/Platform.Protocol.csproj" />
+    <Project Path="src/Shared/Platform.Infrastructure/Platform.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Domains/">
+    <Project Path="src/Domains/Documentation/Domains.Documentation.csproj" />
+  </Folder>
 </Solution>

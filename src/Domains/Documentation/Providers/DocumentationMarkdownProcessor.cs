@@ -5,12 +5,12 @@ using Markdig;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using Microsoft.Extensions.Options;
-using Monica.Docs.Domains.Documentation.Domain.Interfaces;
-using Monica.Docs.Domains.Documentation.Domain.Models;
-using Monica.Docs.Domains.Documentation.Domain.Services;
-using Monica.Docs.Domains.Documentation.Infrastructure.Configurations;
+using Monica.Docs.Domains.Documentation.Configurations;
+using Monica.Docs.Domains.Documentation.Interfaces;
+using Monica.Docs.Domains.Documentation.Models;
+using Monica.Docs.Domains.Documentation.Services;
 
-namespace Monica.Docs.Domains.Documentation.Infrastructure.Providers;
+namespace Monica.Docs.Domains.Documentation.Providers;
 
 public sealed partial class DocumentationMarkdownProcessor(
     IOptions<DocumentationApiOptions> options)

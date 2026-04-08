@@ -2,33 +2,36 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Monica.Core;
+using Monica.Core.Mediator;
+using Monica.Core.Results;
 using Monica.Core.Modularity.Extensions;
-using Monica.Docs.Domains.Documentation.Application.HandlersQuery;
-using Monica.Docs.Domains.Documentation.Domain.Interfaces;
-using Monica.Docs.Domains.Documentation.Infrastructure.Configurations;
-using Monica.Docs.Domains.Documentation.Infrastructure.DependencyInjection;
-using Monica.Framework.ProjectUnits.Models;
+using Monica.Docs.Api.HandlersQuery;
+using Monica.Docs.Domains.Documentation.Configurations;
+using Monica.Docs.Domains.Documentation.DependencyInjection;
+using Monica.Docs.Domains.Documentation.Interfaces;
 using Monica.Docs.Shared.Platform.Infrastructure.Controllers;
+using Monica.Docs.Shared.Platform.Protocol.PublishedLanguages.DomainDocumentation.Models;
+using Monica.Docs.Shared.Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
+using Monica.Framework.ProjectUnits.Models;
 using Monica.Modules;
 
-namespace Monica.Docs.Shared.Platform.Infrastructure;
+namespace Monica.Docs.Api;
 
 public static class UnifiedEntrance
 {
     private static readonly string[] SwaggerAssemblies =
     [
-        "Monica.Docs.AppHost.Api",
+        "Monica.Docs.Api",
         "Monica.Docs.Shared.Platform.Protocol",
         "Monica.Docs.Shared.Platform.Infrastructure",
-        "Monica.Docs.Domains.Documentation.Application",
-        "Monica.Docs.Domains.Documentation.Domain",
-        "Monica.Docs.Domains.Documentation.Infrastructure"
+        "Monica.Docs.Domains.Documentation"
     ];
 
     public static void UnifiedConfigureBuilder(this WebApplicationBuilder builder)
     {
         ForceLoadDocumentationAssemblies();
-        builder.Services.AddDocumentationInfrastructure();
+        builder.Services.AddDocumentationDomain();
+        AddDocumentationApiHandlers(builder.Services);
 
         Mo.AddResultEnvelope().UseResultFieldNames(o => o.Status = "code");
         Mo.AddEventBus().UseNoOpDistributedEventBus();
@@ -71,6 +74,15 @@ public static class UnifiedEntrance
         app.UseMonica();
         app.MapControllers();
         app.MapMonica();
+    }
+
+    private static void AddDocumentationApiHandlers(IServiceCollection services)
+    {
+        services.AddTransient<
+            IRequestHandler<GetDocTreeRequest, Res<IReadOnlyList<DocTreeItemDto>>>,
+            QueryHandlerGetDocTree>();
+        services.AddTransient<IRequestHandler<GetDocBySlugRequest, Res<DocContentDto>>, QueryHandlerGetDocBySlug>();
+        services.AddTransient<IRequestHandler<GetDocAssetRequest, object>, QueryHandlerGetDocAsset>();
     }
 
     private static string ResolveDocsBasePath(IHostEnvironment environment)

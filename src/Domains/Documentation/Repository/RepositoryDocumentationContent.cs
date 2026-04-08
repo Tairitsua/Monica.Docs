@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Options;
-using Monica.Docs.Domains.Documentation.Domain.Interfaces;
-using Monica.Docs.Domains.Documentation.Domain.Models;
-using Monica.Docs.Domains.Documentation.Domain.Services;
-using Monica.Docs.Domains.Documentation.Infrastructure.Configurations;
+using Monica.Docs.Domains.Documentation.Configurations;
+using Monica.Docs.Domains.Documentation.Interfaces;
+using Monica.Docs.Domains.Documentation.Models;
+using Monica.Docs.Domains.Documentation.Services;
 using Monica.Markdown.Abstractions;
 using Monica.Markdown.Models;
 
-namespace Monica.Docs.Domains.Documentation.Infrastructure.Repository;
+namespace Monica.Docs.Domains.Documentation.Repository;
 
 public sealed class RepositoryDocumentationContent(
     IMarkdownDocumentCatalog markdownCatalog,

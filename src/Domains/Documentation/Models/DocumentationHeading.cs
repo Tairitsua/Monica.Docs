@@ -1,4 +1,4 @@
-namespace Monica.Docs.Domains.Documentation.Domain.Models;
+namespace Monica.Docs.Domains.Documentation.Models;
 
 public sealed record DocumentationHeading(
     string Id,
