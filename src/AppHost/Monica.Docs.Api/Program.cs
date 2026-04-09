@@ -12,8 +12,6 @@ builder.Services.AddDocumentationDomain();
 
 Mo.AddResultEnvelope().UseResultFieldNames(o => o.Status = "code");
 Mo.AddEventBus().UseNoOpDistributedEventBus();
-Mo.AddObjectMapping();
-Mo.AddJsonSerialization();
 Mo.AddControllers().ConfigMvcBuilder((mvcBuilder, _) =>
 {
     mvcBuilder.AddApplicationPart(typeof(DocumentationController).Assembly)
@@ -22,9 +20,7 @@ Mo.AddControllers().ConfigMvcBuilder((mvcBuilder, _) =>
 {
     services.AddEndpointsApiExplorer();
 });
-Mo.AddDependencyInjection();
-Mo.AddMediator();
-Mo.AddExceptionHandling();
+
 Mo.AddSwagger(o =>
 {
     o.AppName = "Monica.Docs API";
@@ -56,7 +52,6 @@ builder.UseMonica();
 var app = builder.Build();
 
 app.UseMonica();
-app.MapControllers();
 app.MapMonica();
 app.Run();
 
