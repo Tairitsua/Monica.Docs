@@ -25,4 +25,10 @@ Use these rules to keep the microservice architecture from collapsing into a dis
 ## Adapter Rule
 
 - `ServicesHttp`, `ServicesGrpc`, and host entry points are delivery mechanisms.
+- AppHost or gateway projects are composition-only entry points and should stay limited to the project file and `Program.cs`.
 - They do not replace `ApplicationService`, `DomainService`, `Entity`, `Repository`, or other ProjectUnits.
+
+## Solution View
+
+- Keep `.slnx` folders aligned with the real `src/AppHost`, `src/Shared`, `src/Services`, and `src/Migrations` layout.
+- Do not flatten services or migrations in the solution view in a way that hides service ownership boundaries.

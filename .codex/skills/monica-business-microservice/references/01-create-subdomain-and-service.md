@@ -36,8 +36,23 @@ Create:
 ```text
 src/Services/{Subdomain}/
 ├── {Subdomain}Service.API/
+│   ├── HandlersCommand/
+│   ├── HandlersQuery/
+│   ├── HandlersEvent/
+│   ├── BackgroundWorkers/
+│   ├── ServicesHttp/
+│   └── ServicesGrpc/
 ├── {Subdomain}Service.Domain/
+│   ├── Entities/
+│   ├── ValueObjects/
+│   ├── DomainServices/
+│   ├── Events/
+│   ├── Interfaces/
+│   └── Configurations/
 └── {Subdomain}Service.Infrastructure/
+    ├── Repository/
+    ├── Persistence/
+    └── Providers/
 ```
 
 Use `monica-project-unit-development` to fill the correct ProjectUnits inside those projects.
@@ -47,10 +62,11 @@ Use `monica-project-unit-development` to fill the correct ProjectUnits inside th
 - If the new service owns data, create or extend its migration project under `src/Migrations/{Subdomain}/`.
 - Keep each service responsible for its own persistence model and migrations.
 
-## Step 5. Wire the host
+## Step 5. Wire the host and update the solution
 
-- Register the service in the solution's host or gateway entry project.
+- Register the service in the solution's host or gateway `Program.cs`.
 - Keep orchestration metadata outside the domain projects.
+- Keep `.slnx` folders aligned with `src/AppHost`, `src/Shared`, `src/Services`, and `src/Migrations`.
 
 ## Decision Rule
 

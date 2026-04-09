@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Options;
 using Monica.Docs.Domains.Documentation.Configurations;
+using Monica.Docs.Domains.Documentation.Entities;
 using Monica.Docs.Domains.Documentation.Interfaces;
-using Monica.Docs.Domains.Documentation.Models;
-using Monica.Docs.Domains.Documentation.Services;
+using Monica.Docs.Domains.Documentation.DomainServices;
+using Monica.Docs.Domains.Documentation.ValueObjects;
 using Monica.Markdown.Abstractions;
 using Monica.Markdown.Models;
 

@@ -1,4 +1,4 @@
-namespace Monica.Docs.Domains.Documentation.Models;
+namespace Monica.Docs.Domains.Documentation.ValueObjects;
 
 public sealed record DocumentationTreeNode(
     string Title,

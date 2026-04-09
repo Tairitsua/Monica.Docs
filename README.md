@@ -5,7 +5,7 @@ Monica.Docs is intended to serve two roles at the same time:
 1. The documentation site for Monica.
 2. A real Monica example project that demonstrates how to build a business system as a modular monolith with a decoupled frontend and backend.
 
-This README defines the target architecture for that direction. The current repository still contains a single Blazor Server host. That host is transitional and should be migrated into the structure below instead of treated as the final shape.
+This README defines the target architecture for that direction. The backend has already been extracted into a domain-first `src/` layout, and this document describes the shape that layout should continue to converge toward.
 
 ## Project Goals
 
@@ -17,13 +17,15 @@ This README defines the target architecture for that direction. The current repo
 
 ## Current State
 
-Today the repository is a single `.NET 10` Blazor Server app:
+Today the repository already has the first modular-monolith backend extraction in place:
 
-- `Monica.Docs.csproj` hosts the site directly.
+- `src/AppHost/Monica.Docs.Api` is the API entry project.
+- `src/Domains/Documentation` is the current bounded context.
+- `src/Shared/Platform.Protocol` and `src/Shared/Platform.Infrastructure` hold the shared platform language and runtime wiring.
 - `docs/` contains the markdown documentation source.
-- The app references `Monica.Core`, `Monica.Markdown`, and `Monica.UI` from `../MoLibrary`.
+- The solution still depends on Monica framework libraries from `../MoLibrary`.
 
-That is fine as a bootstrap, but it does not match the target architecture. Once frontend and backend are separated, the backend should stop depending on UI concerns directly.
+That is a valid transitional step, but the structure still needs to stay disciplined as the repository grows. In particular, AppHost should remain composition-only and domain-owned application units should stay inside the owning bounded context.
 
 ## Target Architecture
 
@@ -33,7 +35,8 @@ The backend should become a Monica modular monolith that follows the `monica-bus
 
 - Domain-first layout, not global `Application` / `Domain` / `Infrastructure` buckets.
 - Shared language in `Shared/Platform.Protocol/PublishedLanguages`.
-- AppHost entry projects own delivery-facing handlers.
+- Domain-owned application units live under `Domains/{Subdomain}/Application/...`.
+- AppHost entry projects stay composition-only.
 - Clear persistence ownership per bounded context.
 - No direct cross-domain references to another domain's internal implementation.
 
@@ -69,10 +72,7 @@ src/
 ├── AppHost/
 │   └── Monica.Docs.Api/
 │       ├── Monica.Docs.Api.csproj
-│       ├── HandlersCommand/
-│       ├── HandlersQuery/
-│       ├── EventHandlers/
-│       └── BackgroundWorkers/
+│       └── Program.cs
 ├── Shared/
 │   ├── Platform.BuildingBlocks/
 │   │   └── Platform.BuildingBlocks.csproj
@@ -89,10 +89,16 @@ src/
 ├── Domains/
 │   └── Documentation/
 │       ├── Domains.Documentation.csproj
+│       ├── Application/
+│       │   ├── HandlersCommand/
+│       │   ├── HandlersQuery/
+│       │   ├── HandlersEvent/
+│       │   └── BackgroundWorkers/
+│       ├── Entities/
+│       ├── ValueObjects/
 │       ├── Interfaces/
-│       ├── Services/
 │       ├── Configurations/
-│       ├── DependencyInjection/
+│       ├── DomainServices/
 │       ├── Repository/
 │       ├── Persistence/
 │       └── Providers/
@@ -111,7 +117,8 @@ Notes:
 
 - `frontend/` is intentionally outside the backend `src/` tree.
 - `AppHost/Monica.Docs.Api` shows the preferred naming style: use the solution-specific project name directly, typically ending with `Api`.
-- AppHost entry projects own delivery handlers such as `HandlersCommand`, `HandlersQuery`, `EventHandlers`, and `BackgroundWorkers`.
+- AppHost entry projects stay composition-only and should be kept down to the project file plus `Program.cs`.
+- Domain-owned handlers and jobs live inside `Domains/Documentation/Application/HandlersCommand`, `HandlersQuery`, `HandlersEvent`, and `BackgroundWorkers`.
 - `Shared/Platform.*` folders own their `Platform.*.csproj` directly. No extra `Monica.Docs.*Platform` nesting is needed there.
 - `Monica.Docs.slnx` should mirror the physical `src/AppHost`, `src/Shared`, and `src/Domains` folders in solution view.
 - `Database/DbMigrator` can exist even if v1 is mostly file-system based. If relational persistence appears later, ownership still stays with the owning domain.
@@ -137,6 +144,7 @@ Future bounded contexts should only be added when they have distinct language an
 
 Own the business concepts and rules for docs:
 
+- query handlers and background workflows under `Application/`
 - doc identity and slug rules
 - doc metadata and front matter normalization
 - navigation order and grouping rules
@@ -147,14 +155,11 @@ Own the business concepts and rules for docs:
 
 ### `Monica.Docs.Api`
 
-Own use-case level handlers, such as:
+Own the host-level composition only:
 
-- `GetDocTree`
-- `GetDocBySlug`
-- `GetDocAsset`
-- `ListDocBreadcrumbs`
-
-These handlers shape the data returned to clients and depend on the shared published language plus the owning domain package.
+- register Monica modules
+- load controllers and OpenAPI
+- compose the Documentation domain into the running application
 
 ## Published Language
 
@@ -222,8 +227,9 @@ Not required in v1:
 These rules matter because this repository is also supposed to be a Monica example project:
 
 - Keep the solution domain-first.
-- Keep AppHost entry projects focused on delivery, orchestration, and handlers.
+- Keep AppHost entry projects focused on composition and delivery wiring only.
 - Keep domain models, repositories, providers, and persistence ownership out of AppHost.
+- Keep domain-owned handlers and jobs inside the owning domain package under `Application/`.
 - Keep shared business language in `Platform.Protocol`.
 - Keep persistence ownership inside the owning domain.
 - Do not let the frontend couple to backend implementation details.

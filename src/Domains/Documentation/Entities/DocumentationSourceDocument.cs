@@ -1,4 +1,4 @@
-namespace Monica.Docs.Domains.Documentation.Models;
+namespace Monica.Docs.Domains.Documentation.Entities;
 
 public sealed record DocumentationSourceDocument(
     string Slug,
