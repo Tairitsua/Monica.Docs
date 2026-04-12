@@ -3,7 +3,6 @@ using Monica.Core.Modularity.Extensions;
 using Monica.Docs.Domains.Documentation;
 using Monica.Docs.Domains.Documentation.Configurations;
 using Monica.Docs.Shared.Platform.Infrastructure.Controllers;
-using Monica.Framework.ProjectUnits.Models;
 using Monica.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,13 +24,6 @@ Mo.AddSwagger(o =>
 {
     o.AppName = "Monica.Docs API";
     o.Version = "v1";
-    o.DocumentAssemblies =
-    [
-        "Monica.Docs.Api",
-        "Monica.Docs.Shared.Platform.Protocol",
-        "Monica.Docs.Shared.Platform.Infrastructure",
-        "Monica.Docs.Domains.Documentation"
-    ];
 });
 Mo.AddProjectUnits(o =>
 {
@@ -67,5 +59,3 @@ static string ResolveDocsBasePath(IHostEnvironment environment)
 
     return Path.GetFullPath(Path.Combine(environment.ContentRootPath, "..", "..", "..", "docs"));
 }
-
-public partial class Program;

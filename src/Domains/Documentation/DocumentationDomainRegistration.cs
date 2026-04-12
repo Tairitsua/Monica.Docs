@@ -27,12 +27,7 @@ public static class DocumentationDomainRegistration
 
         services.AddSingleton<IRepositoryDocumentationContent, RepositoryDocumentationContent>();
         services.AddSingleton<IDocumentationMarkdownProcessor, DocumentationMarkdownProcessor>();
-        services.AddTransient<
-            IRequestHandler<GetDocTreeRequest, Res<IReadOnlyList<DocTreeItemDto>>>,
-            QueryHandlerGetDocTree>();
-        services.AddTransient<IRequestHandler<GetDocBySlugRequest, Res<DocContentDto>>, QueryHandlerGetDocBySlug>();
-        services.AddTransient<IRequestHandler<GetDocAssetRequest, object>, QueryHandlerGetDocAsset>();
-
+     
         return services;
     }
 }
