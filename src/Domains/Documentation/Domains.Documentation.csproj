@@ -14,7 +14,14 @@
 
   <ItemGroup>
     <ProjectReference Include="../../Shared/Platform.Protocol/Platform.Protocol.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Configuration/Monica.Configuration.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Core/Monica.Core.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.DependencyInjection/Monica.DependencyInjection.csproj" />
     <ProjectReference Include="../../../../MoLibrary/Monica.Markdown/Monica.Markdown.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.WebApi/Monica.WebApi.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Generators.AutoController/Monica.Generators.AutoController.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

@@ -1,25 +1,17 @@
-using Domains.Documentation;
 using Domains.Documentation.Configurations;
 using Monica.Core;
 using Monica.Core.Modularity.Extensions;
-using Monica.Docs.Domains.Documentation;
 using Monica.Modules;
-using Platform.Infrastructure.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDocumentationDomain();
-
 Mo.AddResultEnvelope().UseResultFieldNames(o => o.Status = "code");
-Mo.AddEventBus().UseNoOpDistributedEventBus();
-Mo.AddControllers().ConfigMvcBuilder((mvcBuilder, _) =>
+Mo.AddConfiguration(o =>
 {
-    mvcBuilder.AddApplicationPart(typeof(DocumentationController).Assembly)
-        .AddControllersAsServices();
-}).ConfigDependentServices(services =>
-{
-    services.AddEndpointsApiExplorer();
+    o.AppConfiguration = builder.Configuration;
 });
+Mo.AddEventBus().UseNoOpDistributedEventBus();
+Mo.AddWebApi();
 
 Mo.AddSwagger(o =>
 {

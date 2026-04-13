@@ -1,5 +1,6 @@
 using Domains.Documentation.DomainServices;
 using Domains.Documentation.Interfaces;
+using Domains.Documentation.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Monica.Core.Results;
 using Monica.WebApi.Abstractions;
@@ -7,15 +8,17 @@ using Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
 
 namespace Domains.Documentation.Application.HandlersQuery;
 
+[Route("api/docs/assets")]
 public sealed class QueryHandlerGetDocAsset(
     IRepositoryDocumentationContent repository)
     : CustomApplicationService<GetDocAssetRequest, object>
 {
+    [HttpGet]
     public override async Task<object> Handle(
         GetDocAssetRequest request,
         CancellationToken cancellationToken)
     {
-        var normalizedAssetPath = DomainDocumentationPathRules.NormalizeRelativePath(request.AssetPath);
+        var normalizedAssetPath = DocumentationPathUtils.NormalizeRelativePath(request.AssetPath);
         if (string.IsNullOrWhiteSpace(normalizedAssetPath))
         {
             return Res.Fail("Documentation asset path is required.");

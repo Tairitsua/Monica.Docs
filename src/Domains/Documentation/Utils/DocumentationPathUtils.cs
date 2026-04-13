@@ -1,6 +1,6 @@
-namespace Domains.Documentation.DomainServices;
+namespace Domains.Documentation.Utils;
 
-public static class DomainDocumentationPathRules
+public static class DocumentationPathUtils
 {
     private static readonly char[] QueryOrFragmentSeparators = ['?', '#'];
 
@@ -93,13 +93,10 @@ public static class DomainDocumentationPathRules
 
         normalizedBasePath = normalizedBasePath.TrimEnd('/');
 
-        var encodedPath = string.Join(
-            "/",
-            NormalizeRelativePath(assetRelativePath)
-                .Split('/', StringSplitOptions.RemoveEmptyEntries)
-                .Select(Uri.EscapeDataString));
+        var encodedPath = Uri.EscapeDataString(NormalizeRelativePath(assetRelativePath));
+        var separator = normalizedBasePath.Contains('?', StringComparison.Ordinal) ? '&' : '?';
 
-        return $"{normalizedBasePath}/{encodedPath}";
+        return $"{normalizedBasePath}{separator}assetPath={encodedPath}";
     }
 
     private static bool TryResolveRelativeTarget(

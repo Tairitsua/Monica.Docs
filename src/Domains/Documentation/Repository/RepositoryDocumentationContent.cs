@@ -1,15 +1,18 @@
 using Domains.Documentation.Configurations;
-using Domains.Documentation.DomainServices;
 using Domains.Documentation.Entities;
 using Domains.Documentation.Interfaces;
+using Domains.Documentation.Utils;
 using Domains.Documentation.ValueObjects;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Monica.DependencyInjection.Annotations;
 using Monica.Markdown.Abstractions;
 using Monica.Markdown.Models;
 
 namespace Domains.Documentation.Repository;
 
+[Dependency(ServiceLifetime.Transient)]
 public sealed class RepositoryDocumentationContent(
     IMarkdownDocumentCatalog markdownCatalog,
     IOptions<DocumentationApiOptions> options)
@@ -35,7 +38,7 @@ public sealed class RepositoryDocumentationContent(
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var normalizedSlug = DomainDocumentationPathRules.NormalizeSlug(slug);
+        var normalizedSlug = DocumentationPathUtils.NormalizeSlug(slug);
         if (string.IsNullOrWhiteSpace(normalizedSlug))
         {
             return null;
@@ -44,7 +47,7 @@ public sealed class RepositoryDocumentationContent(
         var documents = await markdownCatalog.GetDocumentsAsync(_options.DocumentGroupKey);
         var document = documents.FirstOrDefault(candidate =>
             string.Equals(
-                DomainDocumentationPathRules.ToSlug(candidate.RelativePath),
+                DocumentationPathUtils.ToSlug(candidate.RelativePath),
                 normalizedSlug,
                 StringComparison.Ordinal));
 
@@ -63,7 +66,7 @@ public sealed class RepositoryDocumentationContent(
         return new DocumentationSourceDocument(
             normalizedSlug,
             document.Title,
-            DomainDocumentationPathRules.NormalizeRelativePath(document.RelativePath),
+            DocumentationPathUtils.NormalizeRelativePath(document.RelativePath),
             markdown,
             document.LastModifiedUtc,
             document.FrontMatter?.Date,
@@ -77,11 +80,11 @@ public sealed class RepositoryDocumentationContent(
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var normalizedAssetPath = DomainDocumentationPathRules.NormalizeRelativePath(
+        var normalizedAssetPath = DocumentationPathUtils.NormalizeRelativePath(
             Uri.UnescapeDataString(assetPath));
 
         if (string.IsNullOrWhiteSpace(normalizedAssetPath)
-            || DomainDocumentationPathRules.IsMarkdownDocumentPath(normalizedAssetPath))
+            || DocumentationPathUtils.IsMarkdownDocumentPath(normalizedAssetPath))
         {
             return null;
         }
@@ -116,7 +119,7 @@ public sealed class RepositoryDocumentationContent(
         string currentPath)
     {
         var relativePath = node.Data.IsDocument && node.Data.Document is not null
-            ? DomainDocumentationPathRules.NormalizeRelativePath(node.Data.Document.RelativePath)
+            ? DocumentationPathUtils.NormalizeRelativePath(node.Data.Document.RelativePath)
             : CombinePath(currentPath, node.Data.Name);
 
         var children = node.Children
@@ -132,7 +135,7 @@ public sealed class RepositoryDocumentationContent(
                 : node.Data.Name,
             relativePath,
             node.Data.IsDocument && node.Data.Document is not null
-                ? DomainDocumentationPathRules.ToSlug(node.Data.Document.RelativePath)
+                ? DocumentationPathUtils.ToSlug(node.Data.Document.RelativePath)
                 : null,
             node.Data.IsDocument,
             TryGetSidebarOrder(node.Data.Document),
@@ -143,10 +146,10 @@ public sealed class RepositoryDocumentationContent(
     {
         if (string.IsNullOrWhiteSpace(prefix))
         {
-            return DomainDocumentationPathRules.NormalizeRelativePath(name);
+            return DocumentationPathUtils.NormalizeRelativePath(name);
         }
 
-        return DomainDocumentationPathRules.NormalizeRelativePath($"{prefix}/{name}");
+        return DocumentationPathUtils.NormalizeRelativePath($"{prefix}/{name}");
     }
 
     private static int? TryGetSidebarOrder(MarkdownDocument? document)

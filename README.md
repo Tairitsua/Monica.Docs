@@ -189,8 +189,8 @@ The backend only needs a small read-only API at first.
 Suggested endpoints:
 
 - `GET /api/docs/tree`
-- `GET /api/docs/{slug}`
-- `GET /api/docs/assets/{**path}`
+- `GET /api/docs?slug={slug}`
+- `GET /api/docs/assets?assetPath={path}`
 
 Suggested response responsibilities:
 

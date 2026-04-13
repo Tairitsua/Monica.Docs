@@ -1,7 +1,9 @@
 using Domains.Documentation.DomainServices;
 using Domains.Documentation.Entities;
 using Domains.Documentation.Interfaces;
+using Domains.Documentation.Utils;
 using Domains.Documentation.ValueObjects;
+using Microsoft.AspNetCore.Mvc;
 using Monica.Core.Results;
 using Monica.WebApi.Abstractions;
 using Platform.Protocol.PublishedLanguages.DomainDocumentation.Models;
@@ -9,16 +11,18 @@ using Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
 
 namespace Domains.Documentation.Application.HandlersQuery;
 
+[Route("api/docs")]
 public sealed class QueryHandlerGetDocBySlug(
     IRepositoryDocumentationContent repository,
-    IDocumentationMarkdownProcessor markdownProcessor)
+    DomainDocumentationMarkdownProcessor markdownProcessor)
     : ApplicationService<GetDocBySlugRequest, DocContentDto>
 {
+    [HttpGet]
     public override async Task<Res<DocContentDto>> Handle(
         GetDocBySlugRequest request,
         CancellationToken cancellationToken)
     {
-        var normalizedSlug = DomainDocumentationPathRules.NormalizeSlug(request.Slug);
+        var normalizedSlug = DocumentationPathUtils.NormalizeSlug(request.Slug);
         if (string.IsNullOrWhiteSpace(normalizedSlug))
         {
             return Res.Fail("Document slug is required.");
@@ -54,7 +58,7 @@ public sealed class QueryHandlerGetDocBySlug(
         DocumentationSourceDocument document,
         string displayTitle)
     {
-        var segments = DomainDocumentationPathRules.NormalizeRelativePath(document.RelativePath)
+        var segments = DocumentationPathUtils.NormalizeRelativePath(document.RelativePath)
             .Split('/', StringSplitOptions.RemoveEmptyEntries);
 
         if (segments.Length <= 1)

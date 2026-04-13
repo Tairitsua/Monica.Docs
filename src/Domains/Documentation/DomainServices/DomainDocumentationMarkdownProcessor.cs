@@ -2,20 +2,20 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using Domains.Documentation.Configurations;
-using Domains.Documentation.DomainServices;
 using Domains.Documentation.Entities;
-using Domains.Documentation.Interfaces;
+using Domains.Documentation.Utils;
 using Domains.Documentation.ValueObjects;
 using Markdig;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using Microsoft.Extensions.Options;
+using Monica.WebApi.Abstractions;
 
-namespace Domains.Documentation.Providers;
+namespace Domains.Documentation.DomainServices;
 
-public sealed partial class DocumentationMarkdownProcessor(
+public sealed partial class DomainDocumentationMarkdownProcessor(
     IOptions<DocumentationApiOptions> options)
-    : IDocumentationMarkdownProcessor
+    : DomainService
 {
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
         .UseAdvancedExtensions()
@@ -42,7 +42,7 @@ public sealed partial class DocumentationMarkdownProcessor(
         return MarkdownLinkPattern().Replace(markdown, match =>
         {
             var originalUrl = match.Groups["url"].Value;
-            if (!DomainDocumentationPathRules.TryResolveLocalAssetPath(
+            if (!DocumentationPathUtils.TryResolveLocalAssetPath(
                     documentRelativePath,
                     originalUrl,
                     out var assetRelativePath))
@@ -50,7 +50,7 @@ public sealed partial class DocumentationMarkdownProcessor(
                 return match.Value;
             }
 
-            var rewrittenUrl = DomainDocumentationPathRules.BuildAssetUrl(
+            var rewrittenUrl = DocumentationPathUtils.BuildAssetUrl(
                 _options.AssetBasePath,
                 assetRelativePath);
 
