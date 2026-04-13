@@ -1,11 +1,11 @@
+using Domains.Documentation.DomainServices;
+using Domains.Documentation.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Monica.Core.Results;
-using Monica.Docs.Domains.Documentation.Interfaces;
-using Monica.Docs.Domains.Documentation.DomainServices;
-using Monica.Docs.Shared.Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
 using Monica.WebApi.Abstractions;
+using Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
 
-namespace Monica.Docs.Domains.Documentation.Application.HandlersQuery;
+namespace Domains.Documentation.Application.HandlersQuery;
 
 public sealed class QueryHandlerGetDocAsset(
     IRepositoryDocumentationContent repository)

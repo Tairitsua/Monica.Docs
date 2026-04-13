@@ -1,4 +1,4 @@
-namespace Monica.Docs.Domains.Documentation.DomainServices;
+namespace Domains.Documentation.DomainServices;
 
 public static class DomainDocumentationPathRules
 {

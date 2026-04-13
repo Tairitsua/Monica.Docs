@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Monica.Core.Mediator;
 using Monica.Core.Results;
-using Monica.Docs.Shared.Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
+using Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
 
-namespace Monica.Docs.Shared.Platform.Infrastructure.Controllers;
+namespace Platform.Infrastructure.Controllers;
 
 [ApiController]
 [Route("api/docs")]
