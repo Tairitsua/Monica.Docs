@@ -1,7 +1,7 @@
-using Monica.Docs.Domains.Documentation.Entities;
-using Monica.Docs.Domains.Documentation.ValueObjects;
+using Domains.Documentation.Entities;
+using Domains.Documentation.ValueObjects;
 
-namespace Monica.Docs.Domains.Documentation.Interfaces;
+namespace Domains.Documentation.Interfaces;
 
 public interface IDocumentationMarkdownProcessor
 {

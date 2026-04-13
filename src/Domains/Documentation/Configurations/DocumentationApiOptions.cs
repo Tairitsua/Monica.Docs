@@ -1,4 +1,4 @@
-namespace Monica.Docs.Domains.Documentation.Configurations;
+namespace Domains.Documentation.Configurations;
 
 public sealed class DocumentationApiOptions
 {

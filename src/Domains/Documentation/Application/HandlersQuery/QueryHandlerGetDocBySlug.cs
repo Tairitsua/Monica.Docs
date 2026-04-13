@@ -1,13 +1,13 @@
+using Domains.Documentation.DomainServices;
+using Domains.Documentation.Entities;
+using Domains.Documentation.Interfaces;
+using Domains.Documentation.ValueObjects;
 using Monica.Core.Results;
-using Monica.Docs.Domains.Documentation.Entities;
-using Monica.Docs.Domains.Documentation.Interfaces;
-using Monica.Docs.Domains.Documentation.DomainServices;
-using Monica.Docs.Domains.Documentation.ValueObjects;
-using Monica.Docs.Shared.Platform.Protocol.PublishedLanguages.DomainDocumentation.Models;
-using Monica.Docs.Shared.Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
 using Monica.WebApi.Abstractions;
+using Platform.Protocol.PublishedLanguages.DomainDocumentation.Models;
+using Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
 
-namespace Monica.Docs.Domains.Documentation.Application.HandlersQuery;
+namespace Domains.Documentation.Application.HandlersQuery;
 
 public sealed class QueryHandlerGetDocBySlug(
     IRepositoryDocumentationContent repository,

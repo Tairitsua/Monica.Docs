@@ -1,17 +1,17 @@
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using Domains.Documentation.Configurations;
+using Domains.Documentation.DomainServices;
+using Domains.Documentation.Entities;
+using Domains.Documentation.Interfaces;
+using Domains.Documentation.ValueObjects;
 using Markdig;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using Microsoft.Extensions.Options;
-using Monica.Docs.Domains.Documentation.Configurations;
-using Monica.Docs.Domains.Documentation.Entities;
-using Monica.Docs.Domains.Documentation.Interfaces;
-using Monica.Docs.Domains.Documentation.DomainServices;
-using Monica.Docs.Domains.Documentation.ValueObjects;
 
-namespace Monica.Docs.Domains.Documentation.Providers;
+namespace Domains.Documentation.Providers;
 
 public sealed partial class DocumentationMarkdownProcessor(
     IOptions<DocumentationApiOptions> options)

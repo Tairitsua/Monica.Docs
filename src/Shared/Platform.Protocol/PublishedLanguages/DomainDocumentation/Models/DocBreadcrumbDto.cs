@@ -1,4 +1,4 @@
-namespace Monica.Docs.Shared.Platform.Protocol.PublishedLanguages.DomainDocumentation.Models;
+namespace Platform.Protocol.PublishedLanguages.DomainDocumentation.Models;
 
 public sealed record DocBreadcrumbDto(
     string Title,

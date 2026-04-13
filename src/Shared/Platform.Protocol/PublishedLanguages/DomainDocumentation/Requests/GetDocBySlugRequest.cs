@@ -1,7 +1,7 @@
-using Monica.Docs.Shared.Platform.Protocol.PublishedLanguages.DomainDocumentation.Models;
 using Monica.WebApi.Abstractions;
+using Platform.Protocol.PublishedLanguages.DomainDocumentation.Models;
 
-namespace Monica.Docs.Shared.Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
+namespace Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
 
 public sealed record GetDocBySlugRequest(string Slug)
     : IResultRequest<DocContentDto>;

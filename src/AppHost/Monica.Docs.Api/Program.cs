@@ -1,9 +1,10 @@
+using Domains.Documentation;
+using Domains.Documentation.Configurations;
 using Monica.Core;
 using Monica.Core.Modularity.Extensions;
 using Monica.Docs.Domains.Documentation;
-using Monica.Docs.Domains.Documentation.Configurations;
-using Monica.Docs.Shared.Platform.Infrastructure.Controllers;
 using Monica.Modules;
+using Platform.Infrastructure.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
