@@ -25,6 +25,7 @@ sidebar_position: 1
 ## 公开使用面
 
 - `ApplicationService` / `ApplicationService<TRequest, TResponse>`：面向请求处理的应用服务基类。
+- `CrudApplicationService<...>`：面向标准资源 CRUD 的应用服务基类。
 - `ICrudApplicationService`：标记可参与自动 CRUD 控制器生成的服务类型。
 - `CrudControllerOption`：配置自动 CRUD 路由前缀与类名后缀规则。
 - `AutoControllerConfigAttribute`：在程序集级统一默认路由前缀、领域名和生成行为。
@@ -36,3 +37,4 @@ sidebar_position: 1
 - [Configuration](./configuration.md)
 - [Guide and Providers](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
+- [项目单元编写](../../concepts/project-unit-authoring.md)
