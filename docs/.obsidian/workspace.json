@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "d26f1dd55a7b3ee1",
+        "id": "31cb50eb525a08e0",
         "type": "tabs",
         "children": [
           {
-            "id": "2bf0c202d6741326",
+            "id": "cb36a8912f6953fd",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -79,7 +79,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 204.5
+    "width": 383.5
   },
   "right": {
     "id": "ed9714903e96fa0c",
@@ -183,37 +183,38 @@
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
       "markdown-table-editor:Open Markdown Table Editor": false,
-      "table-editor-obsidian:Advanced Tables Toolbar": false
+      "table-editor-obsidian:Advanced Tables Toolbar": false,
+      "omnisearch:Omnisearch": false
     }
   },
-  "active": "2bf0c202d6741326",
+  "active": "cb36a8912f6953fd",
   "lastOpenFiles": [
     "zh-CN/modules/project-units/quick-start.md",
     "zh-CN/modules/project-units/index.md",
-    "zh-CN/modules/project-units/configuration.md",
-    "zh-CN/modules/project-units/scenarios.md",
     "zh-CN/modules/project-units/guide-and-providers.md",
+    "zh-CN/modules/project-units/configuration.md",
+    "zh-CN/modules/event-bus/index.md",
+    "zh-CN/concepts/facades-services-providers.md",
+    "zh-CN/modules/configuration/quick-start.md",
+    "zh-CN/modules/configuration/scenarios.md",
+    "zh-CN/modules/configuration/index.md",
+    "zh-CN/modules/configuration/guide-and-providers.md",
+    "zh-CN/modules/configuration/configuration.md",
+    "zh-CN/modules/project-units/scenarios.md",
+    "zh-CN/modules/job-scheduler/scenarios.md",
+    "zh-CN/modules/job-scheduler/quick-start.md",
+    "zh-CN/modules/job-scheduler/index.md",
     "zh-CN/modules/job-scheduler/configuration.md",
     "zh-CN/modules/job-scheduler/guide-and-providers.md",
-    "zh-CN/modules/job-scheduler/index.md",
-    "zh-CN/modules/job-scheduler/quick-start.md",
+    "zh-CN/modules/auto-model/configuration.md",
+    "zh-CN/modules/auto-model/scenarios.md",
+    "zh-CN/modules/auto-model/quick-start.md",
+    "zh-CN/modules/auto-model/index.md",
+    "zh-CN/modules/auto-model/guide-and-providers.md",
+    "zh-CN/scenarios/index.md",
+    "zh-CN/scenarios/diagnostics-and-ops.md",
+    "zh-CN/concepts/configuration-and-guide.md",
     "zh-CN/modules/dependency-injection/scenarios.md",
-    "zh-CN/modules/dependency-injection/index.md",
-    "zh-CN/modules/dependency-injection/quick-start.md",
-    "zh-CN/modules/dependency-injection/configuration.md",
-    "zh-CN/modules/data-channel/index.md",
-    "zh-CN/modules/data-channel/quick-start.md",
-    "zh-CN/modules/data-channel/scenarios.md",
-    "zh-CN/modules/data-channel/configuration.md",
-    "zh-CN/modules/data-channel/guide-and-providers.md",
-    "zh-CN/modules/configuration/quick-start.md",
-    "zh-CN/getting-started/installation.md",
-    "zh-CN/getting-started/index.md",
-    "zh-CN/concepts/result-envelope.md",
-    "zh-CN/concepts/module-pattern.md",
-    "zh-CN/concepts/index.md",
-    "zh-CN/getting-started/first-module.md",
-    "zh-CN/modules/auto-controllers/guide-and-providers.md",
     "DynamicProxy"
   ]
 }
