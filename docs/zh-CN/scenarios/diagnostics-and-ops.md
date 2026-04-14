@@ -41,3 +41,9 @@ Mo.AddJobSchedulerUI();
 - UI 模块不替代基础设施模块
 - 先让基础模块跑通，再考虑运维界面
 - 文档里优先看基础模块包，UI 模块通常只是围绕同一个能力提供可视化入口
+
+## 常见接入问题
+
+如果你在引入某个 `*.UI` 模块后发现页面打不开、浏览器一直转圈，先检查浏览器 Network 面板里是否出现了 `/_framework/blazor.web.js` 或 `/_content/Monica.UI/...` 的 `404`。
+
+这类问题通常不是业务模块本身失效，而是宿主的 UI 静态资源或 Razor Components 映射没有完成。优先回到 [安装与主机接入](../getting-started/installation.md)，按其中的 UI 模块排查步骤逐项确认主机环境、`RequiresAspNetWebAssets` 和 Monica 映射流程是否完整。
