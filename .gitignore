@@ -6,3 +6,6 @@
 .DS_Store
 .idea/
 .vscode/
+
+# Obsidian local workspace state
+docs/.obsidian/workspace.json
