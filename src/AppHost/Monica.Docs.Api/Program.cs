@@ -2,6 +2,7 @@ using Domains.Documentation.Configurations;
 using Monica.Core;
 using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
+using Monica.UI.Pages;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +32,11 @@ Mo.AddMarkdown(o =>
         key: DocumentationApiOptions.DefaultDocumentGroupKey,
         title: "Monica Docs",
         basePath: ResolveDocsBasePath(builder.Environment));
+Mo.AddSwaggerUI().AddNavigationButton("主页", UISystemInfoPage.PAGE_URL);
+Mo.AddSystemInfoUI();
+Mo.AddUIShell().AddRouteRedirect("/", UISystemInfoPage.PAGE_URL);
+Mo.AddModuleSystemUI();
+
 
 builder.UseMonica();
 

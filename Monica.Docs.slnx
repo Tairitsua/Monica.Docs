@@ -1,4 +1,42 @@
 <Solution>
+  <Folder Name="/lib/">
+    <Project Path="../MoLibrary/Monica.AI.UI/Monica.AI.UI.csproj" />
+    <Project Path="../MoLibrary/Monica.AI/Monica.AI.csproj" />
+    <Project Path="../MoLibrary/Monica.Authority/Monica.Authority.csproj" />
+    <Project Path="../MoLibrary/Monica.AutoModel/Monica.AutoModel.csproj" />
+    <Project Path="../MoLibrary/Monica.Configuration.UI/Monica.Configuration.UI.csproj" />
+    <Project Path="../MoLibrary/Monica.Configuration/Monica.Configuration.csproj" />
+    <Project Path="../MoLibrary/Monica.Core/Monica.Core.csproj" />
+    <Project Path="../MoLibrary/Monica.Dapr/Monica.Dapr.csproj" />
+    <Project Path="../MoLibrary/Monica.DataChannel/Monica.DataChannel.csproj" />
+    <Project Path="../MoLibrary/Monica.DependencyInjection/Monica.DependencyInjection.csproj" />
+    <Project Path="../MoLibrary/Monica.DevOps/Monica.DevOps.csproj" />
+    <Project Path="../MoLibrary/Monica.EventBus/Monica.EventBus.csproj" />
+    <Project Path="../MoLibrary/Monica.Experimental/Monica.Experimental.csproj" />
+    <Project Path="../MoLibrary/Monica.Framework.Generators/Monica.Framework.Generators.csproj" />
+    <Project Path="../MoLibrary/Monica.Framework.UI/Monica.Framework.UI.csproj" />
+    <Project Path="../MoLibrary/Monica.Framework/Monica.Framework.csproj" />
+    <Project Path="../MoLibrary/Monica.Generators.AutoController.Tool/Monica.Generators.AutoController.Tool.csproj" />
+    <Project Path="../MoLibrary/Monica.Generators.AutoController/Monica.Generators.AutoController.csproj" />
+    <Project Path="../MoLibrary/Monica.JobScheduler.EfCore/Monica.JobScheduler.EfCore.csproj" />
+    <Project Path="../MoLibrary/Monica.JobScheduler.UI/Monica.JobScheduler.UI.csproj" />
+    <Project Path="../MoLibrary/Monica.JobScheduler/Monica.JobScheduler.csproj" />
+    <Project Path="../MoLibrary/Monica.Locker/Monica.Locker.csproj" />
+    <Project Path="../MoLibrary/Monica.Logging/Monica.Logging.csproj" />
+    <Project Path="../MoLibrary/Monica.Markdown/Monica.Markdown.csproj" />
+    <Project Path="../MoLibrary/Monica.Office/Monica.Office.csproj" />
+    <Project Path="../MoLibrary/Monica.Profiling/Monica.Profiling.csproj" />
+    <Project Path="../MoLibrary/Monica.Repository/Monica.Repository.csproj" />
+    <Project Path="../MoLibrary/Monica.ServiceDiscovery/Monica.ServiceDiscovery.csproj" />
+    <Project Path="../MoLibrary/Monica.SignalR/Monica.SignalR.csproj" />
+    <Project Path="../MoLibrary/Monica.StateStore.StackExchange/Monica.StateStore.StackExchange.csproj" />
+    <Project Path="../MoLibrary/Monica.StateStore.UI/Monica.StateStore.UI.csproj" />
+    <Project Path="../MoLibrary/Monica.StateStore/Monica.StateStore.csproj" />
+    <Project Path="../MoLibrary/Monica.Tool/Monica.Tool.csproj" />
+    <Project Path="../MoLibrary/Monica.UI/Monica.UI.csproj" />
+    <Project Path="../MoLibrary/Monica.WebApi/Monica.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/src/" />
   <Folder Name="/src/AppHost/">
     <Project Path="src/AppHost/Monica.Docs.Api/Monica.Docs.Api.csproj" />
   </Folder>

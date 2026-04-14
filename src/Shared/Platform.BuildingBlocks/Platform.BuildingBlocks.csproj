@@ -10,5 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="../../../../MoLibrary/Monica.Framework/Monica.Framework.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Framework.UI/Monica.Framework.UI.csproj" />
   </ItemGroup>
 </Project>
