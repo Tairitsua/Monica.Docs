@@ -13,10 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Platform.BuildingBlocks/Platform.BuildingBlocks.csproj" />
     <ProjectReference Include="../Platform.Protocol/Platform.Protocol.csproj" />
-    <ProjectReference Include="../../../../MoLibrary/Monica.Core/Monica.Core.csproj" />
-    <ProjectReference Include="../../../../MoLibrary/Monica.WebApi/Monica.WebApi.csproj" />
   </ItemGroup>
 
 </Project>

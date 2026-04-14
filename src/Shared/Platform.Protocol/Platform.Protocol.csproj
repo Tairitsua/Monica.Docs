@@ -9,8 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../../MoLibrary/Monica.Core/Monica.Core.csproj" />
-    <ProjectReference Include="../../../../MoLibrary/Monica.WebApi/Monica.WebApi.csproj" />
+    <ProjectReference Include="../Platform.BuildingBlocks/Platform.BuildingBlocks.csproj" />
   </ItemGroup>
 
 </Project>
