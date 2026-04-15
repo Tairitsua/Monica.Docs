@@ -53,7 +53,7 @@ app.Run();
 - `/_framework/blazor.web.js`
 - `/_content/Monica.UI/...`
 
-如果 `/_framework/blazor.web.js` 在本地调试时返回 `404`，通常按下面顺序排查：
+如果 `/_framework/blazor.web.js` 在本地调试时返回 `404`，或样式文件返回 `200 OK` 但 `Content-Length: 0`，通常按下面顺序排查：
 
 1. 确认宿主确实是 ASP.NET Core Web 应用，并且走的是 `WebApplicationBuilder` / `WebApplication` 启动流程。
 2. 确认当前启动配置真的应用了预期环境。如果 `launchSettings.json` 没有生效，运行环境可能和你本地调试时假设的不一致，这会直接影响静态 Web 资源的加载行为。
@@ -67,6 +67,52 @@ app.Run();
 
 4. 必要时检查编译输出中的 `.StaticWebAssets.xml` 或 `*.staticwebassets.runtime.json`，确认 `Monica.UI`、`MudBlazor` 等依赖资源的映射已经生成。
 5. 最后回到 `Program.cs`，确认 Monica 主机闭环没有缺失：`builder.UseMonica()`、`app.UseMonica()`、`app.MapMonica()`。
+
+### Debug 启动后 UI 没有样式
+
+如果页面结构已经出来，但 Monica 顶栏、MudBlazor 卡片或加载骨架看起来像“无样式”页面，先不要只看 HTTP 状态码。静态资源端点可能返回 `200 OK`，但响应体是空的。可以直接检查关键 CSS 的响应头和字节数：
+
+```bash
+curl -D - http://localhost:5298/_content/MudBlazor/MudBlazor.min.css -o /tmp/mud.css
+wc -c /tmp/mud.css
+
+curl -D - http://localhost:5298/_content/Monica.UI/css/mo-theme-main.css -o /tmp/mo-theme.css
+wc -c /tmp/mo-theme.css
+```
+
+本地 Debug 运行时，ASP.NET Core 默认只在 `Development` 环境自动启用静态 Web 资源。如果 IDE 没有应用 `launchSettings.json`，进程可能会以 `Production` 启动，但仍然从 `bin/Debug` 运行。这个组合会导致 Razor Class Library 静态资源没有真正启用，表现为 CSS/JS 请求返回空内容，并且服务端日志可能出现类似提示：
+
+```text
+The application is not running against the published output and Static Web Assets are not enabled.
+```
+
+优先修复启动配置，而不是在正式生产环境中强行打开本地静态资源映射：
+
+1. 在 IDE 的 Run/Debug Configuration 中确认 `ASPNETCORE_ENVIRONMENT=Development` 或 `DOTNET_ENVIRONMENT=Development`。
+2. 确认启动项使用的是宿主项目的 `Properties/launchSettings.json`，而不是裸的 executable/profile。
+3. 如果项目经常被 IDE 以裸 Debug 配置启动，可以在 `Program.cs` 中添加 Debug-only fallback，并且只在两个环境变量都未设置时生效：
+
+```csharp
+#if DEBUG
+UseDevelopmentEnvironmentByDefaultForLocalDebugging();
+#endif
+
+var builder = WebApplication.CreateBuilder(args);
+
+static void UseDevelopmentEnvironmentByDefaultForLocalDebugging()
+{
+    if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
+        || !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")))
+    {
+        return;
+    }
+
+    Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", Environments.Development);
+    Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", Environments.Development);
+}
+```
+
+不要把这个问题误判为 Monica 主题 CSS 本身损坏。只要同一套 URL 在正确的 `Development` Debug 启动下能返回非零字节内容，问题就通常在宿主启动环境或静态 Web 资源加载条件上。
 
 如果某个 UI 页面在浏览器内导航可以打开，但按 `F5` 刷新后返回 `404`，还要额外检查模块端点是否都通过 Monica 的映射流程注册完成。`Monica.UI` 会在模块映射阶段注册 Razor Components、静态资源和附加程序集；宿主没有完成这一步时，Router 内导航和直接刷新可能表现不一致。
 
