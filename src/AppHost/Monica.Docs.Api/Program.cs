@@ -24,6 +24,7 @@ Mo.AddProjectUnits(o =>
     o.ConventionOptions.EnableNameConvention = true;
     o.ConventionOptions.NameConventionMode = ENameConventionMode.Strict;
 });
+Mo.AddProjectUnitsUI();
 Mo.AddMarkdown(o =>
     {
         o.ParseFrontMatter = true;
