@@ -19,6 +19,8 @@ Monica 里的“应用服务”通常有两种写法，它们都建立在 `Monic
 `Monica.Docs` 当前就使用这条路径：
 
 ```csharp
+using Microsoft.AspNetCore.Mvc;
+
 public sealed record GetDocTreeRequest
     : IResultRequest<IReadOnlyList<DocTreeItemDto>>;
 
@@ -26,6 +28,7 @@ public sealed class QueryHandlerGetDocTree(
     IRepositoryDocumentationContent repository)
     : ApplicationService<GetDocTreeRequest, IReadOnlyList<DocTreeItemDto>>
 {
+    [HttpGet("tree")]
     public override async Task<Res<IReadOnlyList<DocTreeItemDto>>> Handle(
         GetDocTreeRequest request,
         CancellationToken cancellationToken)
@@ -120,6 +123,8 @@ public sealed record CommandPublishDocument(string Slug) : IResultRequest;
 - 让 `RequestDto` 实现 `IResultRequest<T>` 或 `IResultRequest`
 - 复杂规则放进实体或 `DomainService`
 - 需要 `string` 成功结果时，使用 `Res.Ok<string>(value)`，不要写成 `Res.Ok(value)`
+- 基础路由统一采用 `api/{version}/{DomainName(PascalCase)}`，Handler 方法只保留请求级路由片段
+- 模块化单体把 `[assembly: AutoControllerConfig(...)]` 放在 Domain 项目根目录；微服务把它写在 `{Subdomain}Service.API/Program.cs`
 
 `Monica.Docs` 的 `QueryHandlerGetDocBySlug` 就是典型的查询处理器：它先校验请求，再从仓储取文档，最后组装 DTO 并返回 `Res`。
 

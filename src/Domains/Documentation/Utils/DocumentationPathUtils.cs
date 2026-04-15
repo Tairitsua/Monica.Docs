@@ -83,7 +83,7 @@ public static class DocumentationPathUtils
     public static string BuildAssetUrl(string assetBasePath, string assetRelativePath)
     {
         var normalizedBasePath = string.IsNullOrWhiteSpace(assetBasePath)
-            ? "/api/docs/assets"
+            ? "/api/v1/Documentation/assets"
             : assetBasePath.Trim();
 
         if (!normalizedBasePath.StartsWith('/'))

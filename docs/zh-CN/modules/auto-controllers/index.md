@@ -31,6 +31,8 @@ sidebar_position: 1
 - `AutoControllerConfigAttribute`：在程序集级统一默认路由前缀、领域名和生成行为。
 - `IResultRequest`：与结果模型配套的请求契约。
 
+默认推荐的 `ApplicationService` 路由写法是：先用 `AutoControllerConfigAttribute` 固定 `api/{version}/{DomainName(PascalCase)}`，再在 Handler 方法上补充 `tree`、`publish`、`doc` 这类请求级路由片段。
+
 ## 相关页面
 
 - [Quick Start](./quick-start.md)

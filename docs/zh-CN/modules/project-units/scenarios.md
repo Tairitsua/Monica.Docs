@@ -17,6 +17,14 @@ sidebar_position: 5
 
 `Monica.Docs` 的 `GetDocTreeRequest` + `QueryHandlerGetDocTree` 就属于这个模式。对于命令场景，则继续采用同样的 `Command*` + `CommandHandler*` 组合即可。
 
+路由建议也一并固定下来：
+
+- 基础路由统一采用 `api/{version}/{DomainName(PascalCase)}`
+- Handler 方法只写请求级路由片段
+- 例如 `QueryHandlerGetDocTree` 使用 `[HttpGet("tree")]`，最终就是 `GET api/v1/Documentation/tree`
+- 模块化单体把 `[assembly: AutoControllerConfig(...)]` 放在 Domain 项目根目录
+- 微服务把同样的配置写在 `{Subdomain}Service.API/Program.cs`
+
 适合：
 
 - 用例边界清楚

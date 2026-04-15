@@ -33,10 +33,9 @@ Mo.AddMarkdown(o =>
         title: "Monica Docs",
         basePath: ResolveDocsBasePath(builder.Environment));
 Mo.AddSwaggerUI().AddNavigationButton("主页", UISystemInfoPage.PAGE_URL);
-Mo.AddSystemInfoUI();
+Mo.AddSystemInfoUI().AddSwaggerLink();
 Mo.AddUIShell().AddRouteRedirect("/", UISystemInfoPage.PAGE_URL);
 Mo.AddModuleSystemUI();
-
 
 builder.UseMonica();
 

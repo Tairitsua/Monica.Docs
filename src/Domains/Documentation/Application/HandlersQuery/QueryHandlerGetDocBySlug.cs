@@ -11,13 +11,12 @@ using Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
 
 namespace Domains.Documentation.Application.HandlersQuery;
 
-[Route("api/docs")]
 public sealed class QueryHandlerGetDocBySlug(
     IRepositoryDocumentationContent repository,
     DomainDocumentationMarkdownProcessor markdownProcessor)
     : ApplicationService<GetDocBySlugRequest, DocContentDto>
 {
-    [HttpGet]
+    [HttpGet("doc")]
     public override async Task<Res<DocContentDto>> Handle(
         GetDocBySlugRequest request,
         CancellationToken cancellationToken)

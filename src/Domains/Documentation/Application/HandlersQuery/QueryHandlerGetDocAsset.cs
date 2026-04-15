@@ -8,12 +8,11 @@ using Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
 
 namespace Domains.Documentation.Application.HandlersQuery;
 
-[Route("api/docs/assets")]
 public sealed class QueryHandlerGetDocAsset(
     IRepositoryDocumentationContent repository)
     : CustomApplicationService<GetDocAssetRequest, object>
 {
-    [HttpGet]
+    [HttpGet("assets")]
     public override async Task<object> Handle(
         GetDocAssetRequest request,
         CancellationToken cancellationToken)

@@ -8,12 +8,11 @@ using Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
 
 namespace Domains.Documentation.Application.HandlersQuery;
 
-[Route("api/docs/tree")]
 public sealed class QueryHandlerGetDocTree(
     IRepositoryDocumentationContent repository)
     : ApplicationService<GetDocTreeRequest, IReadOnlyList<DocTreeItemDto>>
 {
-    [HttpGet]
+    [HttpGet("tree")]
     public override async Task<Res<IReadOnlyList<DocTreeItemDto>>> Handle(
         GetDocTreeRequest request,
         CancellationToken cancellationToken)

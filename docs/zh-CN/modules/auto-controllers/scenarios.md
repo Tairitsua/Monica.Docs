@@ -14,13 +14,25 @@ sidebar_position: 5
 
 真实项目里，除了在 `Mo.AddAutoControllers(...)` 里改 `CrudControllerOption`，还常常会在程序集级用 `AutoControllerConfigAttribute` 统一默认路由前缀和领域名。这样生成器与宿主注册入口都能围绕同一套路由约定工作。
 
+推荐把 `ApplicationService` 的基础路由固定成 `api/{version}/{DomainName(PascalCase)}`，然后让每个 Handler 方法只声明自己的请求级路由片段。
+
 ```csharp
 using Monica.WebApi.AutoControllers.Annotations;
 
 [assembly: AutoControllerConfig(
     DefaultRoutePrefix = "api/v1",
-    DomainName = "User")]
+    DomainName = "Documentation")]
 ```
+
+例如：
+
+- `QueryHandlerGetDocTree` + `[HttpGet("tree")]` -> `GET api/v1/Documentation/tree`
+- `QueryHandlerGetDocBySlug` + `[HttpGet("doc")]` -> `GET api/v1/Documentation/doc?slug={slug}`
+
+放置位置也建议固定：
+
+- 模块化单体：写在每个 Domain 项目根目录的独立配置文件里
+- 微服务：写在 `{Subdomain}Service.API/Program.cs` 里
 
 ## 场景 3 — 混合使用手写 Controller 与自动 CRUD
 

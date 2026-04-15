@@ -7,7 +7,7 @@ public sealed class DocumentationApiOptions
 {
     public const string SectionName = "DocumentationApi";
     public const string DefaultDocumentGroupKey = "monica";
-    public const string DefaultAssetBasePath = "/api/docs/assets";
+    public const string DefaultAssetBasePath = "/api/v1/Documentation/assets";
 
     [OptionSetting("Document Group Key", Description = "Markdown document-group key used when loading the documentation catalog.")]
     public string DocumentGroupKey { get; set; } = DefaultDocumentGroupKey;

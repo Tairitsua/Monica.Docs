@@ -63,10 +63,13 @@ Shared/Platform.Protocol/PublishedLanguages/DomainDocumentation/Requests/
 ### 2. 定义查询处理器
 
 ```csharp
+using Microsoft.AspNetCore.Mvc;
+
 public sealed class QueryHandlerGetDocTree(
     IRepositoryDocumentationContent repository)
     : ApplicationService<GetDocTreeRequest, IReadOnlyList<DocTreeItemDto>>
 {
+    [HttpGet("tree")]
     public override async Task<Res<IReadOnlyList<DocTreeItemDto>>> Handle(
         GetDocTreeRequest request,
         CancellationToken cancellationToken)
@@ -84,7 +87,23 @@ public sealed class QueryHandlerGetDocTree(
 Domains/Documentation/Application/HandlersQuery/
 ```
 
-### 3. 让 `ProjectUnits` 看到什么
+### 3. 固定领域级基础路由
+
+对于模块化单体，建议在每个 Domain 项目根目录只配置一次默认基础路由：
+
+```csharp
+using Monica.WebApi.AutoControllers.Annotations;
+
+[assembly: AutoControllerConfig(
+    DefaultRoutePrefix = "api/v1",
+    DomainName = "Documentation")]
+```
+
+这样 `QueryHandlerGetDocTree` 的最终路由就是 `GET api/v1/Documentation/tree`，Handler 本身只保留请求级路由片段 `tree`。
+
+如果是微服务架构，则把同样的 `[assembly: AutoControllerConfig(...)]` 写在 `{Subdomain}Service.API/Program.cs` 即可。
+
+### 4. 让 `ProjectUnits` 看到什么
 
 上面这组代码至少会被识别为：
 
@@ -99,6 +118,8 @@ Domains/Documentation/Application/HandlersQuery/
 最值得优先决定的是：你是否要在当前项目启用命名约定治理。如果要启用，建议先从 `Warning` 模式开始，而不是一上来就用 `Strict`。
 
 如果你的项目除了 `QueryHandler*` / `CommandHandler*` 之外，还同时使用 `CrudApplicationService` 这类不包含 `Handler` 的 CRUD 风格应用服务，也建议先用 `Warning` 模式观察现状，再决定是否要为 `ApplicationService` 单独放宽规则。
+
+另一个值得尽早固定的配置是 `ApplicationService` 的默认基础路由。推荐统一采用 `api/{version}/{DomainName(PascalCase)}`，例如 `api/v1/Documentation`，然后每个请求只补充自己的方法路由，例如 `tree`、`doc`、`publish`。
 
 ## 接下来读什么
 
