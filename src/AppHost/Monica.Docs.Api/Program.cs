@@ -32,6 +32,7 @@ Mo.AddMarkdown(o =>
         key: DocumentationApiOptions.DefaultDocumentGroupKey,
         title: "Monica Docs",
         basePath: ResolveDocsBasePath(builder.Environment));
+Mo.AddMarkdownUI();
 Mo.AddSwaggerUI().AddNavigationButton("主页", UISystemInfoPage.PAGE_URL);
 Mo.AddSystemInfoUI().AddSwaggerLink();
 Mo.AddUIShell().AddRouteRedirect("/", UISystemInfoPage.PAGE_URL);
