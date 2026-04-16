@@ -70,7 +70,43 @@ Monica-native 的 CRUD 服务通常有这些共同点：
 - `Worker*` / `Job*` 负责调度、日志、进度、事务边界
 - 实际业务规则继续交给实体和 `DomainService`
 
-## 场景 5 — 用 Warning 模式逐步收紧命名治理
+## 场景 5 — 在注册阶段就读取 `Configuration`
+
+有些业务宿主会在注册阶段就读取配置项目单元，例如先根据配置初始化日志、外部基础设施或额外配置源。这时只调用 `Mo.AddConfiguration()` 还不够，因为模块默认会在后续统一注册。
+
+更稳妥的写法是先注册 `Configuration`，然后立刻执行一次 `Mo.RegisterInstantly(builder)`：
+
+```csharp
+using Monica.Tool.Runtime;
+
+const string configDirectory = "Configurations";
+
+Mo.AddConfiguration(o =>
+{
+    o.GenerateFileForEachOption = true;
+    o.GenerateOptionFileParentDirectory = configDirectory;
+    o.SetOtherSourceAction = manager =>
+    {
+        manager.AddJsonFile(
+            RuntimePathHelper.GetRelativePathInRunningPath($"{configDirectory}/global-appsettings.json"),
+            optional: false,
+            reloadOnChange: true);
+        manager.AddJsonFile(
+            RuntimePathHelper.GetRelativePathInRunningPath("appsettings.json"),
+            optional: true,
+            reloadOnChange: true);
+    };
+    o.AppConfiguration = builder.Configuration;
+});
+
+Mo.RegisterInstantly(builder);
+
+// 这里之后的注册代码，才可以安全消费已经绑定的配置类型。
+```
+
+这样后续注册代码才能安全消费已经绑定的配置类型。只有当“注册阶段必须读取配置”时才需要这样做；普通运行期注入场景继续保持默认顺序即可。
+
+## 场景 6 — 用 Warning 模式逐步收紧命名治理
 
 如果团队想统一应用服务、领域事件、仓储等命名规则，建议先打开 `EnableNameConvention` 并保持 `Warning`，先观察现有代码偏差，再决定是否切到 `Strict`。
 
@@ -84,3 +120,4 @@ Monica-native 的 CRUD 服务通常有这些共同点：
 - 把请求 DTO 放在 API 项目本地，而不是 Published Language。
 - 一开始就启用 `Strict` 模式，导致历史项目接入成本过高。
 - 关闭 `ParseUnitDetails` 后仍然期望看到完整的单元细节和文档信息。
+- 需要在注册阶段使用配置类型，却只调用 `Mo.AddConfiguration()`，忘记紧接着 `Mo.RegisterInstantly(builder)`。

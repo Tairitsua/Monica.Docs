@@ -41,6 +41,8 @@ sidebar_position: 4
 | `TriggeredJob` | `TriggeredJob<TArgs>` | `Application/BackgroundWorkers/` |
 | `Configuration` | `[Configuration]` + `*Options` | `Configurations/` |
 
+其中 `Configuration` 还有一个容易漏掉的宿主约束：如果某个 `*Options` 需要在后续模块注册代码里立即使用，必须先执行 `Mo.AddConfiguration(...)`，再调用 `Mo.RegisterInstantly(builder)`；否则它仍会等到默认模块批量注册阶段才真正可用。
+
 ## `Handler` 风格与 `CrudService` 风格
 
 最常见的误解，是把所有“应用服务”都看成同一种东西。实际上：

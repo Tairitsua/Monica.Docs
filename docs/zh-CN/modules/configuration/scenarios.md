@@ -36,7 +36,26 @@ Mo.AddConfiguration(o =>
 });
 ```
 
-## 场景 3 — 替换历史存储以支持回滚审计
+## 场景 3 — 在注册阶段就读取 `Configuration`
+
+如果后续注册代码就要读取 `Configuration` 项目单元或者依赖它的绑定结果，只写 `Mo.AddConfiguration()` 还不够，因为模块通常会在后续统一注册。
+
+这时应当在 `Mo.AddConfiguration(...)` 之后立即调用 `Mo.RegisterInstantly(builder)`：
+
+```csharp
+Mo.AddConfiguration(o =>
+{
+    o.AppConfiguration = builder.Configuration;
+});
+
+Mo.RegisterInstantly(builder);
+
+// 这里之后的注册代码，才可以安全消费已经绑定的配置类型。
+```
+
+这个模式适合日志初始化、外部客户端注册、基础设施引导等“注册阶段就要消费配置”的场景。若配置只在运行期通过 `IOptions<T>`、`IOptionsSnapshot<T>` 或 `IOptionsMonitor<T>` 使用，则不需要额外调用 `Mo.RegisterInstantly(builder)`。
+
+## 场景 4 — 替换历史存储以支持回滚审计
 
 如果你打算开放配置修改与回滚能力，建议尽早把默认内存历史存储替换为自定义实现，这样重启后仍能保留完整历史记录。
 
@@ -44,3 +63,4 @@ Mo.AddConfiguration(o =>
 
 - 忘记给 `AppConfiguration` 赋值，导致配置类型扫描了但无法正确绑定。
 - 把旧文档里的配置注册方式照搬到新架构；当前统一入口是 `Mo.AddConfiguration()`。
+- 需要在注册阶段使用配置，却没有在 `Mo.AddConfiguration(...)` 后立刻调用 `Mo.RegisterInstantly(builder)`。
