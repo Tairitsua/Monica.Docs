@@ -124,21 +124,20 @@ public sealed class RepositoryDocumentationContent(
 
         var children = node.Children
             .Select(child => MapNode(child, relativePath))
-            .OrderBy(child => child.IsDocument ? 1 : 0)
-            .ThenBy(child => child.Order ?? int.MaxValue)
+            .OrderBy(child => child.Order.HasValue ? 0 : 1)
+            .ThenBy(child => child.Order)
+            .ThenBy(child => child.IsDocument ? 1 : 0)
             .ThenBy(child => child.Title, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
         return new DocumentationTreeNode(
-            node.Data.IsDocument && node.Data.Document is not null
-                ? node.Data.Document.Title
-                : node.Data.Name,
+            node.Data.ResolvedDisplayName,
             relativePath,
             node.Data.IsDocument && node.Data.Document is not null
                 ? DocumentationPathUtils.ToSlug(node.Data.Document.RelativePath)
                 : null,
             node.Data.IsDocument,
-            TryGetSidebarOrder(node.Data.Document),
+            node.Data.NavigationOrder,
             children);
     }
 
@@ -150,24 +149,6 @@ public sealed class RepositoryDocumentationContent(
         }
 
         return DocumentationPathUtils.NormalizeRelativePath($"{prefix}/{name}");
-    }
-
-    private static int? TryGetSidebarOrder(MarkdownDocument? document)
-    {
-        if (document?.FrontMatter?.RawMetadata is null
-            || !document.FrontMatter.RawMetadata.TryGetValue("sidebar_position", out var rawValue)
-            || rawValue is null)
-        {
-            return null;
-        }
-
-        return rawValue switch
-        {
-            int intValue => intValue,
-            long longValue => checked((int)longValue),
-            string stringValue when int.TryParse(stringValue, out var parsedValue) => parsedValue,
-            _ => null
-        };
     }
 
     private static bool IsOutsideGroupRoot(string groupBasePath, string candidatePath)
