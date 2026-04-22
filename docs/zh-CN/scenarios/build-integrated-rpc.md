@@ -296,7 +296,7 @@ RPC 生成依赖 Consumer 项目里的共享契约命名空间。如果请求或
 <PackageReference Include="Monica.Generators.AutoController" Version="x.y.z" PrivateAssets="all" />
 ```
 
-只有在你明确需要直接联调 `MoLibrary` 源码时，才考虑用 `ProjectReference` 指向生成器项目。那种模式下，通常还需要类似 `FIPS2022` 的 `Directory.Build.props` / `Directory.Build.targets` 额外 glue，来准备 BuildTasks 程序集。
+只有在你明确需要直接联调 `MoLibrary` 源码时，才考虑用 `ProjectReference` 指向生成器项目。那种模式下，通常还需要仓库级 `Directory.Build.props` / `Directory.Build.targets` 额外 glue，来准备 BuildTasks 程序集。
 
 ### 5. NuGet 发布后，使用方式不变
 
@@ -311,6 +311,37 @@ RPC 生成依赖 Consumer 项目里的共享契约命名空间。如果请求或
 - 不需要手工摆放 BuildTasks
 - 不需要源代码联调的额外 glue
 - 项目引用关系更清晰
+
+## 故障排查清单
+
+### 没有导出元数据文件
+
+优先检查 Producer 项目是否同时满足下面几项：
+
+- 已引用 `Monica.Generators.AutoController`
+- 已声明程序集级 `AutoControllerConfig`
+- 已正确设置 `MonicaRpcMetadataExportDirectory`
+- 本次构建确实产出了 `__RpcMetadata.g.cs`
+- Handler 使用的请求/响应契约位于 Consumer 可引用的共享命名空间中，通常就是 `PublishedLanguages`
+
+### 没有生成 RPC 客户端代码
+
+优先检查 Consumer 项目是否同时满足下面几项：
+
+- 已引用 `Monica.Generators.AutoController`
+- 已声明程序集级 `RpcClientConfig`
+- 元数据文件位于 `RpcMetadata/` 或 `MonicaRpcMetadataConsumeDirectory` 指向的目录
+- Consumer 项目中仍然包含 `PublishedLanguages` 下的共享契约源码
+
+### 删除 `RpcMetadata` 后重新构建仍然失败
+
+如果 bootstrap 没有把元数据恢复出来，通常说明下面至少有一项不成立：
+
+- Producer 源码项目不在同一个仓库中
+- Producer 的导出目录和 Consumer 的消费目录没有正确对应
+- Consumer 项目已经无法读取共享契约源码
+
+这时不要继续依赖自动恢复，应先修正仓库布局与目录映射；如果当前仓库本来就不满足这些前提，就把 `RpcMetadata/*.json` 重新作为源码提交。
 
 ## 相关阅读
 
