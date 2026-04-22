@@ -38,6 +38,20 @@ using Monica.WebApi.AutoControllers.Annotations;
 
 如果某些资源只需要标准 CRUD，可以交给 `ICrudApplicationService`；而那些需要特殊动作、流式接口或复杂授权的资源，则继续保留手写 `ControllerBase`。`AutoControllers` 会同时发现两者。
 
+## 场景 4 — 结合构建期 RPC 生成
+
+如果你的 `ApplicationService` 既需要暴露 HTTP API，又需要在共享协议层里生成 RPC 客户端，不要再单独引入旧的 CLI 工具链。现在推荐直接使用 `Monica.Generators.AutoController` 的构建集成工作流。
+
+这类接入通常包含三层：
+
+- Producer：领域 / API 项目，导出 `RpcMetadata`
+- Consumer：`Platform.Protocol`，消费元数据并生成 `Contracts` 与 `Implementations.*`
+- Host：通过 `Mo.AddRpcClient()` 选择 `Http` 或 `Local`
+
+详细步骤见：
+
+- [无需工具的 RPC 客户端生成与 Local RPC](../../scenarios/build-integrated-rpc.md)
+
 ## Common mistakes
 
 - 修改了 `CrudControllerPostfix`，但已有 CRUD 服务类名仍沿用旧后缀，结果不会被发现。

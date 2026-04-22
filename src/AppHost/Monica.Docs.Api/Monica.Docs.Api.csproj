@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../Domains/Documentation/Domains.Documentation.csproj" />
+    <ProjectReference Include="../../Domains/LocalRpcProvider/Domains.LocalRpcProvider.csproj" />
   </ItemGroup>
 
 </Project>

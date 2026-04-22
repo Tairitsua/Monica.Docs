@@ -11,4 +11,5 @@ sidebar_position: 4
 ## 页面
 
 - [构建最小 Monica API 主机](./minimal-api-host.md)
+- [无需工具的 RPC 客户端生成与 Local RPC](./build-integrated-rpc.md)
 - [组合调试与管理能力](./diagnostics-and-ops.md)

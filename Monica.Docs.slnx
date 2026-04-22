@@ -16,8 +16,6 @@
     <Project Path="../MoLibrary/Monica.Framework.Generators/Monica.Framework.Generators.csproj" />
     <Project Path="../MoLibrary/Monica.Framework.UI/Monica.Framework.UI.csproj" />
     <Project Path="../MoLibrary/Monica.Framework/Monica.Framework.csproj" />
-    <Project Path="../MoLibrary/Monica.Generators.AutoController.Tool/Monica.Generators.AutoController.Tool.csproj" />
-    <Project Path="../MoLibrary/Monica.Generators.AutoController/Monica.Generators.AutoController.csproj" />
     <Project Path="../MoLibrary/Monica.JobScheduler.EfCore/Monica.JobScheduler.EfCore.csproj" />
     <Project Path="../MoLibrary/Monica.JobScheduler.UI/Monica.JobScheduler.UI.csproj" />
     <Project Path="../MoLibrary/Monica.JobScheduler/Monica.JobScheduler.csproj" />
@@ -47,5 +45,6 @@
   </Folder>
   <Folder Name="/src/Domains/">
     <Project Path="src/Domains/Documentation/Domains.Documentation.csproj" />
+    <Project Path="src/Domains/LocalRpcProvider/Domains.LocalRpcProvider.csproj" />
   </Folder>
 </Solution>

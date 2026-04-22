@@ -3,6 +3,7 @@ using Monica.Core;
 using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
 using Monica.UI.Pages;
+using Platform.Infrastructure.RpcClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,9 @@ Mo.AddProjectUnits(o =>
     o.ConventionOptions.NameConventionMode = ENameConventionMode.Strict;
 });
 Mo.AddProjectUnitsUI();
+Mo.AddRpcClient()
+    .ConfigDomainInfoProvider(new MonicaDocsRpcClientDomainInfoProvider())
+    .UseLocalTransport();
 Mo.AddMarkdown(o =>
     {
         o.ParseFrontMatter = true;

@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../Platform.BuildingBlocks/Platform.BuildingBlocks.csproj" />
+    <PackageReference Include="Monica.Generators.AutoController" Version="0.1.0-preview.3" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,20 @@
+{
+  "AssemblyName": "Domains.LocalRpcProvider",
+  "DomainName": "LocalRpcProvider",
+  "RoutePrefix": "api/v1",
+  "RelatedNamespaces": [
+    "Platform.Protocol.PublishedLanguages.DomainLocalRpcProvider.Models",
+    "Platform.Protocol.PublishedLanguages.DomainLocalRpcProvider.Requests"
+  ],
+  "Handlers": [
+    {
+      "RequestType": "GetLocalRpcGreetingRequest",
+      "ResponseType": "Res<LocalRpcGreetingDto>",
+      "HttpMethod": "GET",
+      "Route": "api/v1/LocalRpcProvider/greeting",
+      "ClientMethodName": "GetLocalRpcGreeting",
+      "HandlerType": "Query",
+      "Summary": "Provides a simple payload used to verify local RPC dispatch inside the Monica.Docs modular-monolith sample."
+    }
+  ]
+}

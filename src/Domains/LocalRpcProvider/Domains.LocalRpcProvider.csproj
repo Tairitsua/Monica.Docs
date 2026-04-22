@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <MonicaRpcMetadataExportDirectory>../../Shared/Platform.Protocol/RpcMetadata</MonicaRpcMetadataExportDirectory>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,11 +15,9 @@
 
   <ItemGroup>
     <ProjectReference Include="../../Shared/Platform.Infrastructure/Platform.Infrastructure.csproj" />
-    <ProjectReference Include="../../../../MoLibrary/Monica.Markdown/Monica.Markdown.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Markdig" Version="0.45.0" />
     <PackageReference Include="Monica.Generators.AutoController" Version="0.1.0-preview.3" PrivateAssets="all" />
   </ItemGroup>
 
