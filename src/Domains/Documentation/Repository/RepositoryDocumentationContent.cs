@@ -1,7 +1,7 @@
 using Domains.Documentation.Configurations;
 using Domains.Documentation.Entities;
 using Domains.Documentation.Interfaces;
-using Domains.Documentation.Utils;
+using Domains.Documentation.Utilities;
 using Domains.Documentation.ValueObjects;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,7 +38,7 @@ public sealed class RepositoryDocumentationContent(
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var normalizedSlug = DocumentationPathUtils.NormalizeSlug(slug);
+        var normalizedSlug = UtilsDocumentationPath.NormalizeSlug(slug);
         if (string.IsNullOrWhiteSpace(normalizedSlug))
         {
             return null;
@@ -47,7 +47,7 @@ public sealed class RepositoryDocumentationContent(
         var documents = await markdownCatalog.GetDocumentsAsync(_options.DocumentGroupKey);
         var document = documents.FirstOrDefault(candidate =>
             string.Equals(
-                DocumentationPathUtils.ToSlug(candidate.RelativePath),
+                UtilsDocumentationPath.ToSlug(candidate.RelativePath),
                 normalizedSlug,
                 StringComparison.Ordinal));
 
@@ -66,7 +66,7 @@ public sealed class RepositoryDocumentationContent(
         return new DocumentationSourceDocument(
             normalizedSlug,
             document.Title,
-            DocumentationPathUtils.NormalizeRelativePath(document.RelativePath),
+            UtilsDocumentationPath.NormalizeRelativePath(document.RelativePath),
             markdown,
             document.LastModifiedUtc,
             document.FrontMatter?.Date,
@@ -80,11 +80,11 @@ public sealed class RepositoryDocumentationContent(
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var normalizedAssetPath = DocumentationPathUtils.NormalizeRelativePath(
+        var normalizedAssetPath = UtilsDocumentationPath.NormalizeRelativePath(
             Uri.UnescapeDataString(assetPath));
 
         if (string.IsNullOrWhiteSpace(normalizedAssetPath)
-            || DocumentationPathUtils.IsMarkdownDocumentPath(normalizedAssetPath))
+            || UtilsDocumentationPath.IsMarkdownDocumentPath(normalizedAssetPath))
         {
             return null;
         }
@@ -119,7 +119,7 @@ public sealed class RepositoryDocumentationContent(
         string currentPath)
     {
         var relativePath = node.Data.IsDocument && node.Data.Document is not null
-            ? DocumentationPathUtils.NormalizeRelativePath(node.Data.Document.RelativePath)
+            ? UtilsDocumentationPath.NormalizeRelativePath(node.Data.Document.RelativePath)
             : CombinePath(currentPath, node.Data.Name);
 
         var children = node.Children
@@ -134,7 +134,7 @@ public sealed class RepositoryDocumentationContent(
             node.Data.ResolvedDisplayName,
             relativePath,
             node.Data.IsDocument && node.Data.Document is not null
-                ? DocumentationPathUtils.ToSlug(node.Data.Document.RelativePath)
+                ? UtilsDocumentationPath.ToSlug(node.Data.Document.RelativePath)
                 : null,
             node.Data.IsDocument,
             node.Data.NavigationOrder,
@@ -145,10 +145,10 @@ public sealed class RepositoryDocumentationContent(
     {
         if (string.IsNullOrWhiteSpace(prefix))
         {
-            return DocumentationPathUtils.NormalizeRelativePath(name);
+            return UtilsDocumentationPath.NormalizeRelativePath(name);
         }
 
-        return DocumentationPathUtils.NormalizeRelativePath($"{prefix}/{name}");
+        return UtilsDocumentationPath.NormalizeRelativePath($"{prefix}/{name}");
     }
 
     private static bool IsOutsideGroupRoot(string groupBasePath, string candidatePath)

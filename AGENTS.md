@@ -29,6 +29,10 @@ Key facts for navigation:
 - Use `monica-business-modular-monolith` whenever the task involves solution structure, `Domains/` boundaries, `Platform.*` placement, the strict project reference chain, AppHost composition, or published-language collaboration.
 - Use `monica-project-unit-development` whenever the task involves creating or changing `ApplicationService`, request DTOs, domain services, entities, repositories, domain events, handlers, configurations, or jobs.
 - This repository should actively demonstrate those two skills in practice. Do not introduce local conventions that conflict with them.
+- For business development in this repository, apply the two skills together by default: use `monica-business-modular-monolith` first to choose the bounded-context boundary, target project, dependency direction, and folder placement, then use `monica-project-unit-development` to implement the concrete ProjectUnits.
+- Keep the directory and naming rules aligned with those skills: bounded contexts live under `src/Domains/{Subdomain}` with a single `Domains.{Subdomain}.csproj`; domain-owned application units stay under `Application/HandlersCommand`, `Application/HandlersQuery`, `Application/HandlersEvent`, and `Application/BackgroundWorkers`; repositories stay under `Repository/`; pure helper code stays under `Utilities/` and utility type names should use the `Utils*` prefix.
+- Keep AppHost composition-only. Do not place business ProjectUnits, domain logic, or ad-hoc infrastructure helpers in `src/AppHost/*`.
+- When a task changes business structure or ProjectUnits, the implementation should be reviewed against both skill rule sets before introducing new folders, references, or conventions.
 
 ## Architecture Rules
 
@@ -39,6 +43,8 @@ Key facts for navigation:
 - Keep Monica.Docs-owned projects grouped under the physical `src/AppHost`, `src/Shared`, and `src/Domains` layout inside the solution view, even though the solution also loads Monica dependencies from `../MoLibrary` for demo purposes.
 - Keep domain-owned application units in `Application/HandlersCommand`, `Application/HandlersQuery`, `Application/HandlersEvent`, and `Application/BackgroundWorkers`.
 - Keep repository implementations in `Repository/`, and keep pure helper code in `Utilities/` with `Utils*` names when adding new utility helpers.
+- Keep cross-domain collaboration pointed at `src/Shared/Platform.Protocol/PublishedLanguages` or other protocol-level contracts. Do not reference another domain's internal implementation directly.
+- When AppHost registration needs a `Configuration` ProjectUnit value during startup, register `Mo.AddConfiguration(...)` first and call `Mo.RegisterInstantly(builder)` before the dependent registration executes.
 
 ## Build and Run
 

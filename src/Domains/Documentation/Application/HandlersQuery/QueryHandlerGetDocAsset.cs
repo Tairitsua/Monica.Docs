@@ -1,6 +1,6 @@
 using Domains.Documentation.DomainServices;
 using Domains.Documentation.Interfaces;
-using Domains.Documentation.Utils;
+using Domains.Documentation.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Monica.Core.Results;
 using Monica.WebApi.Abstractions;
@@ -17,7 +17,7 @@ public sealed class QueryHandlerGetDocAsset(
         GetDocAssetRequest request,
         CancellationToken cancellationToken)
     {
-        var normalizedAssetPath = DocumentationPathUtils.NormalizeRelativePath(request.AssetPath);
+        var normalizedAssetPath = UtilsDocumentationPath.NormalizeRelativePath(request.AssetPath);
         if (string.IsNullOrWhiteSpace(normalizedAssetPath))
         {
             return Res.Fail("Documentation asset path is required.");

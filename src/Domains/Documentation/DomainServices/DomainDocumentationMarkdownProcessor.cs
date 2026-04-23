@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Domains.Documentation.Configurations;
 using Domains.Documentation.Entities;
-using Domains.Documentation.Utils;
+using Domains.Documentation.Utilities;
 using Domains.Documentation.ValueObjects;
 using Markdig;
 using Markdig.Syntax;
@@ -42,7 +42,7 @@ public sealed partial class DomainDocumentationMarkdownProcessor(
         return MarkdownLinkPattern().Replace(markdown, match =>
         {
             var originalUrl = match.Groups["url"].Value;
-            if (!DocumentationPathUtils.TryResolveLocalAssetPath(
+            if (!UtilsDocumentationPath.TryResolveLocalAssetPath(
                     documentRelativePath,
                     originalUrl,
                     out var assetRelativePath))
@@ -50,7 +50,7 @@ public sealed partial class DomainDocumentationMarkdownProcessor(
                 return match.Value;
             }
 
-            var rewrittenUrl = DocumentationPathUtils.BuildAssetUrl(
+            var rewrittenUrl = UtilsDocumentationPath.BuildAssetUrl(
                 _options.AssetBasePath,
                 assetRelativePath);
 

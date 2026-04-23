@@ -1,6 +1,6 @@
-namespace Domains.Documentation.Utils;
+namespace Domains.Documentation.Utilities;
 
-public static class DocumentationPathUtils
+public static class UtilsDocumentationPath
 {
     private static readonly char[] QueryOrFragmentSeparators = ['?', '#'];
 

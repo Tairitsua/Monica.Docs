@@ -1,7 +1,7 @@
 using Domains.Documentation.DomainServices;
 using Domains.Documentation.Entities;
 using Domains.Documentation.Interfaces;
-using Domains.Documentation.Utils;
+using Domains.Documentation.Utilities;
 using Domains.Documentation.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
 using Monica.Core.Results;
@@ -21,7 +21,7 @@ public sealed class QueryHandlerGetDocBySlug(
         GetDocBySlugRequest request,
         CancellationToken cancellationToken)
     {
-        var normalizedSlug = DocumentationPathUtils.NormalizeSlug(request.Slug);
+        var normalizedSlug = UtilsDocumentationPath.NormalizeSlug(request.Slug);
         if (string.IsNullOrWhiteSpace(normalizedSlug))
         {
             return Res.Fail("Document slug is required.");
@@ -57,7 +57,7 @@ public sealed class QueryHandlerGetDocBySlug(
         DocumentationSourceDocument document,
         string displayTitle)
     {
-        var segments = DocumentationPathUtils.NormalizeRelativePath(document.RelativePath)
+        var segments = UtilsDocumentationPath.NormalizeRelativePath(document.RelativePath)
             .Split('/', StringSplitOptions.RemoveEmptyEntries);
 
         if (segments.Length <= 1)

@@ -1,26 +1,21 @@
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
-using Monica.WebApi.Abstractions;
 
-namespace Domains.Documentation.DomainServices;
+namespace Domains.Documentation.Utilities;
 
 /// <summary>
 /// Resolves the markdown docs root for Monica.Docs across local development and mounted container deployments.
 /// </summary>
-public sealed class DomainDocumentationPathResolver(
-    IHostEnvironment environment,
-    IOptions<Configurations.DocumentationApiOptions> options)
-    : DomainService
+public static class UtilsDocumentationPathResolver
 {
-    private readonly Configurations.DocumentationApiOptions _options = options.Value;
-
     /// <summary>
     /// Resolves the best available docs base path.
     /// </summary>
     /// <exception cref="DirectoryNotFoundException">Thrown when no candidate docs directory exists.</exception>
-    public string ResolveDocsBasePath()
+    public static string ResolveDocsBasePath(
+        IHostEnvironment environment,
+        Configurations.DocumentationApiOptions options)
     {
-        foreach (var candidate in BuildCandidates())
+        foreach (var candidate in BuildCandidates(environment, options))
         {
             if (string.IsNullOrWhiteSpace(candidate))
             {
@@ -35,26 +30,30 @@ public sealed class DomainDocumentationPathResolver(
         }
 
         throw new DirectoryNotFoundException(
-            $"Unable to resolve the Monica.Docs markdown root. Checked configured path '{_options.DocsBasePath}', preferred mount '{_options.PreferredDocsMountPath}', and repository-relative docs folders from '{environment.ContentRootPath}'.");
+            $"Unable to resolve the Monica.Docs markdown root. Checked configured path '{options.DocsBasePath}', preferred mount '{options.PreferredDocsMountPath}', and repository-relative docs folders from '{environment.ContentRootPath}'.");
     }
 
-    private IEnumerable<string> BuildCandidates()
+    private static IEnumerable<string> BuildCandidates(
+        IHostEnvironment environment,
+        Configurations.DocumentationApiOptions options)
     {
-        if (!string.IsNullOrWhiteSpace(_options.DocsBasePath))
+        if (!string.IsNullOrWhiteSpace(options.DocsBasePath))
         {
-            yield return ResolveConfiguredPath(_options.DocsBasePath!);
+            yield return ResolveConfiguredPath(environment, options.DocsBasePath!);
         }
 
-        if (!string.IsNullOrWhiteSpace(_options.PreferredDocsMountPath))
+        if (!string.IsNullOrWhiteSpace(options.PreferredDocsMountPath))
         {
-            yield return _options.PreferredDocsMountPath;
+            yield return options.PreferredDocsMountPath;
         }
 
         yield return Path.Combine(environment.ContentRootPath, "docs");
         yield return Path.Combine(environment.ContentRootPath, "..", "..", "..", "docs");
     }
 
-    private string ResolveConfiguredPath(string configuredPath)
+    private static string ResolveConfiguredPath(
+        IHostEnvironment environment,
+        string configuredPath)
     {
         if (Path.IsPathRooted(configuredPath))
         {

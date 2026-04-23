@@ -1,6 +1,6 @@
 using Domains.Documentation.Application.BackgroundWorkers;
 using Domains.Documentation.Configurations;
-using Domains.Documentation.DomainServices;
+using Domains.Documentation.Utilities;
 using Monica.Core;
 using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
@@ -46,15 +46,15 @@ var documentationApiOptions = builder.Configuration
 builder.Services.Configure<DocumentationApiOptions>(
     builder.Configuration.GetSection(DocumentationApiOptions.SectionName));
 
-var docsBasePath = new DomainDocumentationPathResolver(
-        builder.Environment,
-        Microsoft.Extensions.Options.Options.Create(documentationApiOptions))
-    .ResolveDocsBasePath();
+var docsBasePath = UtilsDocumentationPathResolver.ResolveDocsBasePath(
+    builder.Environment,
+    documentationApiOptions);
 
 Mo.AddMarkdown(o =>
     {
         o.ParseFrontMatter = true;
     })
+    .EnableMultilingualDocuments()
     .AddDocumentGroup(
         key: documentationApiOptions.DocumentGroupKey,
         title: "Monica Docs",
@@ -64,8 +64,7 @@ Mo.AddSwaggerUI().AddNavigationButton("主页", UISystemInfoPage.PAGE_URL);
 Mo.AddSystemInfoUI().AddSwaggerLink();
 Mo.AddUIShell().AddRouteRedirect("/", UISystemInfoPage.PAGE_URL);
 Mo.AddModuleSystemUI();
-
-builder.Services.AddHostedService<HostedServiceDocumentationCatalogSyncBootstrapper>();
+Mo.AddDependencyInjection();
 
 builder.UseMonica();
 
@@ -74,5 +73,3 @@ var app = builder.Build();
 app.UseMonica();
 app.MapMonica();
 app.Run();
-
-return;
