@@ -12,7 +12,7 @@ sidebar_position: 5
 
 ## 场景 2 — 叠加 `global-appsettings.json` 与宿主配置源
 
-真实项目里，一个很常见的 Monica 用法是：仍然把 `builder.Configuration` 作为主配置根，但再通过 `SetOtherSourceAction` 叠加运行目录下的公共配置文件和宿主默认配置文件。
+真实项目里，一个很常见的 Monica 用法是：继续使用模块默认的 `builder.Configuration`，但再通过 `SetOtherSourceAction` 叠加运行目录下的公共配置文件和宿主默认配置文件。
 
 ```csharp
 using Monica.Tool.Runtime;
@@ -32,7 +32,6 @@ Mo.AddConfiguration(o =>
             optional: true,
             reloadOnChange: true);
     };
-    o.AppConfiguration = builder.Configuration;
 });
 ```
 
@@ -40,13 +39,10 @@ Mo.AddConfiguration(o =>
 
 如果后续注册代码就要读取 `Configuration` 项目单元或者依赖它的绑定结果，只写 `Mo.AddConfiguration()` 还不够，因为模块通常会在后续统一注册。
 
-这时应当在 `Mo.AddConfiguration(...)` 之后立即调用 `Mo.RegisterInstantly(builder)`：
+这时应当在 `Mo.AddConfiguration()` 之后立即调用 `Mo.RegisterInstantly(builder)`：
 
 ```csharp
-Mo.AddConfiguration(o =>
-{
-    o.AppConfiguration = builder.Configuration;
-});
+Mo.AddConfiguration();
 
 Mo.RegisterInstantly(builder);
 
@@ -61,6 +57,6 @@ Mo.RegisterInstantly(builder);
 
 ## Common mistakes
 
-- 忘记给 `AppConfiguration` 赋值，导致配置类型扫描了但无法正确绑定。
 - 把旧文档里的配置注册方式照搬到新架构；当前统一入口是 `Mo.AddConfiguration()`。
-- 需要在注册阶段使用配置，却没有在 `Mo.AddConfiguration(...)` 后立刻调用 `Mo.RegisterInstantly(builder)`。
+- 需要在注册阶段使用配置，却没有在 `Mo.AddConfiguration()` 后立刻调用 `Mo.RegisterInstantly(builder)`。
+- 只有普通运行期 `IOptions<T>` 注入需求，却过早调用 `Mo.RegisterInstantly(builder)`，让注册顺序变复杂。

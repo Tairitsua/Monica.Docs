@@ -96,7 +96,6 @@ Mo.AddConfiguration(o =>
             optional: true,
             reloadOnChange: true);
     };
-    o.AppConfiguration = builder.Configuration;
 });
 
 Mo.RegisterInstantly(builder);

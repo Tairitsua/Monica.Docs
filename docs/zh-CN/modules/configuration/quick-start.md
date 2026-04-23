@@ -21,10 +21,7 @@ using Monica.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Mo.AddConfiguration(o =>
-{
-    o.AppConfiguration = builder.Configuration;
-});
+Mo.AddConfiguration();
 
 builder.UseMonica();
 
@@ -43,7 +40,7 @@ public sealed class HomeService(IOptionsSnapshot<AppSettings> options)
 
 ## 第一个有价值的配置
 
-对大多数项目来说，第一件事不是打开高级选项，而是**务必把 `AppConfiguration` 指向宿主的 `builder.Configuration`**。这不是形式配置，而是模块绑定配置类型的事实来源。
+对大多数项目来说，第一件事不是打开高级选项，而是直接调用 `Mo.AddConfiguration()`。模块会自动使用宿主的 `builder.Configuration` 作为配置管理器；只有需要替换为自定义 `IConfigurationManager` 时，才显式设置 `AppConfiguration`。
 
 ## 接下来读什么
 

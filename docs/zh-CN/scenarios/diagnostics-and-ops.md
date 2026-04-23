@@ -23,10 +23,7 @@ Monica 的很多基础设施模块都提供了配套 UI 或诊断入口。推荐
 ## 一个组合示例
 
 ```csharp
-Mo.AddConfiguration(o =>
-{
-    o.AppConfiguration = builder.Configuration;
-});
+Mo.AddConfiguration();
 Mo.AddConfigurationUI();
 
 Mo.AddJobScheduler()

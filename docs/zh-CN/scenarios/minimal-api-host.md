@@ -28,10 +28,7 @@ Mo.AddDependencyInjection();
 Mo.AddEventBus()
     .UseNoOpDistributedEventBus();
 
-Mo.AddConfiguration(o =>
-{
-    o.AppConfiguration = builder.Configuration;
-});
+Mo.AddConfiguration();
 
 Mo.AddAutoControllers(
     crudOptionAction: o =>

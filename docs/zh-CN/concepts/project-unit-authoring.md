@@ -290,15 +290,12 @@ public class AppSettingsOptions
 - 类名以 `Options` 结尾
 - 用 `IOptions<T>`、`IOptionsSnapshot<T>` 或 `IOptionsMonitor<T>` 注入使用
 - 真正需要热更新时再选 `Snapshot` / `Monitor`
-- 如果后续注册代码要在注册阶段就读取配置，先 `Mo.AddConfiguration(...)`，再立刻调用 `Mo.RegisterInstantly(builder)`
+- 如果后续注册代码要在注册阶段就读取配置，先 `Mo.AddConfiguration()`，再立刻调用 `Mo.RegisterInstantly(builder)`
 
 如果某个 `Configuration` 项目单元需要在宿主注册阶段就被后续代码使用，例如日志工厂、外部客户端或其他基础设施注册依赖这些配置，那么只定义 `[Configuration]` 类还不够，宿主还需要调整注册顺序：
 
 ```csharp
-Mo.AddConfiguration(o =>
-{
-    o.AppConfiguration = builder.Configuration;
-});
+Mo.AddConfiguration();
 
 Mo.RegisterInstantly(builder);
 

@@ -20,16 +20,13 @@ Monica 的每个模块都尽量遵循同一套对外形态：**`Mo.Add*()` + `Mo
 ## 统一注册方式
 
 ```csharp
-Mo.AddConfiguration(o =>
-{
-    o.AppConfiguration = builder.Configuration;
-})
-.ConfigCustomStore<MyHistoryStore>();
+Mo.AddConfiguration()
+    .ConfigCustomStore<MyHistoryStore>();
 ```
 
 在这个例子里：
 
-- `Mo.AddConfiguration(...)` 负责基础注册与选项配置
+- `Mo.AddConfiguration()` 负责基础注册；常规宿主会自动使用 `builder.Configuration`
 - `.ConfigCustomStore<MyHistoryStore>()` 是 Guide 提供的附加配置动作
 
 ## 为什么 Monica 要这样设计

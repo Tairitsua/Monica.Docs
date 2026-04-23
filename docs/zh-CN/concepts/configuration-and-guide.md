@@ -18,7 +18,7 @@ sidebar_position: 2
 
 例子：
 
-- `ModuleConfigurationOption.AppConfiguration`
+- `ModuleConfigurationOption.GenerateFileForEachOption`
 - `ModuleJobSchedulerOption.MaxWorkerExecutionThreads`
 - `ModuleProjectUnitsOption.ParseUnitDetails`
 

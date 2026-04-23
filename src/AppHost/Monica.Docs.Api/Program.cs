@@ -10,10 +10,7 @@ using Platform.Infrastructure.RpcClient;
 var builder = WebApplication.CreateBuilder(args);
 
 Mo.AddResultEnvelope().UseResultFieldNames(o => o.Status = "code");
-Mo.AddConfiguration(o =>
-{
-    o.AppConfiguration = builder.Configuration;
-});
+Mo.AddConfiguration();
 Mo.AddEventBus().UseNoOpDistributedEventBus();
 Mo.AddWebApi();
 
@@ -48,8 +45,7 @@ var documentationApiOptions = builder.Configuration
     ?? new DocumentationApiOptions();
 builder.Services.Configure<DocumentationApiOptions>(
     builder.Configuration.GetSection(DocumentationApiOptions.SectionName));
-builder.Services.AddTransient<DomainDocumentationPathResolver>();
-builder.Services.AddTransient<DomainDocumentationCatalogSync>();
+
 var docsBasePath = new DomainDocumentationPathResolver(
         builder.Environment,
         Microsoft.Extensions.Options.Options.Create(documentationApiOptions))
