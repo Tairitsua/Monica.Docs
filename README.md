@@ -7,6 +7,24 @@ Monica.Docs is intended to serve two roles at the same time:
 
 This README defines the target architecture for that direction. The backend has already been extracted into a domain-first `src/` layout, and this document describes the shape that layout should continue to converge toward.
 
+## Running With Mounted Docs
+
+Monica.Docs now supports a recurring markdown catalog sync job and container-friendly docs path resolution.
+
+- Default preferred mount path: `/docs`
+- Default recurring sync cron: `0 */5 * * * *` (every 5 minutes)
+- Override with `DocumentationApi:DocsBasePath`, `DocumentationApi:PreferredDocsMountPath`, and `DocumentationApi:DocsSyncCronExpression`
+- Path resolution order: explicit `DocsBasePath` -> preferred mount path -> `src/AppHost/Monica.Docs.Api/docs` -> repository `docs/`
+- The Job Scheduler UI and Observable Instance UI are enabled in the AppHost so you can inspect the docs sync worker, hosted-service state transitions, and in-memory scheduler settings from the Monica shell
+
+Example container mount:
+
+```bash
+docker run -p 8080:8080 \
+  -v $(pwd)/docs:/docs \
+  monica-docs
+```
+
 ## Project Goals
 
 - Keep this repository useful as Monica product documentation.

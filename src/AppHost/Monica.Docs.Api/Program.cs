@@ -1,4 +1,6 @@
+using Domains.Documentation.Application.BackgroundWorkers;
 using Domains.Documentation.Configurations;
+using Domains.Documentation.DomainServices;
 using Monica.Core;
 using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
@@ -26,22 +28,48 @@ Mo.AddProjectUnits(o =>
     o.ConventionOptions.NameConventionMode = ENameConventionMode.Strict;
 });
 Mo.AddProjectUnitsUI();
+Mo.AddHostedService();
 Mo.AddRpcClient()
     .ConfigDomainInfoProvider(new MonicaDocsRpcClientDomainInfoProvider())
     .UseLocalTransport();
+Mo.AddJobScheduler(o =>
+    {
+        o.ProjectName = "Monica.Docs";
+    })
+    .UseInMemoryProvider()
+    .UseInMemoryMetadataRepository()
+    .UseSchedulerScope("monica-docs");
+Mo.AddJobSchedulerUI();
+Mo.AddObservableInstanceUI();
+
+var documentationApiOptions = builder.Configuration
+    .GetSection(DocumentationApiOptions.SectionName)
+    .Get<DocumentationApiOptions>()
+    ?? new DocumentationApiOptions();
+builder.Services.Configure<DocumentationApiOptions>(
+    builder.Configuration.GetSection(DocumentationApiOptions.SectionName));
+builder.Services.AddTransient<DomainDocumentationPathResolver>();
+builder.Services.AddTransient<DomainDocumentationCatalogSync>();
+var docsBasePath = new DomainDocumentationPathResolver(
+        builder.Environment,
+        Microsoft.Extensions.Options.Options.Create(documentationApiOptions))
+    .ResolveDocsBasePath();
+
 Mo.AddMarkdown(o =>
     {
         o.ParseFrontMatter = true;
     })
     .AddDocumentGroup(
-        key: DocumentationApiOptions.DefaultDocumentGroupKey,
+        key: documentationApiOptions.DocumentGroupKey,
         title: "Monica Docs",
-        basePath: ResolveDocsBasePath(builder.Environment));
+        basePath: docsBasePath);
 Mo.AddMarkdownUI();
 Mo.AddSwaggerUI().AddNavigationButton("主页", UISystemInfoPage.PAGE_URL);
 Mo.AddSystemInfoUI().AddSwaggerLink();
 Mo.AddUIShell().AddRouteRedirect("/", UISystemInfoPage.PAGE_URL);
 Mo.AddModuleSystemUI();
+
+builder.Services.AddHostedService<HostedServiceDocumentationCatalogSyncBootstrapper>();
 
 builder.UseMonica();
 
@@ -52,14 +80,3 @@ app.MapMonica();
 app.Run();
 
 return;
-
-static string ResolveDocsBasePath(IHostEnvironment environment)
-{
-    var localDocsPath = Path.Combine(environment.ContentRootPath, "docs");
-    if (Directory.Exists(localDocsPath))
-    {
-        return localDocsPath;
-    }
-
-    return Path.GetFullPath(Path.Combine(environment.ContentRootPath, "..", "..", "..", "docs"));
-}

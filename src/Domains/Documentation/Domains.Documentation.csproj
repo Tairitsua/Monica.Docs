@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../Shared/Platform.Infrastructure/Platform.Infrastructure.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.JobScheduler/Monica.JobScheduler.csproj" />
     <ProjectReference Include="../../../../MoLibrary/Monica.Markdown/Monica.Markdown.csproj" />
   </ItemGroup>
 

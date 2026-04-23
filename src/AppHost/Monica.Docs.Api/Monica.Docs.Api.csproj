@@ -12,6 +12,8 @@
   <ItemGroup>
     <ProjectReference Include="../../Domains/Documentation/Domains.Documentation.csproj" />
     <ProjectReference Include="../../Domains/LocalRpcProvider/Domains.LocalRpcProvider.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.JobScheduler/Monica.JobScheduler.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.JobScheduler.UI/Monica.JobScheduler.UI.csproj" />
   </ItemGroup>
 
 </Project>
