@@ -8,10 +8,16 @@ using Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
 
 namespace Domains.Documentation.Application.HandlersQuery;
 
+/// <summary>
+/// Serves binary assets that belong to the configured Monica documentation source.
+/// </summary>
 public sealed class QueryHandlerGetDocAsset(
     IRepositoryDocumentationContent repository)
     : CustomApplicationService<GetDocAssetRequest, object>
 {
+    /// <summary>
+    /// Resolves an asset path and returns a ranged physical-file response when the asset exists.
+    /// </summary>
     [HttpGet("assets")]
     public override async Task<object> Handle(
         GetDocAssetRequest request,

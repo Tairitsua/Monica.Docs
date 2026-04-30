@@ -8,10 +8,16 @@ using Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
 
 namespace Domains.Documentation.Application.HandlersQuery;
 
+/// <summary>
+/// Returns the navigation tree for the configured Monica documentation source.
+/// </summary>
 public sealed class QueryHandlerGetDocTree(
     IRepositoryDocumentationContent repository)
     : ApplicationService<GetDocTreeRequest, IReadOnlyList<DocTreeItemDto>>
 {
+    /// <summary>
+    /// Loads the documentation tree and maps repository nodes to published-language DTOs.
+    /// </summary>
     [HttpGet("tree")]
     public override async Task<Res<IReadOnlyList<DocTreeItemDto>>> Handle(
         GetDocTreeRequest request,

@@ -11,11 +11,17 @@ using Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
 
 namespace Domains.Documentation.Application.HandlersQuery;
 
+/// <summary>
+/// Returns a processed Markdown document for a normalized documentation slug.
+/// </summary>
 public sealed class QueryHandlerGetDocBySlug(
     IRepositoryDocumentationContent repository,
     DomainDocumentationMarkdownProcessor markdownProcessor)
     : ApplicationService<GetDocBySlugRequest, DocContentDto>
 {
+    /// <summary>
+    /// Resolves the requested document, rewrites local assets, extracts headings, and builds breadcrumbs.
+    /// </summary>
     [HttpGet("doc")]
     public override async Task<Res<DocContentDto>> Handle(
         GetDocBySlugRequest request,
