@@ -14,12 +14,20 @@ sidebar_position: 3
 |---|---|---|---|
 | [AutoModel](./auto-model/index.md) | `Monica.AutoModel` | `Mo.AddAutoModel()` | 无 |
 | [AutoControllers](./auto-controllers/index.md) | `Monica.WebApi` | `Mo.AddAutoControllers(...)` | 无 |
+| [AI](./ai/index.md) | `Monica.AI` | `Mo.AddAI()` | `Mo.AddAIUI()` |
+| [AI UI](./ai-ui/index.md) | `Monica.AI.UI` | `Mo.AddAIUI()` | 无 |
+| [AI Skill System](./ai-skill-system/index.md) | `Monica.AI` | `Mo.AddAISkillSystem()` | `Mo.AddAIUI()` |
 | [Configuration](./configuration/index.md) | `Monica.Configuration` | `Mo.AddConfiguration()` | `Mo.AddConfigurationUI()` |
 | [DataChannel](./data-channel/index.md) | `Monica.DataChannel` | `Mo.AddDataChannel()` | `Mo.AddDataChannelUI()` |
 | [DependencyInjection](./dependency-injection/index.md) | `Monica.DependencyInjection` | `Mo.AddDependencyInjection()` | `Mo.AddDependencyInjectionUI()` |
 | [EventBus](./event-bus/index.md) | `Monica.EventBus` | `Mo.AddEventBus()` | `Mo.AddEventBusUI()` |
 | [JobScheduler](./job-scheduler/index.md) | `Monica.JobScheduler` | `Mo.AddJobScheduler()` | `Mo.AddJobSchedulerUI()` |
+| [KnowledgeBase](./knowledge-base/index.md) | `Monica.AI` | `Mo.AddKnowledgeBase()` | `Mo.AddKnowledgeBaseUI()` |
+| [KnowledgeBase UI](./knowledge-base-ui/index.md) | `Monica.AI.UI` | `Mo.AddKnowledgeBaseUI()` | 无 |
+| [MCP](./mcp/index.md) | `Monica.AI` | `Mo.AddMcp()` | `Mo.AddAIUI()` |
 | [ProjectUnits](./project-units/index.md) | `Monica.Framework` | `Mo.AddProjectUnits()` | `Mo.AddProjectUnitsUI()` |
+| [RAG](./rag/index.md) | `Monica.AI` | `Mo.AddRAG()` | `Mo.AddRAGUI()` |
+| [RAG UI](./rag-ui/index.md) | `Monica.AI.UI` | `Mo.AddRAGUI()` | 无 |
 | [Repository](./repository/index.md) | `Monica.Repository` | `Mo.AddRepository()` | 无 |
 | [SignalR](./signalr/index.md) | `Monica.SignalR` | `Mo.AddSignalR()` | `Mo.AddSignalRUI()` |
 | [UnitOfWork](./unit-of-work/index.md) | `Monica.Repository` | `Mo.AddUnitOfWork()` | 无 |
