@@ -8,6 +8,22 @@ sidebar_position: 1
 
 Monica 是一个模块化的 .NET 基础设施库。每个模块都遵循统一的 `Mo.Add*()` 注册模式，并围绕 `ModuleOption`、`ModuleGuide` 和公开契约组织功能。
 
+主机级默认值通过 `Mo.Config*()` 统一配置，例如：
+
+```csharp
+Mo.ConfigApplication(options =>
+{
+    options.AppName = "My Application";
+});
+
+Mo.ConfigModuleSystem(options =>
+{
+    options.DefaultApiGroupName = "基础功能";
+});
+```
+
+模块自身配置仍然优先于这些全局默认值。
+
 本轮 zh-CN 重构版文档优先覆盖：
 
 - 快速开始与主机接入模式

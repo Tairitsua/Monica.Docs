@@ -8,6 +8,22 @@ sidebar_position: 1
 
 The documentation tree now uses a language-first layout.
 
+Configure host-level Monica defaults through root `Mo.Config*()` methods before module registration:
+
+```csharp
+Mo.ConfigApplication(options =>
+{
+    options.AppName = "My Application";
+});
+
+Mo.ConfigModuleSystem(options =>
+{
+    options.DefaultApiGroupName = "Core";
+});
+```
+
+Module-specific options remain the highest-priority configuration source.
+
 - Current available language folders: `zh-CN`, `en-US`
 - Most detailed content is still authored under `zh-CN`
 

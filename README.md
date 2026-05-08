@@ -25,6 +25,25 @@ docker run -p 8080:8080 \
   monica-docs
 ```
 
+## Monica Global Configuration
+
+Host-level Monica defaults should be configured through root `Mo.Config*()` methods before module registration:
+
+```csharp
+Mo.ConfigApplication(options =>
+{
+    options.AppName = "Monica Docs";
+    options.AppId = "monica-docs";
+});
+
+Mo.ConfigModuleSystem(options =>
+{
+    options.DefaultApiGroupName = "Documentation";
+});
+```
+
+Module-specific options remain the highest-priority configuration source.
+
 ## Project Goals
 
 - Keep this repository useful as Monica product documentation.
