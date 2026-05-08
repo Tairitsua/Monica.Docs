@@ -5,6 +5,7 @@ using Monica.Core;
 using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
 using Monica.UI.Pages;
+using Monica.UI.Theming;
 using Platform.Infrastructure.RpcClient;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,7 +18,7 @@ Mo.AddWebApi();
 Mo.AddSwagger(o =>
 {
     o.AppName = "Monica.Docs API";
-    o.Version = "v1";
+    o.ApiVersion = "v1";
 });
 Mo.AddProjectUnits(o =>
 {
@@ -62,7 +63,11 @@ Mo.AddMarkdown(o =>
 Mo.AddMarkdownUI();
 Mo.AddSwaggerUI().AddNavigationButton("主页", UISystemInfoPage.PAGE_URL);
 Mo.AddSystemInfoUI().AddSwaggerLink();
-Mo.AddUIShell().AddRouteRedirect("/", UISystemInfoPage.PAGE_URL);
+Mo.AddUIShell(o =>
+{
+    o.DefaultDarkMode = true;
+    o.DefaultTheme = MonicaThemeKind.MaterialDesign3;
+}).AddRouteRedirect("/", UISystemInfoPage.PAGE_URL);
 Mo.AddModuleSystemUI();
 Mo.AddDependencyInjection();
 
