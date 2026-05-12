@@ -39,6 +39,38 @@ Mo.AddJobSchedulerUI();
 - 先让基础模块跑通，再考虑运维界面
 - 文档里优先看基础模块包，UI 模块通常只是围绕同一个能力提供可视化入口
 
+## 将 Monica 管理面板隔离到运维端口
+
+Monica 的管理面板、诊断接口和部分 Minimal API 通常面向运维人员或开发者，不应该默认暴露给所有业务用户。在完善鉴权前，推荐先把 Monica 自有端点限制到单独端口，再通过防火墙、负载均衡或内网访问策略只允许可信网络访问该端口。
+
+```csharp
+Mo.ConfigModuleSystem(options =>
+{
+    options.MonicaEndpointPort = 7100;
+    options.AutoAddMonicaHttpListener = true;
+    // 可选：不配置时会沿用宿主已有 URL 的 host，例如 localhost 或 *。
+    // options.MonicaEndpointHost = "localhost";
+});
+
+// 注册基础模块和 UI 模块...
+
+builder.UseMonica();
+
+var app = builder.Build();
+app.UseMonica();
+app.MapMonica();
+app.Run();
+```
+
+启用 `MonicaEndpointPort` 后，Monica 自有端点只会在该端口匹配；同一路由从其他端口访问会表现为 `404`。`AutoAddMonicaHttpListener` 默认为 `true`，会为常见单进程宿主追加一个 HTTP 监听地址，并尽量沿用宿主已有 URL 的 host。例如开发环境已有 `http://localhost:5298` 时，会追加 `http://localhost:7100`；容器环境已有 `http://+:8080` 时，会追加 `http://+:7100`。
+
+生产环境仍应把它视为**网络层隔离**，不是鉴权替代品：
+
+- 业务端口只暴露给业务用户，Monica 运维端口只暴露给内网、VPN、堡垒机或运维网段。
+- 如果希望 Monica 运维端口使用固定 host，可设置 `MonicaEndpointHost`，例如 `localhost`、`*`、`+`、`0.0.0.0` 或具体 IP。
+- 如果宿主使用显式 `Kestrel:Endpoints`、HTTPS 证书或反向代理配置，监听端口应由宿主或部署平台明确配置；此时可以关闭 `AutoAddMonicaHttpListener`。
+- 后续一旦接入认证和授权，仍应继续保留端口隔离作为纵深防护。
+
 ## 常见接入问题
 
 如果你在引入某个 `*.UI` 模块后发现页面打不开、浏览器一直转圈，先检查浏览器 Network 面板里是否出现了 `/_framework/blazor.web.js` 或 `/_content/Monica.UI/...` 的 `404`。
