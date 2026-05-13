@@ -44,8 +44,6 @@ var documentationApiOptions = builder.Configuration
     .GetSection(DocumentationApiOptions.SectionName)
     .Get<DocumentationApiOptions>()
     ?? new DocumentationApiOptions();
-builder.Services.Configure<DocumentationApiOptions>(
-    builder.Configuration.GetSection(DocumentationApiOptions.SectionName));
 
 var docsBasePath = UtilsDocumentationPathResolver.ResolveDocsBasePath(
     builder.Environment,
