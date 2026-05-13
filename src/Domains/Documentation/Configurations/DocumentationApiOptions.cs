@@ -2,7 +2,7 @@ using Monica.Configuration.Annotations;
 
 namespace Domains.Documentation.Configurations;
 
-[Configuration(SectionName, Title = "Documentation API", Description = "Configures Monica.Docs document-group lookup, generated asset links, docs source resolution, and recurring catalog refresh.")]
+[Configuration(SectionName, DisplayName = "Documentation API", Description = "Configures Monica.Docs document-group lookup, generated asset links, docs source resolution, and recurring catalog refresh.")]
 public sealed class DocumentationApiOptions
 {
     public const string SectionName = "DocumentationApi";
