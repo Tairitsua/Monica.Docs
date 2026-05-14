@@ -1,62 +1,114 @@
 ---
 title: Scenarios
-description: Configuration 的常见接入方式与使用陷阱。
-sidebar_position: 5
+description: Configuration 在实际项目中的配置定义、运行时修改、复杂类型和分布式场景。
+sidebar_position: 6
 ---
 
 # Scenarios
 
-## 场景 1 — 用注解方式统一配置类注册
+## 场景 1 — 用配置类统一 Options 注册
 
-当项目中存在多个配置类型时，使用 `[Configuration]` 与 `[OptionSetting]` 可以把“绑定来源、展示标题、说明信息”一起放到配置模型上，避免宿主里堆满重复的 `Bind` 代码。
-
-## 场景 2 — 叠加 `global-appsettings.json` 与宿主配置源
-
-真实项目里，一个很常见的 Monica 用法是：继续使用模块默认的 `builder.Configuration`，但再通过 `SetOtherSourceAction` 叠加运行目录下的公共配置文件和宿主默认配置文件。
+把配置类放在拥有它的业务模块或基础设施模块中，并用 `[Configuration]` 声明配置定义。宿主只需要注册 `Mo.AddConfiguration()`，不需要逐个写 `services.Configure<TOptions>(...)`。
 
 ```csharp
-using Monica.Tool.Runtime;
-
-Mo.AddConfiguration(o =>
+[Configuration(
+    "Messaging:MailSender",
+    DefinitionKey = "mail.sender",
+    DisplayName = "Mail Sender",
+    OwnerModule = "Messaging")]
+public sealed class MailSenderOptions
 {
-    o.GenerateFileForEachOption = true;
-    o.GenerateOptionFileParentDirectory = "Configurations";
-    o.SetOtherSourceAction = manager =>
-    {
-        manager.AddJsonFile(
-            RuntimePathHelper.GetRelativePathInRunningPath("Configurations/global-appsettings.json"),
-            optional: false,
-            reloadOnChange: true);
-        manager.AddJsonFile(
-            RuntimePathHelper.GetRelativePathInRunningPath("appsettings.json"),
-            optional: true,
-            reloadOnChange: true);
-    };
-});
+    [Required]
+    [OptionSetting("From Address")]
+    public string FromAddress { get; set; } = "";
+
+    [OptionSetting("SMTP", Description = "SMTP endpoint settings.")]
+    public SmtpOptions Smtp { get; set; } = new();
+}
 ```
 
-## 场景 3 — 在注册阶段就读取 `Configuration`
+## 场景 2 — 使用 UI 暂存并保存一组修改
 
-如果后续注册代码就要读取 `Configuration` 项目单元或者依赖它的绑定结果，只写 `Mo.AddConfiguration()` 还不够，因为模块通常会在后续统一注册。
+`Mo.AddConfigurationUI()` 会提供配置状态页。操作员可以修改多个配置项，然后作为一个 mutation group 保存。保存时会：
 
-这时应当在 `Mo.AddConfiguration()` 之后立即调用 `Mo.RegisterInstantly(builder)`：
+1. 创建 `ConfigurationMutationGroup`。
+2. 对每个 staged change 调用 `ConfigurationFacade.MutateAsync(...)`。
+3. 完成或标记部分成功的 mutation group。
+4. 触发本进程 reload，并通过已注册的 notification broadcaster 通知其他实例。
+
+## 场景 3 — 在数据库中持久化配置和历史
+
+默认 memory source 适合开发和演示，但进程重启后不会保留修改。生产环境通常启用 EF Core provider：
 
 ```csharp
-Mo.AddConfiguration();
-
-Mo.RegisterInstantly(builder);
-
-// 这里之后的注册代码，才可以安全消费已经绑定的配置类型。
+Mo.AddConfiguration()
+    .UseEfCoreConfigurationStore((serviceProvider, options) =>
+    {
+        options.UseSqlServer(builder.Configuration.GetConnectionString("Configuration"));
+    });
 ```
 
-这个模式适合日志初始化、外部客户端注册、基础设施引导等“注册阶段就要消费配置”的场景。若配置只在运行期通过 `IOptions<T>`、`IOptionsSnapshot<T>` 或 `IOptionsMonitor<T>` 使用，则不需要额外调用 `Mo.RegisterInstantly(builder)`。
+EF Core provider 会发布当前服务拥有的 schema，并持久化 override、history、source state 和 mutation group。
 
-## 场景 4 — 替换历史存储以支持回滚审计
+## 场景 4 — 复杂类型：Dictionary + List + 嵌套对象
 
-如果你打算开放配置修改与回滚能力，建议尽早把默认内存历史存储替换为自定义实现，这样重启后仍能保留完整历史记录。
+```csharp
+public sealed class GatewayOptions
+{
+    [OptionSetting("Services")]
+    public Dictionary<string, ServiceOptions> Services { get; set; } = [];
+}
+
+public sealed class ServiceOptions
+{
+    [OptionSetting("Connected Databases")]
+    public List<ConnectedDbOptions> ConnectedDbs { get; set; } = [];
+}
+
+public sealed class ConnectedDbOptions
+{
+    [Required]
+    [OptionSetting("Name", IsListItemKey = true)]
+    public string Name { get; set; } = "";
+
+    [Required]
+    [OptionSetting("Connection String", IsSensitive = true)]
+    public string ConnectionString { get; set; } = "";
+}
+```
+
+修改 `Services[$billing].ConnectedDbs[#main].ConnectionString` 时，dictionary key 是 `billing`，list item key 是 `main`。如果该服务节点已经以 container snapshot 存储，Monica 会 patch snapshot；否则可以写入叶子 override。
+
+## 场景 5 — 分布式写入入口
+
+多个微服务都可以注入 `ConfigurationFacade` 或暴露自己的管理入口发起 mutation。架构不是 CRDT 式去中心化存储，而是：
+
+- 存储是单一事实源，例如 DB 或 Redis。
+- 写入入口可以分散到多个服务或 UI。
+- 并发控制依赖 value version 和 schema version。
+- 通知是 best-effort；错过通知的实例可在下一次 provider reload 或下一次 mutation 后重新收敛。
+
+```mermaid
+sequenceDiagram
+    participant UI as 配置 UI
+    participant ServiceA as Service A
+    participant Store as Db / Redis
+    participant Bus as Notification
+    participant ServiceB as Service B
+
+    UI->>ServiceA: 保存 mutation group
+    ServiceA->>Store: 校验 schema/version 并写入 override
+    ServiceA->>ServiceA: reload 本地 IConfiguration projection
+    ServiceA->>Bus: 广播 ConfigurationChangeNotification
+    Bus-->>ServiceB: 通知 reload
+    ServiceB->>Store: 重新加载 override
+```
 
 ## Common mistakes
 
-- 把旧文档里的配置注册方式照搬到新架构；当前统一入口是 `Mo.AddConfiguration()`。
-- 需要在注册阶段使用配置，却没有在 `Mo.AddConfiguration()` 后立刻调用 `Mo.RegisterInstantly(builder)`。
-- 只有普通运行期 `IOptions<T>` 注入需求，却过早调用 `Mo.RegisterInstantly(builder)`，让注册顺序变复杂。
+- 用类短名作为 `DefinitionKey`。跨服务系统里建议使用稳定、全局唯一、不会随命名空间调整轻易变化的 key。
+- 把 `LogicalPath` 当作手写字符串处理。应用代码应使用 `LogicalPath.FromProperties(...)` 或 segment 类型构造路径。
+- 期望 Dapr Configuration source 可写。当前 Dapr source 是 read-only。
+- 没有给 list item 配置稳定 key，却希望按项修改 list。
+- 把 `IsSensitive` 当成权限控制。它只负责存储保护和展示脱敏，不替代认证授权。
+- 只使用默认 memory source 就期望重启后保留修改和历史。生产持久化应接入 EF Core、Redis 或自定义 source。
