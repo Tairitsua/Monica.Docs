@@ -35,12 +35,12 @@ sidebar_position: 5
 
 ```mermaid
 flowchart LR
-    json["Json\npriority 1"]
-    env["Environment\npriority 10"]
-    dapr["Dapr\npriority 50"]
-    memory["Memory\npriority 100 / writable"]
-    redis["Redis\npriority 150 / writable"]
-    db["Database\npriority 200 / writable + history"]
+    json["Json<br/>priority 1"]
+    env["Environment<br/>priority 10"]
+    dapr["Dapr<br/>priority 50"]
+    memory["Memory<br/>priority 100 / writable"]
+    redis["Redis<br/>priority 150 / writable"]
+    db["Database<br/>priority 200 / writable + history"]
     effective["Effective value"]
 
     json --> effective

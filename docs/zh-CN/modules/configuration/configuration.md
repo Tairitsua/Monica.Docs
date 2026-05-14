@@ -49,12 +49,12 @@ public sealed class DemoDocumentationPortalOptions
 
 ```mermaid
 flowchart LR
-    root["DemoDocumentationPortalOptions\nObject"]
-    title["PortalTitle\nScalar"]
-    theme["Theme\nObject"]
-    themeKey["Theme.ThemeKey\nScalar"]
-    security["Security\nObject"]
-    secret["Security.ClientSecret\nScalar / Sensitive"]
+    root["DemoDocumentationPortalOptions<br/>Object"]
+    title["PortalTitle<br/>Scalar"]
+    theme["Theme<br/>Object"]
+    themeKey["Theme.ThemeKey<br/>Scalar"]
+    security["Security<br/>Object"]
+    secret["Security.ClientSecret<br/>Scalar / Sensitive"]
 
     root --> title
     root --> theme --> themeKey
@@ -116,11 +116,11 @@ Monica 支持两种覆盖粒度：
 ```mermaid
 flowchart TD
     setLeaf["Set Security.Authority"]
-    hasContainer{"同一来源中是否已有\n覆盖 Security 容器?"}
-    patch["Patch Security snapshot\n并提升版本"]
-    leaf["写入 Security.Authority\nscalar override"]
+    hasContainer{"同一来源中是否已有<br/>覆盖 Security 容器?"}
+    patch["Patch Security snapshot<br/>并提升版本"]
+    leaf["写入 Security.Authority<br/>scalar override"]
     replace["Replace Security"]
-    remove["删除 Security.* 子 leaf\n写入 Security container snapshot"]
+    remove["删除 Security.* 子 leaf<br/>写入 Security container snapshot"]
 
     setLeaf --> hasContainer
     hasContainer -->|是| patch

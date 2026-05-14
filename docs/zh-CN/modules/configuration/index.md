@@ -33,10 +33,10 @@ flowchart TB
     optionType["带 [Configuration] 的 Options 类型"]
     scanner["配置定义扫描器"]
     schema["ConfigurationDefinition / Schema Tree"]
-    sources["配置值来源\nJson / Environment / Memory / Db / Redis / Dapr"]
+    sources["配置值来源<br/>Json / Environment / Memory / Db / Redis / Dapr"]
     merge["Monica 合并与来源链路"]
     projection["MonicaConfigurationProvider 投影"]
-    microsoft["Microsoft IConfiguration\n宿主接入投影 provider 后生效"]
+    microsoft["Microsoft IConfiguration<br/>宿主接入投影 provider 后生效"]
     options["IOptions<T> / IOptionsSnapshot<T> / IOptionsMonitor<T>"]
     facade["ConfigurationFacade / UI / API"]
 

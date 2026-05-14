@@ -19,11 +19,11 @@ Monica 把配置分成两层：
 
 ```mermaid
 flowchart TB
-    schema["ConfigurationDefinition\nSchema Tree"]
-    source["IConfigurationValueSource\nJson / Env / Memory / Db / Redis / Dapr"]
-    normalize["Override Normalizer\n去除同源重叠覆盖"]
-    merge["Merge Engine\n按优先级和删除语义合并"]
-    project["MonicaConfigurationProvider\n投影为 flat keys"]
+    schema["ConfigurationDefinition<br/>Schema Tree"]
+    source["IConfigurationValueSource<br/>Json / Env / Memory / Db / Redis / Dapr"]
+    normalize["Override Normalizer<br/>去除同源重叠覆盖"]
+    merge["Merge Engine<br/>按优先级和删除语义合并"]
+    project["MonicaConfigurationProvider<br/>投影为 flat keys"]
     iconfig["IConfiguration"]
     options["Options Binder"]
 
@@ -44,8 +44,8 @@ flowchart TB
 ```mermaid
 flowchart LR
     owner["拥有 Options 类型的服务"]
-    clr["CLR Options 类型\n[Configuration] + [OptionSetting]"]
-    db["ConfigurationDefinitions\n持久化 schema"]
+    clr["CLR Options 类型<br/>[Configuration] + [OptionSetting]"]
+    db["ConfigurationDefinitions<br/>持久化 schema"]
     ui["不拥有 CLR 类型的 UI / 其他服务"]
 
     owner --> clr --> db
@@ -82,9 +82,9 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    logical["LogicalPath\nServices[$billing].ConnectedDbs[#main].ConnectionString"]
-    projector["ConfigurationPathProjector\n解析 list item key 到 index"]
-    configPath["IConfiguration path\nDemo:Gateway:Services:billing:ConnectedDbs:0:ConnectionString"]
+    logical["LogicalPath<br/>Services[$billing].ConnectedDbs[#main].ConnectionString"]
+    projector["ConfigurationPathProjector<br/>解析 list item key 到 index"]
+    configPath["IConfiguration path<br/>Demo:Gateway:Services:billing:ConnectedDbs:0:ConnectionString"]
 
     logical --> projector --> configPath
 ```
@@ -129,11 +129,11 @@ Override 有两种粒度：
 ```mermaid
 flowchart TD
     request["Mutation Request"]
-    target{"目标节点是 scalar\n且不是 Replace?"}
-    covering{"同一 source 是否已有\n覆盖该路径的 container?"}
+    target{"目标节点是 scalar<br/>且不是 Replace?"}
+    covering{"同一 source 是否已有<br/>覆盖该路径的 container?"}
     patch["Patch container snapshot"]
     leaf["写 scalar override"]
-    replace["写 container snapshot\n并删除 descendant overrides"]
+    replace["写 container snapshot<br/>并删除 descendant overrides"]
 
     request --> target
     target -->|是| covering

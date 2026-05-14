@@ -31,7 +31,7 @@ UI 修改值时不会立即写入 provider，而是进入 scoped `ConfigurationS
 ```mermaid
 flowchart LR
     edit["编辑输入框"]
-    staged["ConfigurationStateStore\n暂存 PendingChange"]
+    staged["ConfigurationStateStore<br/>暂存 PendingChange"]
     dialog["保存对话框"]
     group["BeginMutationGroup"]
     mutate["MutateAsync x N"]

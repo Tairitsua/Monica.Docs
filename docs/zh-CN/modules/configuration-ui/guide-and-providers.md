@@ -39,7 +39,7 @@ flowchart TB
     state["ConfigurationStateStore"]
     facade["ConfigurationFacade"]
     services["Mutation / SourceChain / History Services"]
-    providers["Value Sources\nMemory / Db / Redis / Dapr / Json / Env"]
+    providers["Value Sources<br/>Memory / Db / Redis / Dapr / Json / Env"]
 
     ui --> state
     ui --> facade
