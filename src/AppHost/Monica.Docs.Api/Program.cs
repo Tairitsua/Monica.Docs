@@ -12,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 Mo.AddResultEnvelope().UseResultFieldNames(o => o.Status = "code");
 Mo.AddConfiguration();
+Mo.AddConfigurationUI();
 Mo.AddEventBus().UseNoOpDistributedEventBus();
 Mo.AddWebApi();
 

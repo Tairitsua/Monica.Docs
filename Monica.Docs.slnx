@@ -7,6 +7,7 @@
     <Project Path="../MoLibrary/Monica.Configuration.Dapr/Monica.Configuration.Dapr.csproj" />
     <Project Path="../MoLibrary/Monica.Configuration.EfCore/Monica.Configuration.EfCore.csproj" />
     <Project Path="../MoLibrary/Monica.Configuration.Redis/Monica.Configuration.Redis.csproj" />
+    <Project Path="../MoLibrary/Monica.Configuration.UI/Monica.Configuration.UI.csproj" />
     <Project Path="../MoLibrary/Monica.Configuration/Monica.Configuration.csproj" />
     <Project Path="../MoLibrary/Monica.Core/Monica.Core.csproj" />
     <Project Path="../MoLibrary/Monica.Dapr/Monica.Dapr.csproj" />
