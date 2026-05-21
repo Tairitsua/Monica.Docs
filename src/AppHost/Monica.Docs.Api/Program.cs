@@ -11,7 +11,8 @@ using Platform.Infrastructure.RpcClient;
 var builder = WebApplication.CreateBuilder(args);
 
 Mo.AddResultEnvelope().UseResultFieldNames(o => o.Status = "code");
-Mo.AddConfiguration();
+Mo.AddConfiguration()
+    .UseFileConfigurationStore();
 Mo.AddConfigurationUI();
 Mo.AddEventBus().UseNoOpDistributedEventBus();
 Mo.AddWebApi();

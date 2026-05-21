@@ -1,139 +1,107 @@
 ---
-title: Guide and Providers
-description: Configuration 的 Guide 方法、配置源、持久化 provider、变更通知和公共 facade。
+title: Guide and Stores
+description: Configuration 的 Guide 方法、存储预设、bootstrap 配置边界和公共 facade。
 sidebar_position: 5
 ---
 
-# Guide and Providers
+# Guide and Stores
 
 ## Guide methods
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|
-| `Mo.AddConfiguration()` | 注册核心配置模块 | 是 | 使用 Monica 管理配置定义和值来源时。 |
-| `AddValueSource<TSource>()` | 注册自定义 `IConfigurationValueSource` | 否 | 你要接入自定义存储或外部配置系统时。 |
-| `UseEfCoreConfigurationStore(...)` | 注册 EF Core 配置持久化 | 否 | 需要数据库保存 definition、override、history 和 mutation group 时。 |
-| `UseRedisConfigurationSource()` | 注册 Redis 配置值来源 | 否 | 需要 Redis 作为高优先级可写 override store 时。 |
-| `UseRedisChangeNotifications()` | 注册 Redis 变更通知 | 否 | 分布式实例之间用 Redis pub/sub fan-out reload 通知时。 |
-| `UseDaprConfigurationSource()` | 注册 Dapr Configuration 只读来源 | 否 | 已有 Dapr configuration store，需要读取到 Monica schema 中时。 |
-| `UseDaprChangeNotifications()` | 注册 Dapr pub/sub 变更通知 | 否 | 使用 Dapr pub/sub 广播配置变更通知时。 |
+| `Mo.AddConfiguration()` | 注册核心配置模块、schema 扫描、Options 绑定、mutation、history、rollback 和 facade | 是 | 声明 Monica 管理的配置定义时。 |
+| `UseFileConfigurationStore(...)` | 使用文件存储 effective values、metadata 和 history | 是，二选一 | 单体、开发、演示、本地运维。 |
+| `UseDbConfigurationStore(...)` | 使用 EF Core 数据库存储 effective values、metadata 和 history | 是，二选一 | 分布式部署，所有实例共享同一配置事实源。 |
 
-## Provider choices
-
-| Source | Source key | Priority | Writable | History | How to enable |
-|---|---:|---:|---|---|---|
-| Json | `json:default` | `1` | 否 | 否 | `Mo.AddConfiguration()` 默认注册。 |
-| Environment | `environment:default` | `10` | 否 | 否 | `Mo.AddConfiguration()` 默认注册。 |
-| Dapr Configuration | `dapr:default` | `50` | 否 | 否 | `UseDaprConfigurationSource()` |
-| Memory | `memory:default` | `100` | 是 | 否 | `Mo.AddConfiguration()` 默认注册。 |
-| Redis | `redis:default` | `150` | 是 | 否 | `UseRedisConfigurationSource()` |
-| Database | `db:default` | `200` | 是 | 是 | `UseEfCoreConfigurationStore(...)` |
-
-优先级越高越先参与生效值选择。未指定 `TargetSourceKey` 的 mutation 会写入优先级最高的 writable source。
-
-这些 source 是 Monica 配置领域层的来源，不等同于 Microsoft 原生 `IConfigurationProvider` 列表。核心模块另外提供 `MonicaConfigurationProvider` 作为投影层；是否把投影加入宿主 `IConfiguration` provider 链，由宿主集成代码决定。
-
-```mermaid
-flowchart LR
-    json["Json<br/>priority 1"]
-    env["Environment<br/>priority 10"]
-    dapr["Dapr<br/>priority 50"]
-    memory["Memory<br/>priority 100 / writable"]
-    redis["Redis<br/>priority 150 / writable"]
-    db["Database<br/>priority 200 / writable + history"]
-    effective["Effective value"]
-
-    json --> effective
-    env --> effective
-    dapr --> effective
-    memory --> effective
-    redis --> effective
-    db --> effective
-```
-
-## EF Core provider
-
-`Monica.Configuration.EfCore` 是当前最完整的持久化 provider。它提供：
-
-- `DatabaseConfigurationValueSource`：可写 override store。
-- `IConfigurationHistorySource`：配置历史查询。
-- `IConfigurationMutationGroupSource`：变更组持久化。
-- `IConfigurationDefinitionPublisher`：启动时把本服务扫描到的 schema 发布到数据库。
+`Mo.AddConfiguration()` 不会隐式创建文件或数据库表。宿主必须显式选择一种存储预设：
 
 ```csharp
 Mo.AddConfiguration()
-    .UseEfCoreConfigurationStore((serviceProvider, options) =>
+    .UseFileConfigurationStore();
+```
+
+或：
+
+```csharp
+Mo.AddConfiguration()
+    .UseDbConfigurationStore((serviceProvider, options) =>
     {
         options.UseSqlServer(builder.Configuration.GetConnectionString("Configuration"));
     });
 ```
 
-EF Core provider 有必需配置：必须通过 `UseDbContext(...)` 提供 `ConfigurationDbContext` 的配置。`UseEfCoreConfigurationStore(...)` 会完成这个要求。
+## Storage bundle
 
-## Redis provider
+当前设计不再暴露多 source priority。每个宿主只启用一个 active store bundle，bundle 内包含三类存储职责：
 
-`Monica.Configuration.Redis` 提供 Redis-backed writable value source 和 Redis pub/sub 通知。它适合需要高优先级集中 override，但不需要数据库审计历史的场景。
+| Store contract | 保存内容 | File mode | DB mode |
+|---|---|---|---|
+| `IConfigurationEffectiveValueStore` | 每个 `DefinitionKey` 的最终 effective JSON document | `effective/{DefinitionKey}.json` | 每个 definition 一行 JSON document |
+| `IConfigurationMetadataStore` | 发布后的配置定义、schema 和 store metadata | `metadata/definitions/{DefinitionKey}.json` | metadata table |
+| `IConfigurationHistoryStore` | mutation group 和每条 mutation history | `history/*.json` / `history.jsonl` | history tables |
+
+`IConfigurationChangeNotifier` 只是 v1 的抽象扩展点。当前核心模块没有内置跨服务热重载实现。
+
+## Bootstrap 配置边界
+
+`appsettings*.json`、环境变量、User Secrets 等仍然属于 Microsoft 原生 `IConfiguration`。它们只用于：
+
+- 启动期 bootstrap，例如数据库连接串、服务发现、日志初始化。
+- 第一次创建 effective value document 时作为 seed 输入。
+
+它们不再作为 Monica runtime-managed source 出现在 UI 中，也没有 `json:default`、`environment:default` 这类优先级来源。初始化完成后，运行时修改只写入所选 store bundle。
+
+## File store
+
+文件存储适合单体和本地模式：
 
 ```csharp
 Mo.AddConfiguration()
-    .UseRedisConfigurationSource()
-    .UseRedisChangeNotifications();
-
-new ModuleConfigurationRedisGuide().Register(options =>
-{
-    options.UseNormalConnection("localhost", 6379);
-});
-```
-
-如果启用 Redis source，它会比默认 memory source 优先级更高。未指定目标来源的 mutation 会优先写入 Redis，除非同时启用了数据库 source。
-
-## Dapr provider
-
-`Monica.Configuration.Dapr` 当前把 Dapr Configuration 映射为 Monica 的只读 value source。它会按 schema leaf 的 `ConfigurationPath` 到 Dapr store 查询值。
-
-```csharp
-Mo.AddConfiguration()
-    .UseDaprConfigurationSource()
-    .UseDaprChangeNotifications();
-
-new ModuleConfigurationDaprGuide().Register(options =>
-{
-    options.StoreName = "configurationstore";
-    options.PubSubName = "pubsub";
-    options.NotificationTopic = "monica.configuration.changes";
-});
-```
-
-Dapr Configuration source 是 read-only。运行时 mutation 不会写回 Dapr Configuration store。如果需要可写持久化，应使用 EF Core、Redis 或自定义 `IConfigurationValueSource`。
-
-## 自定义 value source
-
-自定义来源实现 `IConfigurationValueSource`：
-
-```csharp
-public sealed class MyConfigurationValueSource : IConfigurationValueSource
-{
-    public ConfigurationSourceDescriptor Descriptor { get; } = new()
+    .UseFileConfigurationStore(options =>
     {
-        SourceKey = "custom:my-store",
-        DisplayName = "My Store",
-        Kind = ConfigurationSourceKind.SecretStore,
-        Priority = 300,
-        IsWritable = true
-    };
-
-    public Task<IReadOnlyList<ConfigurationValueOverride>> LoadAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
-
-    public Task<ConfigurationValueOverride?> GetAsync(string definitionKey, LogicalPath logicalPath, CancellationToken cancellationToken) => throw new NotImplementedException();
-
-    public Task<ConfigurationMutationResult> MutateAsync(ConfigurationSourceMutation mutation, CancellationToken cancellationToken) => throw new NotImplementedException();
-}
-
-Mo.AddConfiguration()
-    .AddValueSource<MyConfigurationValueSource>();
+        options.RootDirectory = Path.Combine(builder.Environment.ContentRootPath, "configuration-store");
+    });
 ```
 
-Writable source 必须自己维护 store-level invariant：同一个来源内，父容器 snapshot 和子 leaf override 不能同时以 active 状态重叠存在。
+默认根目录是应用基目录下的 `monica-configuration`。每个配置定义使用 `DefinitionKey` 作为稳定文件名，因此 file mode 会拒绝不能作为文件名的 key。
+
+## DB store
+
+数据库存储适合分布式模式。所有实例共享同一个数据库事实源：
+
+```csharp
+Mo.AddConfiguration()
+    .UseDbConfigurationStore((serviceProvider, options) =>
+    {
+        options.UseSqlServer(builder.Configuration.GetConnectionString("Configuration"));
+    });
+```
+
+DB mode 的 bootstrap 配置只能依赖宿主原生 `IConfiguration`。例如连接串必须来自 `appsettings`、环境变量、User Secrets 或部署系统，不能依赖 Monica-managed configuration。如果启动时无法加载 DB-managed configuration，服务应 fail fast。
+
+## Mutation flow
+
+运行时修改通过 `ConfigurationFacade.MutateAsync(...)` 发起：
+
+```mermaid
+sequenceDiagram
+    participant Caller as UI / API / App
+    participant Facade as ConfigurationFacade
+    participant Store as Effective Value Store
+    participant History as History Store
+    participant Provider as MonicaConfigurationProvider
+    participant Notifier as IConfigurationChangeNotifier
+
+    Caller->>Facade: MutateAsync(request)
+    Facade->>Store: load JSON document by DefinitionKey
+    Facade->>Store: patch by LogicalPath and save new version
+    Facade->>History: append audit record
+    Facade->>Provider: reload local projection
+    Facade->>Notifier: notify if registered
+```
+
+修改复杂对象、dictionary、keyed list 或 scalar leaf 时，存储层仍然保存整份 effective JSON document。Monica 会按 `LogicalPath` patch 文档中的目标节点，并记录 old/new value、version、user、group 和 timestamp。
 
 ## ConfigurationFacade
 
@@ -142,8 +110,8 @@ Writable source 必须自己维护 store-level invariant：同一个来源内，
 | Method | 用途 |
 |---|---|
 | `GetDefinitionsAsync()` / `GetDefinitionAsync(...)` | 获取配置定义列表和 schema detail。 |
-| `GetEffectiveValueAsync(...)` | 获取 display-safe 生效值。 |
-| `GetSourceChainAsync(...)` | 查看某个路径的所有来源值。 |
+| `GetEffectiveValueAsync(...)` | 获取 display-safe effective value。 |
+| `GetStorageOverviewAsync()` / `GetStoreStatesAsync()` | 查看当前 store bundle 和运行状态。 |
 | `MutateAsync(...)` | 写入配置修改。 |
 | `BeginMutationGroupAsync(...)` / `CompleteMutationGroupAsync(...)` | 创建并完成审计组。 |
 | `GetHistoryAsync(...)` / `QueryHistoryAsync(...)` | 查询配置历史。 |
@@ -154,11 +122,7 @@ Facade 返回 `Res<T>` 或 `Res`，调用方应按项目统一的 `Res` 失败�
 
 ## Module dependencies
 
-核心模块依赖 `Monica.Core` 和 ASP.NET Core Configuration / Options。Provider 模块按需引入额外依赖：
-
 | Module | Dependency |
 |---|---|
 | `Monica.Configuration.UI` | `Monica.Configuration`、`Monica.UI`、Localization、Shell UI |
 | `Monica.Configuration.EfCore` | `Monica.Configuration`、`Monica.Repository`、EF Core |
-| `Monica.Configuration.Redis` | `Monica.Configuration`、`Monica.StateStore.StackExchange` |
-| `Monica.Configuration.Dapr` | `Monica.Configuration`、`Monica.Dapr` |

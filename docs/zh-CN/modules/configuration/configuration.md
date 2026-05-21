@@ -6,7 +6,7 @@ sidebar_position: 4
 
 # Configuration
 
-`ModuleConfigurationOption` 当前没有公开配置属性。模块的核心配置方式不是设置模块 option，而是在 Options 类型上使用 `[Configuration]` 和 `[OptionSetting]` 声明 schema。
+`ModuleConfigurationOption` 当前没有公开配置属性。模块的核心配置方式是在 Options 类型上使用 `[Configuration]` 和 `[OptionSetting]` 声明 schema，并在宿主注册时选择 file 或 DB store preset。
 
 ## 配置定义
 
@@ -14,10 +14,10 @@ sidebar_position: 4
 
 | 字段 | 来源 | 说明 |
 |---|---|---|
-| `DefinitionKey` | `[Configuration].DefinitionKey`，未设置时使用 CLR 全名 | 稳定唯一身份。跨服务、历史、UI 和 mutation 都使用它。 |
-| `SectionPath` | 构造参数或 `[Configuration].SectionPath`，未设置时由 definition key 替换 `.` 为 `:` | Microsoft `IConfiguration` 的绑定根路径。 |
+| `DefinitionKey` | `[Configuration].DefinitionKey`，未设置时使用 CLR 全名 | 稳定唯一身份。跨服务、文件/数据库存储、历史、UI 和 mutation 都使用它。 |
+| `SectionPath` | 构造参数或 `[Configuration].SectionPath`，未设置时由 definition key 替换 `.` 为 `:` | Microsoft `IConfiguration` 的绑定根路径，也是第一次 seed host config 的路径。 |
 | `DisplayName` | `[Configuration].DisplayName`，未设置时使用类型名 | UI 展示名，可以重复。 |
-| `ClrTypeName` | 扫描到的 Options 类型 | 诊断和跨服务 schema 识别使用。 |
+| `ClrTypeName` | 扫描到的 Options 类型 | 诊断和 schema 识别使用。 |
 | `OwnerModule` | `[Configuration].OwnerModule` | UI 分组和责任归属。 |
 | `Category` | `[Configuration].Category` | 业务自定义分类。 |
 | `ReloadBehavior` | `[Configuration].ReloadBehavior` | 默认生效策略，节点可覆盖。 |
@@ -47,20 +47,6 @@ public sealed class DemoDocumentationPortalOptions
 | `IEnumerable<T>` / array | `List` | item 作为模板节点。带稳定 key 的 list 支持按项修改。 |
 | `string`、数值、`bool`、`enum`、`DateTime`、`TimeSpan`、`Uri`、`Guid` 等 | `Scalar` | 作为叶子值参与读取、修改和投影。 |
 
-```mermaid
-flowchart LR
-    root["DemoDocumentationPortalOptions<br/>Object"]
-    title["PortalTitle<br/>Scalar"]
-    theme["Theme<br/>Object"]
-    themeKey["Theme.ThemeKey<br/>Scalar"]
-    security["Security<br/>Object"]
-    secret["Security.ClientSecret<br/>Scalar / Sensitive"]
-
-    root --> title
-    root --> theme --> themeKey
-    root --> security --> secret
-```
-
 ## OptionSetting
 
 `[OptionSetting]` 只承载 Monica 的管理元数据，不替代 DataAnnotations。
@@ -70,7 +56,7 @@ flowchart LR
 | `NodeKey` | 当前 `LogicalPath` 的 canonical 字符串 | 给节点一个稳定身份，适合未来属性重命名。 |
 | `DisplayName` | `null` | UI 展示名。 |
 | `Description` | `null` | UI、文档和说明弹窗使用。 |
-| `IsSensitive` | `false` | 敏感值在来源链路、历史和 UI 中脱敏，写入时会被保护。 |
+| `IsSensitive` | `false` | 敏感值在 UI 和 facade 中按 display-safe 方式处理。 |
 | `ReloadBehavior` | `Inherit` | 覆盖定义级生效策略。 |
 | `IsListItemKey` | `false` | 标记列表项内唯一的稳定 key 属性。每个 item 类型最多一个。 |
 
@@ -87,8 +73,6 @@ flowchart LR
 | `[MinLength]` | `MinLengthRule` |
 | `[StringLength]` | `MaxLengthRule` |
 
-当前 mutation 服务已经校验 `ExpectedSchemaVersion`，DataAnnotations 的完整服务端 mutation 校验会随后补齐。生产界面仍应把 UI 本地校验视为体验优化，而不是权限或数据完整性的唯一边界。
-
 ## LogicalPath
 
 `LogicalPath` 是配置管理的稳定路径，不是简单字符串 DSL。它由结构化 segment 组成：
@@ -102,30 +86,24 @@ flowchart LR
 
 `$` 表示 dictionary key，`#` 表示 list item key，`@` 表示 list index。它们是 Monica canonical path 的显示和存储约定；在代码内应优先使用 `LogicalPath` 和 segment 类型，而不是手写字符串。
 
-## 复杂类型和存储粒度
+## Effective value document
 
-Monica 支持两种覆盖粒度：
+运行时修改围绕一份完整 JSON document 工作。每个 `DefinitionKey` 对应一个 current effective value：
 
-| Granularity | 适用对象 | 行为 |
-|---|---|---|
-| `Scalar` | 标量叶子 | 只保存一个叶子的 JSON 值。 |
-| `Container` | object、dictionary、list 或 replace 操作 | 保存一个容器快照 JSON。 |
+- File mode：`effective/{DefinitionKey}.json`。
+- DB mode：effective value table 中的一行 JSON document。
 
-当一个容器已经以 snapshot 形式存在时，修改其内部叶子不会再额外写一条 leaf 覆盖，而是 patch 那个容器 snapshot。这样可以避免同一个来源中“父容器快照”和“子叶子覆盖”重叠造成歧义。
+修改叶子节点、dictionary item 或 keyed list item 时，Monica 会按 `LogicalPath` patch 这份 JSON document，然后提升 document version 并写入 history。
 
 ```mermaid
 flowchart TD
     setLeaf["Set Security.Authority"]
-    hasContainer{"同一来源中是否已有<br/>覆盖 Security 容器?"}
-    patch["Patch Security snapshot<br/>并提升版本"]
-    leaf["写入 Security.Authority<br/>scalar override"]
-    replace["Replace Security"]
-    remove["删除 Security.* 子 leaf<br/>写入 Security container snapshot"]
+    document["Effective JSON document"]
+    patch["Patch target path"]
+    save["Save document version + 1"]
+    project["Reload IConfiguration projection"]
 
-    setLeaf --> hasContainer
-    hasContainer -->|是| patch
-    hasContainer -->|否| leaf
-    replace --> remove
+    setLeaf --> document --> patch --> save --> project
 ```
 
 ## List 和 Dictionary
@@ -149,15 +127,9 @@ public sealed class ConnectedDbOptions
 
 ## 敏感值
 
-敏感值由 `[OptionSetting(IsSensitive = true)]` 声明。Mutation 服务在写入前会保护 payload；来源链路和有效值读取会返回 display-safe 值，不会把敏感内容明文暴露给 UI。
+敏感值由 `[OptionSetting(IsSensitive = true)]` 声明。UI 和 facade 会把当前值作为 display-safe 值处理，默认不展示明文。
 
-存储值支持三种形态：
-
-| Kind | 用途 |
-|---|---|
-| `PlainJson` | 普通 JSON 值。 |
-| `ProtectedJson` | 受保护的敏感 payload。 |
-| `SecretReference` | 指向外部 secret store 的引用。 |
+`IsSensitive` 不是权限控制。它只描述配置节点的展示和编辑语义；谁能查看或修改配置仍应由宿主认证授权决定。
 
 ## 生效策略
 

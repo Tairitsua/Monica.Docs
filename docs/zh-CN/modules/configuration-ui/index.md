@@ -1,17 +1,17 @@
 ---
 title: Configuration UI
-description: Configuration 的 Blazor 操作台，用于查看 schema、编辑配置、保存变更组、查看历史和诊断 provider。
+description: Configuration 的 Blazor 操作台，用于查看 schema、编辑配置、保存变更组、查看历史和诊断存储状态。
 sidebar_position: 1
 ---
 
 # Configuration UI
 
-`Monica.Configuration.UI` 是 `Monica.Configuration` 的操作台模块。它通过 `ConfigurationFacade` 读取配置定义、来源链路、有效值和历史，并把用户的修改暂存在 UI 状态中，最后作为一个 mutation group 保存。
+`Monica.Configuration.UI` 是 `Monica.Configuration` 的操作台模块。它通过 `ConfigurationFacade` 读取配置定义、有效值、存储状态和历史，并把用户的修改暂存在 UI 状态中，最后作为一个 mutation group 保存。
 
 ## 何时使用这个模块
 
 - 需要给运维或开发人员提供可视化配置管理入口。
-- 需要查看某个值来自 Json、环境变量、内存、数据库、Redis 或 Dapr。
+- 需要查看当前 active store bundle 的运行状态。
 - 需要在保存前暂存多个配置修改，并以一个审计组提交。
 - 需要查看配置历史、回滚历史行或回滚整组变更。
 
@@ -30,7 +30,7 @@ sidebar_position: 1
 | 配置状态 | `/configuration/state` | `Configuration` 分类，顺序 `10` |
 | 配置历史 | `/configuration/history` | `Configuration` 分类，顺序 `20` |
 | 配置 Debug | `/configuration/debug` | `Configuration` 分类，顺序 `30` |
-| Provider 状态 | `/configuration/providers` | `Configuration` 分类，顺序 `40` |
+| 存储状态 | `/configuration/providers` | `Configuration` 分类，顺序 `40` |
 
 ## 公开使用面
 
@@ -38,12 +38,12 @@ sidebar_position: 1
 - `ModuleConfigurationUIOption`：当前没有公开属性。
 - `ConfigurationStateStore`：页面级暂存状态服务。
 
-UI 模块不直接操作存储 provider。所有读取、mutation、history、rollback 都通过 `ConfigurationFacade` 完成。
+UI 模块不直接操作 store。所有读取、mutation、history、rollback 都通过 `ConfigurationFacade` 完成。
 
 ## 相关页面
 
 - [Quick Start](./quick-start.md)
 - [Configuration](./configuration.md)
-- [Guide and Providers](./guide-and-providers.md)
+- [Guide and Stores](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
 - [Configuration](../configuration/index.md)

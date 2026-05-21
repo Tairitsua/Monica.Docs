@@ -1,10 +1,10 @@
 ---
-title: Guide and Providers
-description: Configuration UI 的 Guide、依赖和后端 provider 关系。
+title: Guide and Stores
+description: Configuration UI 的 Guide、依赖和后端 store 关系。
 sidebar_position: 4
 ---
 
-# Guide and Providers
+# Guide and Stores
 
 ## Guide methods
 
@@ -18,18 +18,17 @@ sidebar_position: 4
 
 | Dependency | Why it is used |
 |---|---|
-| `Mo.AddConfiguration()` | 提供 `ConfigurationFacade`、schema、provider、mutation 和 history。 |
+| `Mo.AddConfiguration()` | 提供 `ConfigurationFacade`、schema、store、mutation 和 history。 |
 | `Mo.AddLocalization()` | 注册 UI 本地化资源。 |
 | `Mo.AddUIShell()` | 注册页面、导航和 Blazor shell。 |
 
-## Provider relationship
+## Store relationship
 
-Configuration UI 不选择 provider，也不直接写数据库或 Redis。它只调用 `ConfigurationFacade`。实际写入目标由 `Monica.Configuration` 的 value source 决定：
+Configuration UI 不选择 store，也不直接写文件或数据库。它只调用 `ConfigurationFacade`。实际写入目标由 `Monica.Configuration` 的 active store bundle 决定：
 
-- 只注册核心模块时，默认写入 `memory:default`。
-- 启用 Redis source 后，默认写入 Redis，除非请求指定其他 `TargetSourceKey`。
-- 启用 EF Core source 后，默认写入数据库，并可查看历史。
-- Dapr source 当前只读，UI 不会把 mutation 写入 Dapr Configuration store。
+- `UseFileConfigurationStore(...)`：写入本地 file store。
+- `UseDbConfigurationStore(...)`：写入 EF Core DB store，适合分布式。
+- `IConfigurationChangeNotifier`：如果宿主注册了实现，mutation 成功后会调用通知抽象。
 
 ## UI 与核心模块的边界
 
@@ -38,11 +37,11 @@ flowchart TB
     ui["Configuration UI Pages"]
     state["ConfigurationStateStore"]
     facade["ConfigurationFacade"]
-    services["Mutation / SourceChain / History Services"]
-    providers["Value Sources<br/>Memory / Db / Redis / Dapr / Json / Env"]
+    services["Mutation / History / Rollback Services"]
+    stores["Store Bundle<br/>Effective / Metadata / History"]
 
     ui --> state
     ui --> facade
     facade --> services
-    services --> providers
+    services --> stores
 ```

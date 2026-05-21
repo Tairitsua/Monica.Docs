@@ -23,7 +23,8 @@ using Monica.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Mo.AddConfiguration();
+Mo.AddConfiguration()
+    .UseFileConfigurationStore();
 
 builder.UseMonica();
 
@@ -65,9 +66,9 @@ public sealed class HomeService(IOptionsSnapshot<DemoAppOptions> options)
 
 `Mo.AddConfiguration()` 会在 Monica 扫描业务类型时找到 `[Configuration]` 类型，生成 schema，并注册对应的 Options 绑定。运行期消费配置时仍然使用 Microsoft Options Pattern。
 
-当前 Options 绑定使用宿主已有的 `builder.Configuration` section。运行时 mutation 会写入 Monica value source；如果宿主需要把这些动态 override 直接纳入 `IConfiguration` 绑定视图，还需要接入 Monica 投影 provider。Configuration UI、来源链路、历史和 mutation 不依赖应用手写 `services.Configure<TOptions>(...)`。
+`UseFileConfigurationStore()` 是单体和本地模式的最小 store preset。第一次启动时，Monica 会为每个 `DefinitionKey` 创建一个 effective JSON document：优先从宿主 `IConfiguration` 的 section seed，缺失时回退到 CLR 默认值。
 
-## 配置文件示例
+## 配置文件 seed 示例
 
 ```json
 {
@@ -81,7 +82,7 @@ public sealed class HomeService(IOptionsSnapshot<DemoAppOptions> options)
 }
 ```
 
-`[Configuration("Demo:App")]` 决定 Microsoft `IConfiguration` 绑定路径。上面的 `Demo:App` 会绑定到 `DemoAppOptions`，属性路径分别是 `Demo:App:AppName`、`Demo:App:PageSize` 等。
+`[Configuration("Demo:App")]` 决定 seed 的 Microsoft `IConfiguration` section。初始化完成后，运行时修改写入 Monica store 中的 effective JSON document，不会回写原始 `appsettings.json`。
 
 ## 添加管理 UI
 
@@ -90,11 +91,12 @@ dotnet add package Monica.Configuration.UI
 ```
 
 ```csharp
-Mo.AddConfiguration();
+Mo.AddConfiguration()
+    .UseFileConfigurationStore();
 Mo.AddConfigurationUI();
 ```
 
-`Mo.AddConfigurationUI()` 会注册配置状态、历史、Debug View 和 Provider 页面。页面入口请看 [Configuration UI](../configuration-ui/index.md)。
+`Mo.AddConfigurationUI()` 会注册配置状态、历史、Debug View 和 Storage 页面。页面入口请看 [Configuration UI](../configuration-ui/index.md)。
 
 ## 第一个运行时修改
 
@@ -125,11 +127,11 @@ public sealed class ConfigurationCommand(ConfigurationFacade facade)
 }
 ```
 
-默认情况下，可写源是内存源，适合开发、演示和测试。如果需要重启后保留修改和历史，请启用 EF Core 或 Redis 等持久化来源。
+修改成功后，Monica 会 patch 对应 `DefinitionKey` 的 effective JSON document，写入 history，刷新本进程的 `MonicaConfigurationProvider` 投影。
 
 ## 接下来读什么
 
 - [Configuration](./configuration.md)
 - [Concepts](./concepts.md)
-- [Guide and Providers](./guide-and-providers.md)
+- [Guide and Stores](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
