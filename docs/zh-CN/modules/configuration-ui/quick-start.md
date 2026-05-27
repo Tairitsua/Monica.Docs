@@ -46,10 +46,10 @@ app.Run();
 Storage 页面位于：
 
 ```text
-/configuration/providers
+/configuration/storage
 ```
 
-路由名保留为 `providers`，页面内容显示的是当前 active store bundle，而不是旧的 source priority 列表。
+该页面显示当前 active store bundle 及运行状态。
 
 ## 接下来读什么
 

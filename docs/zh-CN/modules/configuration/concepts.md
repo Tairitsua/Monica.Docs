@@ -152,3 +152,5 @@ mutation 使用 `ConnectedDbs[#main]` 定位。进入 Microsoft Configuration �
 敏感值由 `[OptionSetting(IsSensitive = true)]` 标记。UI 和 facade 返回 display-safe 结果，不暴露明文。
 
 `IsSensitive` 不是授权系统。它只负责展示脱敏和编辑体验；谁能查看或修改配置仍应由宿主应用的认证授权策略控制。
+
+当前 v1 store 不实现字段级密文 payload 或外部 secret reference。敏感值若写入 effective JSON document，其静态安全性由存储与部署环境负责；需要外部密钥管理的值应继续作为 bootstrap/secret 输入保留在 Monica 管理范围之外。

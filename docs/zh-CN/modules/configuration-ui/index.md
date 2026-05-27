@@ -30,7 +30,7 @@ sidebar_position: 1
 | 配置状态 | `/configuration/state` | `Configuration` 分类，顺序 `10` |
 | 配置历史 | `/configuration/history` | `Configuration` 分类，顺序 `20` |
 | 配置 Debug | `/configuration/debug` | `Configuration` 分类，顺序 `30` |
-| 存储状态 | `/configuration/providers` | `Configuration` 分类，顺序 `40` |
+| 存储状态 | `/configuration/storage` | `Configuration` 分类，顺序 `40` |
 
 ## 公开使用面
 

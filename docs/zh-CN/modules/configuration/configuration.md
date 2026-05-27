@@ -131,6 +131,8 @@ public sealed class ConnectedDbOptions
 
 `IsSensitive` 不是权限控制。它只描述配置节点的展示和编辑语义；谁能查看或修改配置仍应由宿主认证授权决定。
 
+当前 v1 store 不提供字段级密文 payload 或外部 secret reference。将敏感值纳入 effective JSON document 时，应由所选存储、部署环境和访问控制保障静态数据安全，或将密钥保留在 Monica 管理范围之外。
+
 ## 生效策略
 
 | Reload behavior | 含义 |
