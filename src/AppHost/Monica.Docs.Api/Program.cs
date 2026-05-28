@@ -1,6 +1,9 @@
 using Domains.Documentation.Application.BackgroundWorkers;
 using Domains.Documentation.Configurations;
 using Domains.Documentation.Utilities;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Monica.Configuration.EfCore.DbContext;
 using Monica.Core;
 using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
@@ -9,10 +12,11 @@ using Monica.UI.Theming;
 using Platform.Infrastructure.RpcClient;
 
 var builder = WebApplication.CreateBuilder(args);
+var configurationStoreConnectionString = ResolveConfigurationStoreConnectionString(builder);
 
 Mo.AddResultEnvelope().UseResultFieldNames(o => o.Status = "code");
 Mo.AddConfiguration()
-    .UseFileConfigurationStore();
+    .UseDbConfigurationStore((_, options) => options.UseSqlite(configurationStoreConnectionString));
 Mo.AddConfigurationUI();
 Mo.AddEventBus().UseNoOpDistributedEventBus();
 Mo.AddWebApi();
@@ -74,7 +78,37 @@ Mo.AddDependencyInjection();
 builder.UseMonica();
 
 var app = builder.Build();
+await EnsureConfigurationDatabaseCreatedAsync(app.Services);
 
 app.UseMonica();
 app.MapMonica();
 app.Run();
+
+static string ResolveConfigurationStoreConnectionString(WebApplicationBuilder builder)
+{
+    var configuredConnectionString = builder.Configuration.GetConnectionString("MonicaConfiguration")
+        ?? "Data Source=App_Data/monica-configuration.sqlite";
+    var sqliteConnectionStringBuilder = new SqliteConnectionStringBuilder(configuredConnectionString);
+
+    if (!string.Equals(sqliteConnectionStringBuilder.DataSource, ":memory:", StringComparison.OrdinalIgnoreCase)
+        && !Path.IsPathRooted(sqliteConnectionStringBuilder.DataSource))
+    {
+        sqliteConnectionStringBuilder.DataSource = Path.GetFullPath(
+            Path.Combine(builder.Environment.ContentRootPath, sqliteConnectionStringBuilder.DataSource));
+    }
+
+    var databaseDirectory = Path.GetDirectoryName(sqliteConnectionStringBuilder.DataSource);
+    if (!string.IsNullOrWhiteSpace(databaseDirectory))
+    {
+        Directory.CreateDirectory(databaseDirectory);
+    }
+
+    return sqliteConnectionStringBuilder.ConnectionString;
+}
+
+static async Task EnsureConfigurationDatabaseCreatedAsync(IServiceProvider services)
+{
+    await using var scope = services.CreateAsyncScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
+    await dbContext.Database.EnsureCreatedAsync();
+}
