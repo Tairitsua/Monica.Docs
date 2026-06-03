@@ -16,7 +16,17 @@ var configurationStoreConnectionString = ResolveConfigurationStoreConnectionStri
 
 Mo.AddResultEnvelope().UseResultFieldNames(o => o.Status = "code");
 Mo.AddConfiguration()
-    .UseDbConfigurationStore((_, options) => options.UseSqlite(configurationStoreConnectionString));
+    .UseDbConfigurationStore((_, options) => options.UseSqlite(configurationStoreConnectionString))
+    .AddManagedJsonFile(
+        "docs-external-settings.json",
+        optional: false,
+        reloadOnChange: true,
+        options =>
+        {
+            options.DisplayName = "Docs External Demo Settings";
+            options.Description = "Operator-managed JSON file registered through Monica.Configuration for source-chain and source-editing demos.";
+            options.IsWritable = true;
+        });
 Mo.AddConfigurationUI();
 Mo.AddEventBus().UseNoOpDistributedEventBus();
 Mo.AddWebApi();

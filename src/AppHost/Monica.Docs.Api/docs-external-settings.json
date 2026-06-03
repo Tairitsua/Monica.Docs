@@ -1,0 +1,44 @@
+{
+  "Demo": {
+    "DocumentationPortal": {
+      "PortalTitle": "External JSON Docs Portal",
+      "SearchPageSize": 48,
+      "RequireLogin": false,
+      "Theme": {
+        "ThemeKey": "compact",
+        "EnableTableOfContents": false
+      },
+      "Security": {
+        "ClientId": "monica-docs-external-json"
+      }
+    },
+    "DocumentationRouting": {
+      "DefaultService": "admin",
+      "Services": {
+        "docs": {
+          "DisplayName": "Documentation External Route",
+          "Weight": 95,
+          "FeatureFlags": {
+            "draft-preview": true
+          }
+        }
+      }
+    },
+    "DocumentationWorkflow": {
+      "PipelineName": "external-json-publish",
+      "Steps": [
+        {
+          "StepKey": "scan",
+          "DisplayName": "External JSON Scan",
+          "Enabled": true,
+          "SortOrder": 5,
+          "Retry": {
+            "MaxAttempts": 4,
+            "Delay": "00:00:03",
+            "Backoff": "Linear"
+          }
+        }
+      ]
+    }
+  }
+}
