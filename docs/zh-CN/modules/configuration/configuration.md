@@ -1,12 +1,18 @@
 ---
 title: Configuration
-description: Configuration 的配置定义、节点模型、路径、验证、敏感值和复杂类型规则。
+description: Configuration 的模块选项、配置定义、节点模型、路径、验证、敏感值、复杂类型和导入导出规则。
 sidebar_position: 4
 ---
 
 # Configuration
 
-`ModuleConfigurationOption` 当前没有公开配置属性。模块的核心配置方式是在 Options 类型上使用 `[Configuration]` 和 `[OptionSetting]` 声明 schema，并在宿主注册时选择 file 或 DB store preset。
+`ModuleConfigurationOption` 目前只有一个运行时来源清单开关。模块的主要配置方式是在 Options 类型上使用 `[Configuration]` 和 `[OptionSetting]` 声明 schema，并在宿主注册时选择 file 或 DB store preset。
+
+## Module options
+
+| Property | Type | Default | Required | When to change | Notes |
+|---|---|---|---|---|---|
+| `IncludeUnmanagedSourceInventoryItems` | `bool` | `true` | No | 当宿主不希望 Configuration UI 展示非 Monica 管理的 runtime key 时关闭。 | 只影响 source/storage 页面中的来源清单；不影响 Monica-managed definitions、source chain 或 Options 绑定。 |
 
 ## 配置定义
 
@@ -14,10 +20,10 @@ sidebar_position: 4
 
 | 字段 | 来源 | 说明 |
 |---|---|---|
-| `DefinitionKey` | `[Configuration].DefinitionKey`，未设置时使用 CLR 全名 | 稳定唯一身份。跨服务、文件/数据库存储、历史、UI 和 mutation 都使用它。 |
-| `SectionPath` | 构造参数或 `[Configuration].SectionPath`，未设置时由 definition key 替换 `.` 为 `:` | Microsoft `IConfiguration` 的绑定根路径，也是第一次 seed host config 的路径。 |
+| `DefinitionKey` | `[Configuration].DefinitionKey`，未设置时使用 CLR 类型身份 | 稳定唯一身份。跨服务、文件/数据库存储、历史、UI、导入导出和 mutation 都使用它。 |
+| `SectionPath` | 构造参数或 `[Configuration].SectionPath`，未设置时由 scanner 推导 | Microsoft `IConfiguration` 的绑定根路径，也是第一次 seed host config 的路径。 |
 | `DisplayName` | `[Configuration].DisplayName`，未设置时使用类型名 | UI 展示名，可以重复。 |
-| `ClrTypeName` | 扫描到的 Options 类型 | 诊断和 schema 识别使用。 |
+| `ClrTypeName` | 扫描到的 Options 类型 | 诊断、导出和 schema 识别使用。 |
 | `OwnerModule` | `[Configuration].OwnerModule` | UI 分组和责任归属。 |
 | `Category` | `[Configuration].Category` | 业务自定义分类。 |
 | `ReloadBehavior` | `[Configuration].ReloadBehavior` | 默认生效策略，节点可覆盖。 |
@@ -45,7 +51,7 @@ public sealed class DemoDocumentationPortalOptions
 | 普通 object | `Object` | 继续扫描公开实例属性。 |
 | `IDictionary<TKey, TValue>` | `Dictionary` | key 作为字典项身份，value 作为模板节点。 |
 | `IEnumerable<T>` / array | `List` | item 作为模板节点。带稳定 key 的 list 支持按项修改。 |
-| `string`、数值、`bool`、`enum`、`DateTime`、`TimeSpan`、`Uri`、`Guid` 等 | `Scalar` | 作为叶子值参与读取、修改和投影。 |
+| `string`、数值、`bool`、`enum`、`DateTime`、`TimeSpan`、`Uri` 等 | `Scalar` | 作为叶子值参与读取、修改和投影。 |
 
 ## OptionSetting
 
@@ -53,16 +59,16 @@ public sealed class DemoDocumentationPortalOptions
 
 | 属性 | 默认值 | 用途 |
 |---|---|---|
-| `NodeKey` | 当前 `LogicalPath` 的 canonical 字符串 | 给节点一个稳定身份，适合未来属性重命名。 |
+| `NodeKey` | `null` | 给节点一个稳定身份，适合未来属性重命名。 |
 | `DisplayName` | `null` | UI 展示名。 |
 | `Description` | `null` | UI、文档和说明弹窗使用。 |
-| `IsSensitive` | `false` | 敏感值在 UI 和 facade 中按 display-safe 方式处理。 |
+| `IsSensitive` | `false` | 敏感值在 UI、facade、source file view 和导出文件中按 display-safe 方式处理。 |
 | `ReloadBehavior` | `Inherit` | 覆盖定义级生效策略。 |
 | `IsListItemKey` | `false` | 标记列表项内唯一的稳定 key 属性。每个 item 类型最多一个。 |
 
 ## 验证规则
 
-配置验证直接复用 .NET DataAnnotations。扫描器会把常见验证注解转换成 `ConfigurationValidationRule`，供 UI 展示和编辑器本地校验使用；Options 绑定后仍会调用 `ValidateDataAnnotations()`。
+配置验证直接复用 .NET DataAnnotations。扫描器会把常见验证注解转换成 `ConfigurationValidationRule`，供 UI 展示、JSON edit、import 和 mutation 校验使用；Options 绑定后仍会调用 `ValidateDataAnnotations()`。
 
 | DataAnnotation | Monica rule |
 |---|---|
@@ -72,6 +78,8 @@ public sealed class DemoDocumentationPortalOptions
 | `[MaxLength]` | `MaxLengthRule` |
 | `[MinLength]` | `MinLengthRule` |
 | `[StringLength]` | `MaxLengthRule` |
+
+UI 会对 `TimeSpan`、`DateTime`、数值、enum/allowed values、regex、range 和必填值做本地校验。无效值不会进入 saveable pending changes，而是作为 validation issue 暂存并阻止保存。
 
 ## LogicalPath
 
@@ -88,23 +96,31 @@ public sealed class DemoDocumentationPortalOptions
 
 ## Effective value document
 
-运行时修改围绕一份完整 JSON document 工作。每个 `DefinitionKey` 对应一个 current effective value：
+运行时修改围绕一份完整 JSON document 工作。每个 `DefinitionKey` 对应一个 Monica-managed current effective value：
 
 - File mode：`effective/{DefinitionKey}.json`。
 - DB mode：effective value table 中的一行 JSON document。
 
-修改叶子节点、dictionary item 或 keyed list item 时，Monica 会按 `LogicalPath` patch 这份 JSON document，然后提升 document version 并写入 history。
+修改 scalar、object、dictionary item、keyed list item 或整个复杂节点时，Monica 会按 `LogicalPath` patch 这份 JSON document，然后提升 document version 并写入 history。
 
 ```mermaid
 flowchart TD
-    setLeaf["Set Security.Authority"]
+    edit["Set / Remove LogicalPath"]
     document["Effective JSON document"]
-    patch["Patch target path"]
+    patch["Patch target node"]
     save["Save document version + 1"]
     project["Reload IConfiguration projection"]
 
-    setLeaf --> document --> patch --> save --> project
+    edit --> document --> patch --> save --> project
 ```
+
+## Runtime source values
+
+`ConfigurationEffectiveValue` 返回的是 display-safe 的当前运行时有效值。它会携带 `EffectiveSource`：
+
+- 如果 Monica provider 是最高优先级来源，`Version` 来自 Monica effective document。
+- 如果外部 JSON、环境变量或其他 provider 覆盖了该 key，`DisplayValue` 来自那个 provider，`Version` 可能为 `null`。
+- 如果来源是可写 JSON provider，UI mutation 会写该 JSON 文件；如果来源只读，UI 会禁用编辑并说明原因。
 
 ## List 和 Dictionary
 
@@ -123,15 +139,15 @@ public sealed class ConnectedDbOptions
 }
 ```
 
-没有稳定 item key 的 list 仍然可以整体替换，但不适合按项做精确 mutation。`ListIndexSegment` 只用于 projection 和诊断，mutation 请求不能使用它。
+没有稳定 item key 的 list 仍然可以整体替换，但不适合按项做精确 mutation。`ListIndexSegment` 只用于 projection 和诊断，mutation 请求不能把它当成长期稳定身份。
 
 ## 敏感值
 
-敏感值由 `[OptionSetting(IsSensitive = true)]` 声明。UI 和 facade 会把当前值作为 display-safe 值处理，默认不展示明文。
+敏感值由 `[OptionSetting(IsSensitive = true)]` 声明。UI、facade、source file view 和导出文件会把当前值作为 display-safe 值处理，默认不展示明文。
 
 `IsSensitive` 不是权限控制。它只描述配置节点的展示和编辑语义；谁能查看或修改配置仍应由宿主认证授权决定。
 
-当前 v1 store 不提供字段级密文 payload 或外部 secret reference。将敏感值纳入 effective JSON document 时，应由所选存储、部署环境和访问控制保障静态数据安全，或将密钥保留在 Monica 管理范围之外。
+当前 v1 store 不提供字段级密文 payload 或外部 secret reference。将敏感值纳入 effective JSON document 或外部 JSON 文件时，应由所选存储、部署环境和访问控制保障静态数据安全，或将密钥保留在 Monica 管理范围之外。
 
 ## 生效策略
 
@@ -143,3 +159,21 @@ public sealed class ConnectedDbOptions
 | `Inherit` | 节点继承定义或父级策略。 |
 
 `RequiresRestart` 和 `StaticAfterStartup` 都会提示用户重启，但语义不同：前者强调“修改后需要重启”，后者强调“这个值设计上只在启动阶段读取”。
+
+## 导入导出文件格式
+
+导出文件是 versioned JSON package，当前 `formatVersion` 为 `1`。核心字段包括：
+
+| 字段 | 说明 |
+|---|---|
+| `exportedAt` / `exportedBy` | 导出时间和操作人。 |
+| `systemVersion` / `environmentName` | 导出环境信息。 |
+| `includeSensitive` | 是否包含敏感值。默认导出会脱敏。 |
+| `definitions` | 每个 Monica-managed definition 的导出内容。 |
+| `definitions[].definitionKey` | 稳定 definition 身份。 |
+| `definitions[].schemaVersion` / `schemaHash` | 导入时用于提示 schema mismatch。 |
+| `definitions[].sourceSummary` | 导出时当前有效值涉及的来源摘要。 |
+| `definitions[].value` | root JSON value。 |
+| `definitions[].redactedPaths` | 被脱敏的 logical path，导入时跳过。 |
+
+导入是“报告并暂存”，不是直接写 store。未知 definition/path、schema mismatch、只读来源和验证错误会进入报告；有效变更进入 UI 暂存，最后仍通过保存 mutation group 提交。
