@@ -8,8 +8,7 @@ namespace Domains.Documentation.Configurations;
     DefinitionKey = "docs.portal.demo",
     DisplayName = "Docs Portal Demo",
     Description = "Demonstrates grouped portal configuration with scalar values, validation metadata, nested objects, restart impact, and sensitive fields.",
-    OwnerModule = "Documentation",
-    Category = "Demo",
+    Category = "Documentation Demo",
     ReloadBehavior = ConfigurationReloadBehavior.OnlineReloadable)]
 public sealed class DemoDocumentationPortalOptions
 {
@@ -42,6 +41,46 @@ public sealed class DemoDocumentationPortalOptions
 
     [OptionSetting("Security", Description = "Nested authentication and token settings.")]
     public DemoPortalSecurityOptions Security { get; set; } = new();
+
+    [OptionSetting("Featured Tags", Description = "Free-form tags promoted on the documentation landing page.")]
+    public List<string> FeaturedTags { get; set; } = ["configuration", "ui", "release-notes"];
+
+    [OptionSetting("Supported Locales", Description = "Locale tabs exposed by the portal language switcher.")]
+    public List<DemoPortalLocale> SupportedLocales { get; set; } = [DemoPortalLocale.ZhCn, DemoPortalLocale.EnUs];
+
+    [OptionSetting("Route Aliases", Description = "Scalar dictionary mapping short route aliases to canonical documentation paths.")]
+    public Dictionary<string, string> RouteAliases { get; set; } = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["quickstart"] = "/modules/configuration/quick-start",
+        ["configuration"] = "/modules/configuration/configuration",
+        ["scenarios"] = "/modules/configuration/scenarios"
+    };
+
+    [OptionSetting("Role Access Modes", Description = "Scalar enum dictionary used to validate role-specific portal access behavior.")]
+    public Dictionary<string, DemoPortalAccessMode> RoleAccessModes { get; set; } = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["reader"] = DemoPortalAccessMode.ReadOnly,
+        ["author"] = DemoPortalAccessMode.EditDrafts,
+        ["operator"] = DemoPortalAccessMode.Publish
+    };
+
+    [OptionSetting("Maintenance Windows", Description = "Scalar TimeSpan dictionary for recurring portal maintenance slots.")]
+    public Dictionary<string, TimeSpan> MaintenanceWindows { get; set; } = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["weekday-cache-refresh"] = TimeSpan.FromMinutes(20),
+        ["weekly-index-rebuild"] = TimeSpan.FromHours(2)
+    };
+
+    [OptionSetting("Telemetry Sample Rates", Description = "Scalar numeric dictionary for route-level telemetry sampling.")]
+    public Dictionary<string, decimal> TelemetrySampleRates { get; set; } = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["/"] = 0.25m,
+        ["/search"] = 1.0m,
+        ["/admin"] = 0.5m
+    };
+
+    [OptionSetting("Weighted Promotion Tags", Description = "Duplicate entries are allowed; repeated tags increase their promotion weight.", AllowDuplicateListItems = true)]
+    public List<string> WeightedPromotionTags { get; set; } = ["configuration", "configuration", "ui"];
 }
 
 public sealed class DemoPortalThemeOptions
@@ -57,6 +96,16 @@ public sealed class DemoPortalThemeOptions
     [Range(1, 6)]
     [OptionSetting("Max Heading Depth", Description = "Deepest markdown heading level included in the generated table of contents.")]
     public int MaxHeadingDepth { get; set; } = 4;
+
+    [OptionSetting("Accent Colors", Description = "Enum scalar list for theme accent presets.")]
+    public List<DemoPortalAccentColor> AccentColors { get; set; } = [DemoPortalAccentColor.Blue, DemoPortalAccentColor.Green];
+
+    [OptionSetting("Css Variables", Description = "Scalar dictionary for demo-only CSS variable overrides.")]
+    public Dictionary<string, string> CssVariables { get; set; } = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["--docs-sidebar-width"] = "280px",
+        ["--docs-content-density"] = "comfortable"
+    };
 }
 
 public sealed class DemoPortalSecurityOptions
@@ -82,4 +131,26 @@ public enum DemoDeploymentSlot
     Development,
     Staging,
     Production
+}
+
+public enum DemoPortalLocale
+{
+    ZhCn,
+    EnUs,
+    JaJp
+}
+
+public enum DemoPortalAccessMode
+{
+    ReadOnly,
+    EditDrafts,
+    Publish
+}
+
+public enum DemoPortalAccentColor
+{
+    Blue,
+    Green,
+    Amber,
+    Rose
 }

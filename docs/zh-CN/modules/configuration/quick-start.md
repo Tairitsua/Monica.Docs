@@ -51,7 +51,7 @@ app.Run();
     DefinitionKey = "demo.app",
     DisplayName = "Demo App",
     Description = "演示 Monica.Configuration 的最小配置类。",
-    OwnerModule = "Demo")]
+    Category = "Demo")]
 public sealed class DemoAppOptions
 {
     [Required]

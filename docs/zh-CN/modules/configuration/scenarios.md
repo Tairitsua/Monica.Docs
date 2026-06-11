@@ -20,7 +20,7 @@ Mo.AddConfiguration()
     "Messaging:MailSender",
     DefinitionKey = "mail.sender",
     DisplayName = "Mail Sender",
-    OwnerModule = "Messaging")]
+    Category = "Messaging")]
 public sealed class MailSenderOptions
 {
     [Required]

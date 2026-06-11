@@ -8,8 +8,7 @@ namespace Domains.Documentation.Configurations;
     DefinitionKey = "docs.workflow.demo",
     DisplayName = "Docs Workflow Demo",
     Description = "Demonstrates ordered list configuration, stable list item keys, nested retry settings, and mixed scalar value kinds.",
-    OwnerModule = "Documentation Jobs",
-    Category = "Demo",
+    Category = "Documentation Demo",
     ReloadBehavior = ConfigurationReloadBehavior.OnlineReloadable)]
 public sealed class DemoDocumentationWorkflowOptions
 {
@@ -34,7 +33,18 @@ public sealed class DemoDocumentationWorkflowOptions
             {
                 MaxAttempts = 3,
                 Delay = TimeSpan.FromSeconds(5),
-                Backoff = DemoRetryBackoff.Exponential
+                Backoff = DemoRetryBackoff.Exponential,
+                RecoverableErrors = [DemoWorkflowErrorCode.Timeout, DemoWorkflowErrorCode.RateLimited],
+                RetryHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["x-docs-retry"] = "scan"
+                }
+            },
+            NotificationChannels = [DemoWorkflowNotificationChannel.Email, DemoWorkflowNotificationChannel.Teams],
+            StepMetadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["scope"] = "markdown",
+                ["priority"] = "normal"
             }
         },
         new()
@@ -47,7 +57,18 @@ public sealed class DemoDocumentationWorkflowOptions
             {
                 MaxAttempts = 5,
                 Delay = TimeSpan.FromSeconds(15),
-                Backoff = DemoRetryBackoff.Linear
+                Backoff = DemoRetryBackoff.Linear,
+                RecoverableErrors = [DemoWorkflowErrorCode.Timeout, DemoWorkflowErrorCode.SearchUnavailable],
+                RetryHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["x-docs-retry"] = "index"
+                }
+            },
+            NotificationChannels = [DemoWorkflowNotificationChannel.Email],
+            StepMetadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["scope"] = "search",
+                ["priority"] = "high"
             }
         },
         new()
@@ -60,7 +81,18 @@ public sealed class DemoDocumentationWorkflowOptions
             {
                 MaxAttempts = 2,
                 Delay = TimeSpan.FromSeconds(10),
-                Backoff = DemoRetryBackoff.None
+                Backoff = DemoRetryBackoff.None,
+                RecoverableErrors = [DemoWorkflowErrorCode.RateLimited],
+                RetryHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["x-docs-retry"] = "publish"
+                }
+            },
+            NotificationChannels = [DemoWorkflowNotificationChannel.Teams, DemoWorkflowNotificationChannel.Webhook],
+            StepMetadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["scope"] = "catalog",
+                ["priority"] = "critical"
             }
         }
     ];
@@ -86,6 +118,12 @@ public sealed class DemoWorkflowStepOptions
 
     [OptionSetting("Retry", Description = "Nested retry behavior for this workflow step.")]
     public DemoRetryOptions Retry { get; set; } = new();
+
+    [OptionSetting("Notification Channels", Description = "Enum scalar list nested inside a workflow step.")]
+    public List<DemoWorkflowNotificationChannel> NotificationChannels { get; set; } = [];
+
+    [OptionSetting("Step Metadata", Description = "Scalar dictionary nested inside a workflow step.")]
+    public Dictionary<string, string> StepMetadata { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }
 
 public sealed class DemoRetryOptions
@@ -99,6 +137,12 @@ public sealed class DemoRetryOptions
 
     [OptionSetting("Backoff", Description = "Retry backoff algorithm.")]
     public DemoRetryBackoff Backoff { get; set; } = DemoRetryBackoff.Exponential;
+
+    [OptionSetting("Recoverable Errors", Description = "Enum scalar list for errors that should trigger retry.")]
+    public List<DemoWorkflowErrorCode> RecoverableErrors { get; set; } = [DemoWorkflowErrorCode.Timeout];
+
+    [OptionSetting("Retry Headers", Description = "Scalar dictionary of headers attached to retry diagnostics.")]
+    public Dictionary<string, string> RetryHeaders { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }
 
 public enum DemoRetryBackoff
@@ -106,4 +150,19 @@ public enum DemoRetryBackoff
     None,
     Linear,
     Exponential
+}
+
+public enum DemoWorkflowNotificationChannel
+{
+    Email,
+    Teams,
+    Webhook
+}
+
+public enum DemoWorkflowErrorCode
+{
+    Timeout,
+    RateLimited,
+    SearchUnavailable,
+    StorageLocked
 }

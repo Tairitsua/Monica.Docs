@@ -24,8 +24,8 @@ sidebar_position: 4
 | `SectionPath` | 构造参数或 `[Configuration].SectionPath`，未设置时由 scanner 推导 | Microsoft `IConfiguration` 的绑定根路径，也是第一次 seed host config 的路径。 |
 | `DisplayName` | `[Configuration].DisplayName`，未设置时使用类型名 | UI 展示名，可以重复。 |
 | `ClrTypeName` | 扫描到的 Options 类型 | 诊断、导出和 schema 识别使用。 |
-| `OwnerModule` | `[Configuration].OwnerModule` | UI 分组和责任归属。 |
-| `Category` | `[Configuration].Category` | 业务自定义分类。 |
+| `FromProject` | 发布配置定义的程序集 | 诊断和筛选使用，由 Monica 扫描器自动记录。 |
+| `Category` | `[Configuration].Category` | UI 分组和业务自定义分类。 |
 | `ReloadBehavior` | `[Configuration].ReloadBehavior` | 默认生效策略，节点可覆盖。 |
 | `SchemaHash` | 由扫描器计算 | 用于识别 schema 漂移。 |
 
@@ -34,8 +34,7 @@ sidebar_position: 4
     "Demo:DocumentationPortal",
     DefinitionKey = "docs.portal.demo",
     DisplayName = "Docs Portal Demo",
-    OwnerModule = "Documentation",
-    Category = "Demo",
+    Category = "Documentation Demo",
     ReloadBehavior = ConfigurationReloadBehavior.OnlineReloadable)]
 public sealed class DemoDocumentationPortalOptions
 {

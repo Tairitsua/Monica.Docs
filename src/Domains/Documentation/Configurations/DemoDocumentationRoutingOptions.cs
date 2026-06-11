@@ -8,8 +8,7 @@ namespace Domains.Documentation.Configurations;
     DefinitionKey = "docs.routing.demo",
     DisplayName = "Docs Routing Demo",
     Description = "Demonstrates dictionary configuration where each service owns nested route, database, and feature settings.",
-    OwnerModule = "Documentation",
-    Category = "Demo",
+    Category = "Documentation Demo",
     ReloadBehavior = ConfigurationReloadBehavior.OnlineReloadable)]
 public sealed class DemoDocumentationRoutingOptions
 {
@@ -46,6 +45,17 @@ public sealed class DemoDocumentationRoutingOptions
             {
                 ["semantic-search"] = true,
                 ["draft-preview"] = false
+            },
+            EnabledModules = [DemoDocumentationServiceModule.Catalog, DemoDocumentationServiceModule.Search],
+            RateLimits = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["anonymous"] = 60,
+                ["authenticated"] = 600
+            },
+            ResponseHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["x-docs-service"] = "catalog",
+                ["cache-control"] = "public,max-age=120"
             }
         },
         ["admin"] = new()
@@ -66,6 +76,17 @@ public sealed class DemoDocumentationRoutingOptions
             {
                 ["bulk-publish"] = true,
                 ["danger-zone"] = false
+            },
+            EnabledModules = [DemoDocumentationServiceModule.Admin, DemoDocumentationServiceModule.Audit],
+            RateLimits = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["operator"] = 240,
+                ["admin"] = 900
+            },
+            ResponseHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["x-docs-service"] = "admin",
+                ["cache-control"] = "private,no-store"
             }
         }
     };
@@ -92,6 +113,15 @@ public sealed class DemoDocumentationServiceOptions
 
     [OptionSetting("Feature Flags", Description = "Dictionary of runtime feature flags for this service.")]
     public Dictionary<string, bool> FeatureFlags { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    [OptionSetting("Enabled Modules", Description = "Enum scalar list nested inside a service dictionary value.")]
+    public List<DemoDocumentationServiceModule> EnabledModules { get; set; } = [];
+
+    [OptionSetting("Rate Limits", Description = "Scalar integer dictionary nested inside a service dictionary value.")]
+    public Dictionary<string, int> RateLimits { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    [OptionSetting("Response Headers", Description = "Scalar string dictionary nested inside a service dictionary value.")]
+    public Dictionary<string, string> ResponseHeaders { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }
 
 public sealed class DemoConnectedDbOptions
@@ -113,4 +143,23 @@ public sealed class DemoConnectedDbOptions
     [Range(1, 120)]
     [OptionSetting("Timeout Seconds", Description = "Command timeout used by this connection.")]
     public int TimeoutSeconds { get; set; } = 30;
+
+    [OptionSetting("Replica Hosts", Description = "Scalar list nested inside a stable-key list item.")]
+    public List<string> ReplicaHosts { get; set; } = ["primary.internal.local"];
+
+    [OptionSetting("Pool Limits", Description = "Scalar integer dictionary nested inside a stable-key list item.")]
+    public Dictionary<string, int> PoolLimits { get; set; } = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["min"] = 1,
+        ["max"] = 20
+    };
+}
+
+public enum DemoDocumentationServiceModule
+{
+    Catalog,
+    Search,
+    Admin,
+    Audit,
+    Preview
 }
