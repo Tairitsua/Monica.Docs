@@ -12,7 +12,7 @@ sidebar_position: 4
 
 | Property | Type | Default | Required | When to change | Notes |
 |---|---|---|---|---|---|
-| `IsMinimalApiDisabled` | `bool?` | `true` | No | 需要把 Configuration 的外部 Minimal API 暴露给业务前端或管理系统时设置为 `false`，或调用 `EnableMinimalApis(...)`。 | 这是 Configuration 自己的默认值，不跟随全局默认开启。 |
+| `EnableMinimalApi` | `bool?` | `false` | No | 需要把 Configuration 的外部 Minimal API 暴露给业务前端或管理系统时设置为 `true`。 | Configuration 明确默认关闭；不要通过 Guide 方法开启。 |
 | `ApiGroup` | `string?` | `"Configuration"` | No | 需要调整 Swagger/API 分组名时修改。 | 继承自 `MinimalApiModuleOptions<ModuleConfiguration>`。 |
 | `DefaultSectionPathConvention` | `ConfigurationSectionPathConvention` | `ShortTypeName` | No | 未在 `[Configuration]` 上显式设置 section path，且宿主希望用命名空间限定根路径时改为 `ClrFullName`。 | 影响 schema scanning 和 Options binding 根路径。 |
 | `DuplicateSectionPathBehavior` | `ConfigurationDuplicateSectionPathBehavior` | `FailFast` | No | 迁移旧系统时临时允许重复 section path。 | 推荐保持 `FailFast`，否则 source inspection 和 mutation 目标会变得不明确。 |

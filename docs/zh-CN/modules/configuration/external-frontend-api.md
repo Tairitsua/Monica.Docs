@@ -47,18 +47,21 @@ Minimal API 保持很薄：HTTP DTO 负责认证、授权、序列化和前端�
 ```csharp
 Mo.AddConfiguration(options =>
 {
-    options.IsMinimalApiDisabled = false;
+    options.EnableMinimalApi = true;
 });
 ```
 
-也可以使用 guide 方法，同时设置 Swagger/API 分组名：
+需要调整 Swagger/API 分组名时，也通过 module option 统一设置：
 
 ```csharp
-Mo.AddConfiguration()
-    .EnableMinimalApis("Configuration");
+Mo.AddConfiguration(options =>
+{
+    options.EnableMinimalApi = true;
+    options.ApiGroup = "Configuration";
+});
 ```
 
-如果宿主通过 `Mo.ModuleSystem.DefaultMinimalApiDisabled` 全局控制 Minimal API，`Monica.Configuration` 仍然会以自己的默认值 `true` 关闭外部接口，直到上面的配置把 `IsMinimalApiDisabled` 改为 `false`。
+Configuration 外部接口不会通过 Guide 方法开启。`ModuleConfigurationOption.EnableMinimalApi` 明确默认为 `false`，因此即使宿主把 `Mo.ModuleSystem.EnableMinimalApiByDefault` 设置为 `true`，也应在 `Mo.AddConfiguration(...)` 中显式确认是否暴露这组管理 API。
 
 成功响应示例：
 
