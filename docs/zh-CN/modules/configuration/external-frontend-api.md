@@ -1,14 +1,14 @@
 ---
-title: External Frontend API Draft
-description: 面向业务系统自建前端嵌入 Monica.Configuration 能力的 Minimal API 接口草案，覆盖参数列表、暂存分析、发布、历史、回滚、导入和导出。
+title: External Frontend API
+description: 面向业务系统自建前端嵌入 Monica.Configuration 能力的 Minimal API 接口，覆盖参数列表、暂存分析、发布、历史、回滚、导入和导出。
 sidebar_position: 7
 ---
 
-# External Frontend API Draft
+# External Frontend API
 
-本页是给业务系统自建前端使用的 **接口合同草案**。当前 `Monica.Configuration.UI` 是 Blazor 操作台，内部直接注入 `ConfigurationFacade`；本页描述的是后续要通过 Monica 模块 Minimal API 暴露的 HTTP 边界，供业务前端嵌入自己的参数管理 UI。
+本页是给业务系统自建前端使用的 **接口合同**。`Monica.Configuration.UI` 是 Blazor 操作台，内部直接注入 `ConfigurationFacade`；业务系统如果要嵌入自己的参数管理 UI，可以显式开启这里描述的 Monica 模块 Minimal API HTTP 边界。
 
-实现时应保持 Minimal API 很薄：HTTP DTO 负责认证、授权、序列化和前端友好的字段形状；配置领域行为仍通过 `ConfigurationFacade`、mutation/history/rollback 服务和导入导出分析服务完成。
+Minimal API 保持很薄：HTTP DTO 负责认证、授权、序列化和前端友好的字段形状；配置领域行为仍通过 `ConfigurationFacade`、mutation/history/rollback 服务和导入导出分析服务完成。
 
 ## 设计目标
 
@@ -39,6 +39,26 @@ sidebar_position: 7
 | value payload | 对前端暴露 raw JSON value；服务端保存前转换为 `ConfigurationStoredValue.Json`。 |
 
 `value` 字段按 JSON 原生值传输：字符串就是 JSON string，对象就是 JSON object，数组就是 JSON array。`mutationKind = Set` 且 `value = null` 表示把目标值设置为 JSON null；`mutationKind = Remove` 时服务端忽略 `value`。
+
+## 启用方式
+
+这些 Minimal API 默认关闭。宿主必须在 `Mo.AddConfiguration(...)` 的 module option 中显式打开：
+
+```csharp
+Mo.AddConfiguration(options =>
+{
+    options.IsMinimalApiDisabled = false;
+});
+```
+
+也可以使用 guide 方法，同时设置 Swagger/API 分组名：
+
+```csharp
+Mo.AddConfiguration()
+    .EnableMinimalApis("Configuration");
+```
+
+如果宿主通过 `Mo.ModuleSystem.DefaultMinimalApiDisabled` 全局控制 Minimal API，`Monica.Configuration` 仍然会以自己的默认值 `true` 关闭外部接口，直到上面的配置把 `IsMinimalApiDisabled` 改为 `false`。
 
 成功响应示例：
 
@@ -115,6 +135,7 @@ sidebar_position: 7
 | 当前有效值                  | `GET`  | `/api/configuration/effective-value`                             |
 | Source chain           | `GET`  | `/api/configuration/source-chain`                                |
 | Runtime sources        | `GET`  | `/api/configuration/sources`                                     |
+| Runtime source inventories | `GET`  | `/api/configuration/sources/inventories`                         |
 | Source revision        | `GET`  | `/api/configuration/sources/{sourceKey}/revision`                |
 | Source file view       | `GET`  | `/api/configuration/sources/{sourceKey}/file`                    |
 | JSON 编辑文档              | `GET`  | `/api/configuration/json-editor-document`                        |
@@ -195,14 +216,6 @@ Response data：
 
 返回 `ConfigurationDefinitionSummary[]`。用于业务前端先加载 definition 分组，再按需加载详情。
 
-Query：
-
-| 参数 | 类型 | 说明 |
-|---|---|---|
-| `category` | `string?` | API 层过滤。 |
-| `origin` | `ConfigurationDefinitionOrigin?` | `LocalScan` 或 `PublishedMetadata`。 |
-| `search` | `string?` | API 层搜索。 |
-
 Facade 映射：`ConfigurationFacade.GetDefinitionsAsync()`。
 
 ### `GET /api/configuration/definitions/{definitionKey}`
@@ -261,6 +274,14 @@ Facade 映射：`ConfigurationFacade.GetSourceChainAsync(definitionKey, logicalP
 
 Facade 映射：`ConfigurationFacade.GetConfigurationSourcesAsync()`。
 
+### `GET /api/configuration/sources/inventories`
+
+返回 runtime source inventory，包含每个 source 中可展示的 key/value 摘要。宿主可以通过 `IncludeUnmanagedSourceInventoryItems` 控制是否包含非 Monica-managed definition 的配置项。
+
+Response data：`ConfigurationSourceInventory[]`。
+
+Facade 映射：`ConfigurationFacade.GetConfigurationSourceInventoriesAsync()`。
+
 ### `GET /api/configuration/sources/{sourceKey}/revision`
 
 返回可写 source 的当前 revision hash。业务前端发布外部 source mutation 时，应把它作为 `expectedSourceRevision` 传回。
@@ -279,7 +300,7 @@ Facade 映射：`ConfigurationFacade.GetSourceFileViewAsync(sourceKey)`。
 
 ### `GET /api/configuration/json-editor-document`
 
-构造某个 scope 的可编辑 JSON 文档，包含当前 pending changes 后的显示值，并对敏感值脱敏。
+构造某个 scope 的可编辑 JSON 文档，包含当前 effective value，并对敏感值脱敏。
 
 Query：
 
@@ -287,7 +308,6 @@ Query：
 |---|---|---|---|
 | `definitionKey` | `string` | Yes | Definition key。 |
 | `scopePath` | `string?` | No | 编辑范围；为空表示 root。 |
-| `pendingChangeToken` | `string?` | No | 如果 API 层实现服务端 draft session，可用它合并已有暂存。v1 可不支持。 |
 
 Response data：
 
@@ -304,7 +324,7 @@ Response data：
 }
 ```
 
-实现映射：应把 `ConfigurationJsonDraftService.BuildEditorDocument(...)` 的逻辑从 UI internal 服务提升为 API 可复用服务，或在 Configuration 模块新增等价服务。
+实现映射：`ConfigurationApiService.BuildJsonEditorDocumentAsync(...)`。
 
 ### `POST /api/configuration/drafts/json/analyze`
 
@@ -323,6 +343,8 @@ Request：
   "compactChanges": true
 }
 ```
+
+`compactChanges = true` 时，新增的 keyed dictionary/list item 会作为一个安全 container write 返回；设为 `false` 时，API 会在 schema 支持时展开为更细的子节点 changes。
 
 Response data：
 
@@ -358,7 +380,7 @@ Response data：
 }
 ```
 
-`displayChangeKind` 是 API DTO 建议字段，用于业务前端直接渲染复杂编辑差异：
+`displayChangeKind` 用于业务前端直接渲染复杂编辑差异：
 
 | 值 | UI 含义 | 推导规则 |
 |---|---|---|
@@ -370,8 +392,8 @@ Response data：
 
 实现映射：
 
-- 复用或提升 `ConfigurationJsonDraftService.Analyze(...)`。
-- API DTO 不应直接暴露 `Monica.Configuration.UI.State.PendingChange`，应定义稳定的外部 `ConfigurationDraftChangeDto`。
+- `ConfigurationApiService.AnalyzeJsonDraftAsync(...)`。
+- API DTO 不暴露 `Monica.Configuration.UI.State.PendingChange`，而是返回稳定的外部 `ConfigurationDraftChange`。
 - `value` 对外使用 raw JSON value；服务端发布前转换成 `ConfigurationStoredValue.Json`。
 
 ## 发布 MutationGroup
@@ -408,6 +430,8 @@ Request：
   ]
 }
 ```
+
+`compactChanges` 的语义与 JSON draft 分析接口一致。
 
 Response data：
 
@@ -504,7 +528,7 @@ Facade 映射：`ConfigurationFacade.QueryHistoryAsync(...)`。如果同时指�
 
 Response data：`ConfigurationValueHistory`。
 
-当前 facade 还没有公开 `GetHistoryByIdAsync(...)`，实现 Minimal API 时应补一个 facade 方法，内部使用 `IConfigurationHistoryService.GetHistoryByIdAsync(...)`。
+API 内部通过 `IConfigurationHistoryService.GetHistoryByIdAsync(...)` 按 history id 查询单条历史记录；未找到时返回失败响应。
 
 ### `POST /api/configuration/rollback/history/{historyId}`
 
@@ -652,9 +676,9 @@ Response data：
 - schema version/hash mismatch：diagnostic warning，前端应提示用户确认。
 - redacted paths：跳过，不生成 change。
 - validation issue：blocking，不能发布。
-- read-only source：blocking，因为导入目标是当前生效且可写的 source。
+- read-only source：不会直接写该 source；API 会回退为 Monica effective store mutation，前端如需解释最终优先级应展示 source chain。
 
-实现映射：提升或复用 `ConfigurationParameterPackageService.AnalyzeImportAsync(...)`。
+实现映射：`ConfigurationApiService.AnalyzeImportAsync(...)`。
 
 ### `POST /api/configuration/import/publish`
 
@@ -694,7 +718,7 @@ Response data：
 }
 ```
 
-如果 `allowWarnings = false` 且存在 warning diagnostic，建议返回 `ResStatus.ErrorWarning`，让前端二次确认后重试。
+如果 `allowWarnings = false` 且存在 warning diagnostic，API 返回 `ResStatus.ErrorWarning`，让前端二次确认后重试。
 
 ## 推荐前端流程
 
@@ -706,7 +730,7 @@ Response data：
 
 ### 修改并发布
 
-1. scalar 编辑直接构造一个 `ConfigurationDraftChangeDto`。
+1. scalar 编辑直接构造一个 `ConfigurationMutationGroupPublishChange`。
 2. complex / JSON 编辑先调用 `POST /api/configuration/drafts/json/analyze`。
 3. 前端使用 `displayChangeKind` 渲染新增、删除、修改状态。
 4. 如果 `validationIssues` 非空，禁用发布。
@@ -727,10 +751,10 @@ Response data：
 3. 用户确认后调用 rollback endpoint。
 4. 刷新参数列表、history 和 group 状态。
 
-## 实现注意事项
+## 实现说明
 
-- API DTO 应放在 Configuration 模块的 public contract 中，不要把 `Monica.Configuration.UI.State.PendingChange`、`ConfigurationValidationIssue` 等 UI internal 类型作为外部 API 合同。
-- 导入导出和 JSON draft 的核心逻辑现在在 UI support service 中；实现 API 前应把这部分提升到 Configuration 模块或公共 application service。
+- API DTO 放在 Configuration 模块的外部 HTTP contract 中，不使用 `Monica.Configuration.UI.State.PendingChange`、`ConfigurationValidationIssue` 等 UI internal 类型作为 API 合同。
+- 导入导出和 JSON draft 的核心逻辑由 `ConfigurationApiService` 承接，并通过 `ConfigurationApiFacade` 转为 Monica `Res<T>` envelope。
 - 发布接口必须统一写 mutation group，避免出现“单条 mutation 没有审计组”的外部入口。
 - 外部 source mutation 必须使用 `expectedSourceRevision`；Monica effective store mutation 必须使用 `expectedValueVersion`。
 - `expectedSchemaVersion` 必须来自当前 definition，schema mismatch 时返回 validation/error response，不应静默保存。
