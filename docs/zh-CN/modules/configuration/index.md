@@ -123,5 +123,4 @@ flowchart TB
 - [Configuration](./configuration.md)
 - [Guide and Stores](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
-- [External Frontend API Draft](./external-frontend-api.md)
 - [Configuration UI](../configuration-ui/index.md)

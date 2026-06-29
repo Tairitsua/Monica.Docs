@@ -38,6 +38,8 @@ flowchart TB
 
 `DefinitionKey` 是跨服务、历史、mutation、文件名和 UI 使用的稳定身份。不要只用类短名；推荐使用类似 `docs.portal.demo`、`mail.sender` 这种全局唯一且不容易随命名空间变化的 key。
 
+发布到 metadata store 的 definition 是 portable 管理 schema，不依赖 owner service 的 assembly identity。owner service 会保留本地运行时需要的 CLR type identity，同时发布 `typeName` 风格的类型名、schema JSON 和 CLR 默认值 JSON。非 owner service 只要连接同一组 metadata / effective value / history store，就能读取 schema、校验 mutation，并修改共享 Monica effective document；它不需要持有对应 CLR options 类型。
+
 ## Active store bundle
 
 当前版本不再让多个 Monica provider 互相做 source priority 合并。每个宿主只启用一个 active Monica store bundle，bundle 包含三类职责：
@@ -48,7 +50,7 @@ flowchart TB
 | `IConfigurationMetadataStore` | 保存发布后的 definition metadata 和 schema。 |
 | `IConfigurationHistoryStore` | 保存 mutation group 和每次 mutation 的审计记录。 |
 
-单体模式使用 file store；分布式模式使用 DB store。分布式不是 CRDT 式多主同步，而是“共享 DB 作为事实源 + 多服务可作为写入口 + 本进程 reload + 后续通知扩展”。
+单体模式使用 file store；分布式模式使用 DB store。分布式不是 CRDT 式多主同步，而是“共享 store 作为事实源 + 多服务可作为 Monica effective store 写入口 + 本进程 reload + 后续通知扩展”。如果某个服务没有发布到 metadata store 的 definition，它不能猜测 schema，也不能修改该配置。
 
 ## Runtime source chain
 
@@ -112,6 +114,8 @@ effective/{DefinitionKey}.json
 
 或 DB 中的一行 document。修改叶子节点时，Monica 会 patch 这份 JSON 文档中的目标位置，而不是维护一组内部来源优先级 override。
 
+首次创建 effective document 时，owner service 会使用本地 CLR 默认值和当前 `IConfiguration` 叠加生成 seed。非 owner service 无法实例化 owner 的 CLR options 类型时，会使用 metadata store 中的 owner-published default JSON，再叠加当前进程本地 `IConfiguration` 中可读到的值。因此 owner 和 non-owner 的第一次 Monica effective store mutation 使用同一套 schema 与默认值语义。
+
 ```mermaid
 flowchart LR
     request["Mutation Request<br/>LogicalPath + NewValue"]
@@ -124,7 +128,7 @@ flowchart LR
     request --> document --> patch --> save --> history --> reload
 ```
 
-如果当前生效来源不是 Monica provider，而是可写 JSON provider，UI 会对那个 JSON 文件执行 source-targeted mutation。该操作仍会写入 Monica history，但历史目标是 `ExternalConfigurationSource`。
+如果当前生效来源不是 Monica provider，而是可写 JSON provider，owner service 可以对那个 JSON 文件执行 source-targeted mutation。该操作仍会写入 Monica history，但历史目标是 `ExternalConfigurationSource`。这不是跨服务分布式写入能力；非 owner service 应写共享 Monica effective store，或把 source mutation 路由到 source owner。
 
 ## List 的稳定身份
 
@@ -152,7 +156,7 @@ mutation 使用 `ConnectedDbs[#main]` 定位。进入 Microsoft Configuration �
 配置修改统一经过 `ConfigurationFacade`。Mutation service 会：
 
 1. 根据 `DefinitionKey` 加载 schema 和目标存储。
-2. 用 `LogicalPath` patch Monica effective document，或用 projected configuration path patch 外部 JSON source。
+2. 用 `LogicalPath` patch Monica effective document，或在本服务拥有本地 definition 且 source 可写时，用 projected configuration path patch 外部 JSON source。
 3. 用 DataAnnotations 和 schema 规则校验。
 4. 增加 document version 或 source revision。
 5. 写入 history。

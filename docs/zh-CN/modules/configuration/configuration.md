@@ -6,14 +6,12 @@ sidebar_position: 4
 
 # Configuration
 
-`ModuleConfigurationOption` 继承 Monica 的 Minimal API module option，并增加 Configuration 自己的 schema、source inventory 和 distributed reload 选项。模块的主要配置方式仍然是在 Options 类型上使用 `[Configuration]` 和 `[OptionSetting]` 声明 schema，并在宿主注册时选择 file 或 DB store preset。
+`ModuleConfigurationOption` 继承 Monica 的基础 module option，并增加 Configuration 自己的 schema、source inventory 和 distributed reload 选项。模块的主要配置方式仍然是在 Options 类型上使用 `[Configuration]` 和 `[OptionSetting]` 声明 schema，并在宿主注册时选择 file 或 DB store preset。
 
 ## Module options
 
 | Property | Type | Default | Required | When to change | Notes |
 |---|---|---|---|---|---|
-| `EnableMinimalApi` | `bool?` | `false` | No | 需要把 Configuration 的外部 Minimal API 暴露给业务前端或管理系统时设置为 `true`。 | Configuration 明确默认关闭；不要通过 Guide 方法开启。 |
-| `ApiGroup` | `string?` | `"Configuration"` | No | 需要调整 Swagger/API 分组名时修改。 | 继承自 `MinimalApiModuleOptions<ModuleConfiguration>`。 |
 | `DefaultSectionPathConvention` | `ConfigurationSectionPathConvention` | `ShortTypeName` | No | 未在 `[Configuration]` 上显式设置 section path，且宿主希望用命名空间限定根路径时改为 `ClrFullName`。 | 影响 schema scanning 和 Options binding 根路径。 |
 | `DuplicateSectionPathBehavior` | `ConfigurationDuplicateSectionPathBehavior` | `FailFast` | No | 迁移旧系统时临时允许重复 section path。 | 推荐保持 `FailFast`，否则 source inspection 和 mutation 目标会变得不明确。 |
 | `IncludeUnmanagedSourceInventoryItems` | `bool` | `true` | No | 当宿主不希望 Configuration UI 展示非 Monica 管理的 runtime key 时关闭。 | 只影响 source/storage 页面中的来源清单；不影响 Monica-managed definitions、source chain 或 Options 绑定。 |
