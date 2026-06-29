@@ -130,6 +130,20 @@ flowchart LR
 
 如果当前生效来源不是 Monica provider，而是可写 JSON provider，owner service 可以对那个 JSON 文件执行 source-targeted mutation。该操作仍会写入 Monica history，但历史目标是 `ExternalConfigurationSource`。这不是跨服务分布式写入能力；非 owner service 应写共享 Monica effective store，或把 source mutation 路由到 source owner。
 
+## 启动期 effective options snapshot
+
+应用 DI 容器构建前，有些模块注册代码还不能注入 `IOptions<T>`，但已经需要读取 Monica 管理的静态启动参数。此时可以使用 `MonicaEffectiveOptions.CreateReader(...)` 创建一个 startup reader，直接从 `IConfigurationEffectiveValueStore` 读取带 `[Configuration]` 的 Options。
+
+这个 reader 的边界很明确：
+
+- DB 连接串、store provider 参数等仍然是 bootstrap 配置，因为它们用于连接 Monica effective store 本身。
+- 其他启动期静态 Options 可以在连接 store 后从 Monica effective document 读取。
+- `GetMany(...)` / `GetManyAsync(...)` 会把多个配置定义合并为一次 batch load，适合模块注册阶段一次性读取所有需要的 Options。
+- reader 在生命周期内缓存已读取的 Options；同一个 reader 重复读取相同类型不会再次访问 store。
+- 返回的是启动期快照，不是 live reload API，也不替代运行期的 `IOptions<T>`、`IOptionsSnapshot<T>` 或 `IOptionsMonitor<T>`。
+
+首次读取缺失的 effective document 时，reader 会使用与 Monica provider 相同的 seed 语义：CLR 默认值叠加 bootstrap `IConfiguration` 中可读到的值，然后调用 store 的 batch `EnsureCreatedAsync(...)` 创建缺失文档。
+
 ## List 的稳定身份
 
 Microsoft Configuration 最终绑定 list 时必须使用数字下标，例如 `ConnectedDbs:0`。但下标不适合作为运行时修改身份，因为插入、删除或排序都会改变 index。

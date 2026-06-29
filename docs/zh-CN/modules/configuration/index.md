@@ -22,6 +22,7 @@ sidebar_position: 1
 - 你需要单体 file store 或分布式 DB store 来保存 Monica 管理的 effective values、metadata 和 history。
 - 你需要在 UI 中解释一个值来自 Monica effective store、JSON 文件、环境变量还是其他 provider。
 - 你需要通过 UI 修改 Monica effective store，或修改可写 JSON provider，例如 `appsettings*.json` 或通过 `AddManagedJsonFile(...)` 注册的文件。
+- 你需要在应用 DI 容器构建前读取 Monica effective store 中的启动期静态 Options，并用于模块注册。
 - 你希望最终消费方式仍然保持 Microsoft `IConfiguration`、`IOptions<T>`、`IOptionsSnapshot<T>` 和 `IOptionsMonitor<T>`。
 
 ## 包与注册入口
@@ -100,6 +101,8 @@ flowchart TB
 - `UseFileConfigurationStore(...)`：单体/本地 file store preset。
 - `UseDbConfigurationStore(...)`：分布式 EF Core DB store preset。
 - `AddManagedJsonFile(...)`：追加一个 Monica 可识别的 JSON configuration source，可用于覆盖 Monica effective values。
+- `MonicaEffectiveOptions.CreateReader(...)`：为尚未进入应用 DI 阶段的启动代码创建 Monica effective options reader。
+- `IMonicaEffectiveOptionsReader` / `MonicaEffectiveOptionsSnapshot`：从 effective store 读取单个或批量 Options 的启动期快照。
 - `ConfigurationAttribute`：把一个 Options 类型声明为 Monica 管理的配置定义。
 - `OptionSettingAttribute`：给配置属性添加展示名、说明、敏感值、重载行为和列表项稳定 key。
 - `ConfigurationFacade`：UI、Minimal API 或应用层使用的配置管理入口，返回 `Res<T>`。

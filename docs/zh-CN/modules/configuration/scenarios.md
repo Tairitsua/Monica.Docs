@@ -46,7 +46,40 @@ Mo.AddConfiguration()
 
 数据库连接串属于 bootstrap 配置，必须来自宿主原生 `IConfiguration`。服务启动前还无法读取 Monica-managed configuration，因此 DB store 自身的连接信息不能放进 Monica effective values。
 
-## 场景 3 — 注册外部 JSON 文件作为覆盖来源
+## 场景 3 — DI 构建前批量读取 Monica effective Options
+
+有些宿主会在构建应用 DI 容器前注册模块，并且模块注册需要读取启动期静态 Options。此时只应从 bootstrap configuration 读取连接 Monica store 所需的 Options，例如 `DatabaseOptions`；其他已经由 Monica 管理的 Options 应在 store 可连接后通过 effective options reader 读取。
+
+```csharp
+using Monica.Configuration.Bootstrap;
+using Monica.Configuration.EfCore.Bootstrap;
+
+var bootstrapConfiguration = builder.Configuration;
+var databaseOptions = bootstrapConfiguration.GetMonicaBootstrapConfiguration<DatabaseOptions>();
+
+using var reader = MonicaEffectiveOptions
+    .CreateReader(bootstrapConfiguration)
+    .UseDbConfigurationStore((_, options) =>
+    {
+        options.UseSqlServer(databaseOptions.ConnectionString);
+    })
+    .Build();
+
+var snapshot = reader.GetMany(
+    typeof(AppOptions),
+    typeof(DaprOptions),
+    typeof(JwtTokenOptions),
+    typeof(BlobStoringOptions));
+
+var appOptions = snapshot.Get<AppOptions>();
+var daprOptions = snapshot.Get<DaprOptions>();
+```
+
+`GetMany(...)` 会把多个 `[Configuration]` 类型合并成一次 store batch load，减少启动期数据库压力。缺失的 effective document 会用 bootstrap `IConfiguration` 中可读到的值叠加 CLR 默认值创建；已经存在的 document 会直接按 Monica effective store 中的内容绑定。
+
+这个 reader 只表示启动期快照，不参与运行期 reload。应用启动完成后，业务代码仍应通过正常的 Options Pattern 消费配置。
+
+## 场景 4 — 注册外部 JSON 文件作为覆盖来源
 
 有些配置需要继续由文件交付或现场维护，例如连接串覆盖、客户现场参数或低频运维开关。可以使用 `AddManagedJsonFile(...)`：
 
@@ -83,7 +116,7 @@ Mo.AddConfiguration()
 
 该文件优先级高于 Monica effective store。UI 中对应配置项会显示当前值来自 `Docs External Demo Settings`。如果该文件可写，修改配置项会写回这个 JSON 文件，并在 history 中记录 `TargetKind = ExternalConfigurationSource`。
 
-## 场景 4 — 查看 source chain 排查“为什么不是我刚改的值”
+## 场景 5 — 查看 source chain 排查“为什么不是我刚改的值”
 
 当某个值被外部 provider 覆盖时，直接看 Monica effective document 可能会误判。应查看 source chain：
 
@@ -95,7 +128,7 @@ Mo.AddConfiguration()
 
 如果修改 Monica store 后运行时值没有变化，通常是因为更高优先级 provider 仍然提供同一个 key。UI 会在保存预览和来源详情中提示目标 source。
 
-## 场景 5 — 使用 UI 暂存并保存一组修改
+## 场景 6 — 使用 UI 暂存并保存一组修改
 
 `Mo.AddConfigurationUI()` 会提供配置状态页。操作员可以修改多个配置项，然后作为一个 mutation group 保存。保存时会：
 
@@ -108,7 +141,7 @@ Mo.AddConfiguration()
 
 无效输入不会进入 saveable pending changes，而是进入 validation issue 列表。保存对话框会显示错误原因、规则说明和跳转按钮；只要存在 validation issue，就不能保存该组修改。
 
-## 场景 6 — 复杂类型：Dictionary + List + 嵌套对象
+## 场景 7 — 复杂类型：Dictionary + List + 嵌套对象
 
 ```csharp
 public sealed class GatewayOptions
@@ -139,7 +172,7 @@ public sealed class ConnectedDbOptions
 
 复杂节点编辑默认压缩为 container mutation。例如编辑 `Services[$billing]` 会保存为一条 `Set Services[$billing]`，历史详情用 diff 展示字段级变化。
 
-## 场景 7 — 带集合默认值的 Options 绑定
+## 场景 8 — 带集合默认值的 Options 绑定
 
 配置类可以为集合提供安全默认值。只要宿主配置显式提供了对应集合 section，Monica 绑定时会把该集合视为“配置替换默认值”，而不是把配置项追加到默认集合后面。
 
@@ -180,7 +213,7 @@ public sealed class SearchUiOptions
 
 如果配置中完全没有 `Search:Providers`，则 `Providers` 保持 CLR 默认值 `[ "local" ]`。这个规则同样适用于 dictionary、array 和嵌套对象中的集合。它只影响 Options 绑定语义；列表项的运行期 mutation 仍然建议使用 `OptionSettingAttribute.IsListItemKey` 提供稳定 item key。
 
-## 场景 8 — 参数导入导出
+## 场景 9 — 参数导入导出
 
 导出用于备份、交付或同步环境：
 
@@ -198,7 +231,7 @@ public sealed class SearchUiOptions
 
 导入目标是“当前生效且可写的 source”。如果当前值由只读 provider 覆盖，导入会报告问题，而不是偷偷写 Monica store。
 
-## 场景 9 — 分布式写入入口
+## 场景 10 — 分布式写入入口
 
 多个微服务都可以注入 `ConfigurationFacade` 或暴露自己的管理入口发起 mutation。架构不是 CRDT 式去中心化存储，而是：
 
