@@ -139,7 +139,48 @@ public sealed class ConnectedDbOptions
 
 复杂节点编辑默认压缩为 container mutation。例如编辑 `Services[$billing]` 会保存为一条 `Set Services[$billing]`，历史详情用 diff 展示字段级变化。
 
-## 场景 7 — 参数导入导出
+## 场景 7 — 带集合默认值的 Options 绑定
+
+配置类可以为集合提供安全默认值。只要宿主配置显式提供了对应集合 section，Monica 绑定时会把该集合视为“配置替换默认值”，而不是把配置项追加到默认集合后面。
+
+```csharp
+[Configuration("Search")]
+public sealed class SearchOptions
+{
+    public List<string> Providers { get; set; } = ["local"];
+
+    public SearchUiOptions Ui { get; set; } = new();
+}
+
+public sealed class SearchUiOptions
+{
+    public List<string> Tabs { get; set; } = ["overview"];
+}
+```
+
+宿主配置：
+
+```json
+{
+  "Search": {
+    "Providers": [ "database" ],
+    "Ui": {
+      "Tabs": [ "results" ]
+    }
+  }
+}
+```
+
+运行时通过 `IOptions<SearchOptions>` 读取到的结果是：
+
+| Property | Runtime value |
+|---|---|
+| `Providers` | `[ "database" ]` |
+| `Ui.Tabs` | `[ "results" ]` |
+
+如果配置中完全没有 `Search:Providers`，则 `Providers` 保持 CLR 默认值 `[ "local" ]`。这个规则同样适用于 dictionary、array 和嵌套对象中的集合。它只影响 Options 绑定语义；列表项的运行期 mutation 仍然建议使用 `OptionSettingAttribute.IsListItemKey` 提供稳定 item key。
+
+## 场景 8 — 参数导入导出
 
 导出用于备份、交付或同步环境：
 
@@ -157,7 +198,7 @@ public sealed class ConnectedDbOptions
 
 导入目标是“当前生效且可写的 source”。如果当前值由只读 provider 覆盖，导入会报告问题，而不是偷偷写 Monica store。
 
-## 场景 8 — 分布式写入入口
+## 场景 9 — 分布式写入入口
 
 多个微服务都可以注入 `ConfigurationFacade` 或暴露自己的管理入口发起 mutation。架构不是 CRDT 式去中心化存储，而是：
 

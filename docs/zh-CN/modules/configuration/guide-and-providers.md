@@ -152,6 +152,19 @@ await facade.MutateAsync(new ConfigurationMutationRequest
 
 它们不属于 Monica-managed definitions 的存储层。Monica 不会自动把 `appsettings.json` 的全部内容纳入 effective store；只有 `[Configuration]` 定义出的配置项会成为 Monica-managed definitions。
 
+## Options 绑定中的集合默认值
+
+Monica 注册 `[Configuration]` 类型时，会为运行时 `IOptions<T>` / `IOptionsSnapshot<T>` / `IOptionsMonitor<T>` 使用 Monica 自己的绑定语义。它仍然委托 Microsoft Configuration Binder 完成类型转换，但在绑定前会先处理集合默认值：
+
+- 如果某个 `List<T>`、array、mutable collection 或 dictionary 的配置 section 存在且有子项，配置值会**替换** CLR 默认集合。
+- 如果该 section 不存在，CLR 默认集合会被保留。
+- 嵌套对象会按配置 section 递归处理。
+- `ConfigurationKeyNameAttribute` 指定的属性名同样适用。
+
+这样可以避免官方 Binder 在集合属性已有默认值时把配置项 append 到默认集合后面。例如 `public List<string> Providers { get; set; } = ["local"];` 遇到配置 `Providers:0 = "db"` 时，最终运行时 options 中的值是 `["db"]`，而不是 `["local", "db"]`。
+
+`GetMonicaBootstrapConfiguration<TOptions>()` 使用同一套集合替换语义。因此启动期读取 DB 连接、外部 provider 参数等 bootstrap options 时，也会与运行时 `IOptions<T>` 行为保持一致。
+
 ## Mutation flow
 
 运行时修改通过 `ConfigurationFacade` 发起：
