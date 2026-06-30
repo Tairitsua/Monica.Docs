@@ -132,12 +132,12 @@ flowchart LR
 
 ## 启动期 effective options snapshot
 
-应用 DI 容器构建前，有些模块注册代码还不能注入 `IOptions<T>`，但已经需要读取 Monica 管理的静态启动参数。此时可以使用 `MonicaEffectiveOptions.CreateReader(...)` 创建一个 startup reader，直接从 `IConfigurationEffectiveValueStore` 读取带 `[Configuration]` 的 Options。
+应用 DI 容器构建前，有些模块注册代码还不能注入 `IOptions<T>`，但已经需要读取 Monica 管理的静态启动参数。此时可以先通过 `Mo.AddConfiguration()` 得到 `ModuleConfigurationGuide`，完成 `UseFileConfigurationStore(...)` 或 `UseDbConfigurationStore(...)` 以及 `AddManagedJsonFile(...)` 配置后，再调用 `CreateEffectiveOptionsReader(...)` 创建 startup reader。
 
 这个 reader 的边界很明确：
 
 - DB 连接串、store provider 参数等仍然是 bootstrap 配置，因为它们用于连接 Monica effective store 本身。
-- 其他启动期静态 Options 可以在连接 store 后从 Monica effective document 读取。
+- 其他启动期静态 Options 会在连接 store 后按 runtime priority 读取：bootstrap provider 低于 Monica effective store，`AddManagedJsonFile(...)` 注册的 JSON provider 高于 Monica effective store。
 - `GetMany(...)` / `GetManyAsync(...)` 会把多个配置定义合并为一次 batch load，适合模块注册阶段一次性读取所有需要的 Options。
 - reader 在生命周期内缓存已读取的 Options；同一个 reader 重复读取相同类型不会再次访问 store。
 - 返回的是启动期快照，不是 live reload API，也不替代运行期的 `IOptions<T>`、`IOptionsSnapshot<T>` 或 `IOptionsMonitor<T>`。

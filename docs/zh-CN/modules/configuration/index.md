@@ -101,8 +101,8 @@ flowchart TB
 - `UseFileConfigurationStore(...)`：单体/本地 file store preset。
 - `UseDbConfigurationStore(...)`：分布式 EF Core DB store preset。
 - `AddManagedJsonFile(...)`：追加一个 Monica 可识别的 JSON configuration source，可用于覆盖 Monica effective values。
-- `MonicaEffectiveOptions.CreateReader(...)`：为尚未进入应用 DI 阶段的启动代码创建 Monica effective options reader。
-- `IMonicaEffectiveOptionsReader` / `MonicaEffectiveOptionsSnapshot`：从 effective store 读取单个或批量 Options 的启动期快照。
+- `ModuleConfigurationGuide.CreateEffectiveOptionsReader(...)`：为尚未进入应用 DI 阶段的启动代码创建 Monica effective options reader。
+- `IMonicaEffectiveOptionsReader` / `MonicaEffectiveOptionsSnapshot`：按 bootstrap、Monica effective store、managed JSON 的优先级读取单个或批量 Options 的启动期快照。
 - `ConfigurationAttribute`：把一个 Options 类型声明为 Monica 管理的配置定义。
 - `OptionSettingAttribute`：给配置属性添加展示名、说明、敏感值、重载行为和列表项稳定 key。
 - `ConfigurationFacade`：UI、Minimal API 或应用层使用的配置管理入口，返回 `Res<T>`。

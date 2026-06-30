@@ -52,18 +52,27 @@ Mo.AddConfiguration()
 
 ```csharp
 using Monica.Configuration.Bootstrap;
-using Monica.Configuration.EfCore.Bootstrap;
 
 var bootstrapConfiguration = builder.Configuration;
 var databaseOptions = bootstrapConfiguration.GetMonicaBootstrapConfiguration<DatabaseOptions>();
 
-using var reader = MonicaEffectiveOptions
-    .CreateReader(bootstrapConfiguration)
+var configurationGuide = Mo.AddConfiguration()
     .UseDbConfigurationStore((_, options) =>
     {
         options.UseSqlServer(databaseOptions.ConnectionString);
     })
-    .Build();
+    .AddManagedJsonFile(
+        "Configurations/global-appsettings.json",
+        optional: false,
+        reloadOnChange: true)
+    .AddManagedJsonFile(
+        "appsettings.json",
+        optional: true,
+        reloadOnChange: true);
+
+using var reader = configurationGuide.CreateEffectiveOptionsReader(
+    builder,
+    bootstrapConfiguration);
 
 var snapshot = reader.GetMany(
     typeof(AppOptions),
@@ -75,7 +84,7 @@ var appOptions = snapshot.Get<AppOptions>();
 var daprOptions = snapshot.Get<DaprOptions>();
 ```
 
-`GetMany(...)` 会把多个 `[Configuration]` 类型合并成一次 store batch load，减少启动期数据库压力。缺失的 effective document 会用 bootstrap `IConfiguration` 中可读到的值叠加 CLR 默认值创建；已经存在的 document 会直接按 Monica effective store 中的内容绑定。
+`GetMany(...)` 会把多个 `[Configuration]` 类型合并成一次 store batch load，减少启动期数据库压力。缺失的 effective document 会用 bootstrap `IConfiguration` 中可读到的值叠加 CLR 默认值创建；已经存在的 document 会先投影成 Monica configuration provider，再被 `AddManagedJsonFile(...)` 注册的 JSON 文件按更高优先级覆盖。
 
 这个 reader 只表示启动期快照，不参与运行期 reload。应用启动完成后，业务代码仍应通过正常的 Options Pattern 消费配置。
 

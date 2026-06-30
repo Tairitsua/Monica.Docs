@@ -14,7 +14,7 @@ sidebar_position: 5
 | `UseFileConfigurationStore(...)` | 使用文件存储 effective values、metadata 和 history | 是，二选一 | 单体、开发、演示、本地运维。 |
 | `UseDbConfigurationStore(...)` | 使用 EF Core 数据库存储 effective values、metadata 和 history | 是，二选一 | 分布式部署，所有实例共享同一配置事实源。 |
 | `AddManagedJsonFile(...)` | 追加一个 JSON configuration source，并把来源元数据登记给 Monica UI | 否 | 需要让文件优先覆盖 Monica store，或允许操作员通过 UI 修改某个 JSON 文件。 |
-| `MonicaEffectiveOptions.CreateReader(...)` | 创建 DI 构建前可用的 effective options reader | 否 | 模块注册代码需要读取 Monica-managed 启动期静态 Options。 |
+| `CreateEffectiveOptionsReader(...)` | 从 `ModuleConfigurationGuide` 创建 DI 构建前可用的 effective options reader | 否 | 模块注册代码需要读取 Monica-managed 启动期静态 Options。 |
 
 `Mo.AddConfiguration()` 不会隐式选择文件或数据库存储。宿主必须显式选择一种 store preset：
 
@@ -77,22 +77,27 @@ DB mode 的 bootstrap 配置只能依赖宿主原生 `IConfiguration`。例如�
 
 ## Pre-DI effective options reader
 
-`GetMonicaBootstrapConfiguration<TOptions>()` 只适合读取真正的 bootstrap 值，例如连接配置 store 所需的 `DatabaseOptions`。当 store 已经可以连接，但应用 DI 容器还没有构建时，可以用 `MonicaEffectiveOptions.CreateReader(...)` 从 Monica effective store 读取其他启动期静态 Options。
+`GetMonicaBootstrapConfiguration<TOptions>()` 只适合读取真正的 bootstrap 值，例如连接配置 store 所需的 `DatabaseOptions`。当 store 已经可以连接，但应用 DI 容器还没有构建时，可以从 `ModuleConfigurationGuide` 创建 startup reader，读取其他启动期静态 Options。
 
 ```csharp
 using Monica.Configuration.Bootstrap;
-using Monica.Configuration.EfCore.Bootstrap;
 
 var bootstrapConfiguration = builder.Configuration;
 var databaseOptions = bootstrapConfiguration.GetMonicaBootstrapConfiguration<DatabaseOptions>();
 
-using var reader = MonicaEffectiveOptions
-    .CreateReader(bootstrapConfiguration)
+var configurationGuide = Mo.AddConfiguration()
     .UseDbConfigurationStore((_, options) =>
     {
         options.UseSqlServer(databaseOptions.ConnectionString);
     })
-    .Build();
+    .AddManagedJsonFile(
+        "operator-settings.json",
+        optional: true,
+        reloadOnChange: true);
+
+using var reader = configurationGuide.CreateEffectiveOptionsReader(
+    builder,
+    bootstrapConfiguration);
 
 var snapshot = reader.GetMany(
     typeof(AppOptions),
@@ -103,6 +108,8 @@ var appOptions = snapshot.Get<AppOptions>();
 ```
 
 推荐在启动阶段使用 `GetMany(...)` / `GetManyAsync(...)` 一次性读取所有需要的 Options。reader 会扫描每个类型的 `[Configuration]` 定义，生成缺失文档的 seed JSON，并对 store 调用一次 batch `EnsureCreatedAsync(...)`。已经读取过的类型会缓存在 reader 生命周期内；后续 `Get(...)` 或 `GetMany(...)` 只会访问尚未加载的类型。
+
+reader 绑定 Options 时使用与运行时一致的优先级：`bootstrapConfiguration` 最低，Monica effective store 居中，`AddManagedJsonFile(...)` 注册的 JSON 文件最高。因此启动期模块注册可以看到 operator-managed JSON 覆盖值，不会只读取 Monica effective document。
 
 reader 会 fail fast：缺少 `[Configuration]`、没有配置 effective store、数据库连接失败、schema 异常或 effective JSON 无法绑定都会抛出异常。它返回的是启动期快照，不会监听运行期变更；应用启动完成后的业务代码仍应使用 `IOptions<T>`、`IOptionsSnapshot<T>` 或 `IOptionsMonitor<T>`。
 
