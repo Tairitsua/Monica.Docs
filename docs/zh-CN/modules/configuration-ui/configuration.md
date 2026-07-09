@@ -63,6 +63,17 @@ flowchart LR
 
 敏感字段的无效值会在预览和报告中脱敏。
 
+## 正则输入体验
+
+当配置节点由 `[OptionSetting(TextSemantic = ConfigurationTextSemantic.RegexPattern)]` 标记时，配置状态页会把它作为正则表达式输入处理：
+
+- 输入框下方显示正则标识和转义预览，帮助用户识别它不是普通文本配置。
+- `\d`、`\w`、`\s`、`\u4E00` 等转义会以高亮形式展示；明显不完整或不支持的转义会以错误样式提示。
+- 保存前会使用 .NET 正则解析器校验整个 pattern。无效 pattern 会进入 validation issue，并阻止保存。
+- 非 ASCII 字符会保持为正则兼容的 `\uXXXX` 形式；普通中文配置项不受影响。
+
+敏感配置即使标记为正则，也不会在密码隐藏状态下显示转义预览，避免泄露用户正在输入的值。
+
 ## Source-aware editing
 
 配置状态页显示的是当前 runtime effective value，而不是固定显示 Monica store 中的值。

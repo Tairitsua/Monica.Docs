@@ -68,8 +68,35 @@ public sealed class DemoDocumentationPortalOptions
 | `DisplayName` | `null` | UI 展示名。 |
 | `Description` | `null` | UI、文档和说明弹窗使用。 |
 | `IsSensitive` | `false` | 敏感值在 UI、facade、source file view 和导出文件中按 display-safe 方式处理。 |
+| `TextSemantic` | `PlainText` | 标记 scalar `string` 的文本语义。正则表达式配置应显式使用 `ConfigurationTextSemantic.RegexPattern`。 |
 | `ReloadBehavior` | `Inherit` | 覆盖定义级生效策略。 |
 | `IsListItemKey` | `false` | 标记列表项内唯一的稳定 key 属性。每个 item 类型最多一个。 |
+
+## 正则文本语义
+
+当一个配置值本身就是正则表达式，而不是普通中文说明、关键字或枚举值时，应在对应的 scalar `string` 属性上显式声明 `TextSemantic`：
+
+```csharp
+using Monica.Configuration.Annotations;
+using Monica.Configuration.Models;
+
+public sealed class RouteMatchOptions
+{
+    [OptionSetting(
+        DisplayName = "中文航路点正则",
+        TextSemantic = ConfigurationTextSemantic.RegexPattern)]
+    public string ChineseWaypointPattern { get; set; } = @"[\u4E00-\u9FA5]+";
+}
+```
+
+`RegexPattern` 的行为只适用于已标记的字符串节点：
+
+- UI、facade、source file view、JSON 编辑、导入导出和 mutation 保存会把非 ASCII UTF-16 code unit 规范化为大写 `\uXXXX`，例如 `一-龥` 会显示和保存为 `\u4E00-\u9FA5`。
+- 现有 ASCII 正则转义保持稳定，例如 `\d`、`\w`、`\s` 和已经存在的 `\u4E00` 不会被二次改写。
+- 普通中文配置值仍按中文保存和展示，不会因为属性名包含 `Pattern`、`Regex` 或 `Rule` 自动变成正则语义。
+- `TextSemantic = RegexPattern` 只能用于 scalar `string` 节点；object、list、dictionary、enum 或数值节点会在 schema 扫描阶段 fail fast。
+
+`[RegularExpression(...)]` 仍然表示“用正则验证这个值”，它会生成 `RegexRule`。它不表示“这个配置值本身是正则”。如果一个字符串既要被正则校验，又要作为正则表达式供业务代码使用，需要同时保留 DataAnnotations 并设置 `TextSemantic`。
 
 ## 验证规则
 
