@@ -1,4 +1,4 @@
-using Domains.Documentation.Application.BackgroundWorkers;
+using Domains.Showcase.Application.BackgroundWorkers;
 using Domains.Documentation.Configurations;
 using Domains.Documentation.Utilities;
 using Microsoft.Data.Sqlite;
@@ -13,79 +13,88 @@ using Platform.Infrastructure.RpcClient;
 
 var builder = WebApplication.CreateBuilder(args);
 var configurationStoreConnectionString = ResolveConfigurationStoreConnectionString(builder);
-
-Mo.AddResultEnvelope().UseResultFieldNames(o => o.Status = "code");
-Mo.AddConfiguration()
-    .UseDbConfigurationStore((_, options) => options.UseSqlite(configurationStoreConnectionString))
-    .AddManagedJsonFile(
-        "docs-external-settings.json",
-        optional: false,
-        reloadOnChange: true,
-        options =>
-        {
-            options.DisplayName = "Docs External Demo Settings";
-            options.Description = "Operator-managed JSON file registered through Monica.Configuration for source-chain and source-editing demos.";
-            options.IsWritable = true;
-        });
-Mo.AddConfigurationUI();
-Mo.AddEventBus().UseNoOpDistributedEventBus();
-Mo.AddWebApi();
-
-Mo.AddSwagger(o =>
-{
-    o.AppName = "Monica.Docs API";
-    o.ApiVersion = "v1";
-});
-Mo.AddProjectUnits(o =>
-{
-    o.ConventionOptions.EnableNameConvention = true;
-    o.ConventionOptions.NameConventionMode = ENameConventionMode.Strict;
-});
-Mo.AddProjectUnitsUI();
-Mo.AddHostedService();
-Mo.AddRpcClient()
-    .ConfigDomainInfoProvider(new MonicaDocsRpcClientDomainInfoProvider())
-    .UseLocalTransport();
-Mo.AddJobScheduler(o =>
-    {
-        o.ProjectName = "Monica.Docs";
-    })
-    .UseInMemoryProvider()
-    .UseInMemoryMetadataRepository()
-    .UseSchedulerScope("monica-docs");
-Mo.AddJobSchedulerUI();
-Mo.AddObservableInstanceUI();
-
 var documentationApiOptions = builder.Configuration
     .GetSection(DocumentationApiOptions.SectionName)
     .Get<DocumentationApiOptions>()
     ?? new DocumentationApiOptions();
-
 var docsBasePath = UtilsDocumentationPathResolver.ResolveDocsBasePath(
     builder.Environment,
     documentationApiOptions);
 
-Mo.AddMarkdown(o =>
-    {
-        o.ParseFrontMatter = true;
-    })
-    .EnableMultilingualDocuments()
-    .AddDocumentGroup(
-        key: documentationApiOptions.DocumentGroupKey,
-        title: "Monica Docs",
-        basePath: docsBasePath);
-Mo.AddMarkdownUI();
-Mo.AddSwaggerUI().AddNavigationButton("主页", UISystemInfoPage.PAGE_URL);
-Mo.AddSystemInfoUI().AddSwaggerLink();
-Mo.AddUIShell(o =>
+builder.AddMonica(monica =>
 {
-    o.DefaultDarkMode = true;
-    o.DefaultTheme = MonicaThemeKind.MaterialDesign3;
-}).AddRouteRedirect("/", UISystemInfoPage.PAGE_URL);
-Mo.AddModuleSystemUI();
-Mo.AddDependencyInjection();
+    monica.ConfigureApplication(options =>
+    {
+        options.AppName = "Monica.Docs";
+        options.AppId = "monica-docs";
+    });
+    monica.ConfigureModuleSystem(options =>
+    {
+        options.DefaultApiGroupName = "Documentation";
+    });
 
-builder.UseMonica();
+    monica.AddResultEnvelope().UseResultFieldNames(options => options.Status = "code");
+    monica.AddConfiguration()
+        .UseDbConfigurationStore((_, options) => options.UseSqlite(configurationStoreConnectionString))
+        .AddManagedJsonFile(
+            "docs-external-settings.json",
+            optional: false,
+            reloadOnChange: true,
+            options =>
+            {
+                options.DisplayName = "Docs External Demo Settings";
+                options.Description = "Operator-managed JSON file registered through Monica.Configuration for source-chain and source-editing demos.";
+                options.IsWritable = true;
+            });
+    monica.AddConfigurationUI();
+    monica.AddEventBus().UseNoOpDistributedEventBus();
+    monica.AddWebApi();
+
+    monica.AddSwagger(options =>
+    {
+        options.AppName = "Monica.Docs API";
+        options.ApiVersion = "v1";
+    });
+    monica.AddProjectUnits(options =>
+    {
+        options.ConventionOptions.EnableNameConvention = true;
+        options.ConventionOptions.NameConventionMode = ENameConventionMode.Strict;
+    });
+    monica.AddProjectUnitsUI();
+    monica.AddHostedService();
+    monica.AddRpcClient()
+        .ConfigDomainInfoProvider(new MonicaDocsRpcClientDomainInfoProvider())
+        .UseLocalTransport();
+    monica.AddJobScheduler(options =>
+        {
+            options.ProjectName = "Monica.Docs";
+        })
+        .UseInMemoryProvider()
+        .UseInMemoryMetadataRepository()
+        .UseSchedulerScope("monica-docs");
+    monica.AddJobSchedulerUI();
+    monica.AddObservableInstanceUI();
+
+    monica.AddMarkdown(options =>
+        {
+            options.ParseFrontMatter = true;
+        })
+        .EnableMultilingualDocuments()
+        .AddDocumentGroup(
+            key: documentationApiOptions.DocumentGroupKey,
+            title: "Monica Docs",
+            basePath: docsBasePath);
+    monica.AddMarkdownUI();
+    monica.AddSwaggerUI().AddNavigationButton("Home", UISystemInfoPage.PAGE_URL);
+    monica.AddSystemInfoUI().AddSwaggerLink();
+    monica.AddUIShell(options =>
+    {
+        options.DefaultDarkMode = true;
+        options.DefaultTheme = MonicaThemeKind.MaterialDesign3;
+    }).AddRouteRedirect("/", UISystemInfoPage.PAGE_URL);
+    monica.AddModuleSystemUI();
+    monica.AddDependencyInjection();
+});
 
 var app = builder.Build();
 await EnsureConfigurationDatabaseCreatedAsync(app.Services);

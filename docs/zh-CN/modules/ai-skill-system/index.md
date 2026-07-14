@@ -19,8 +19,8 @@ sidebar_position: 1
 | 项目 | 值 |
 |---|---|
 | 包 | `Monica.AI` |
-| 注册入口 | `Mo.AddAISkillSystem()` |
-| 相关 UI 模块 | `Mo.AddAIUI()` |
+| 注册入口 | `monica.AddAISkillSystem()` |
+| 相关 UI 模块 | `monica.AddAIUI()` |
 
 ## 公开使用面
 

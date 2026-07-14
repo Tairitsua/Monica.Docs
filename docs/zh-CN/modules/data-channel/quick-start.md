@@ -16,30 +16,38 @@ dotnet add package Monica.DataChannel
 
 ```csharp
 using Monica.DataChannel.Abstractions;
+using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Mo.AddDataChannel(o =>
+builder.AddMonica(monica =>
 {
-    o.RecentExceptionToKeep = 20;
-})
-.SetChannelBuilder<DemoDataChannelSetup>();
-
-builder.UseMonica();
+    monica.AddDataChannel(o =>
+    {
+        o.RecentExceptionToKeep = 20;
+    })
+    .UseSetup<DemoDataChannelSetup>();
+});
 
 public sealed class DemoDataChannelSetup : IDataChannelSetup
 {
-    public void Setup()
+    public void Setup(IDataChannelRegistrar channels)
     {
-        // 在这里创建并注册 DataChannel pipeline。
+        channels.Add("demo", pipeline =>
+            pipeline.SetOuterEndpoint(new DaprBindingOptions(
+                EDaprBindingType.Kafka,
+                ConnectionDirection.Output)
+            {
+                OutputBindingName = "demo-output"
+            }));
     }
 }
 ```
 
 ## 第一个有价值的配置
 
-`DataChannel` 的第一个关键配置不是某个布尔开关，而是**提供一个 `IDataChannelSetup` 实现**。模块会在启动阶段自动调用它来完成 channel 构建与注册。
+`DataChannel` 的第一个关键配置不是某个布尔开关，而是**提供一个 `IDataChannelSetup` 实现**。模块会在启动阶段把当前宿主的 `IDataChannelRegistrar` 传给它，再完成 channel 构建与注册。
 
 ## 接下来读什么
 

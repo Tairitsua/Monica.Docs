@@ -17,16 +17,18 @@ dotnet add package Monica.SignalR
 ```csharp
 using Microsoft.AspNetCore.SignalR;
 using Monica.Authority.Identity.Abstractions;
+using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
 using Monica.SignalR.Abstractions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Mo.AddSignalR()
-    .AddSignalR<IChatHubOperator, ChatHubOperator, IChatClientContract, ICurrentUser>()
-    .MapSignalRHub<ChatHub>("/signalr/chat");
-
-builder.UseMonica();
+builder.AddMonica(monica =>
+{
+    monica.AddSignalR()
+        .AddSignalR<IChatHubOperator, ChatHubOperator, IChatClientContract, ICurrentUser>()
+        .MapSignalRHub<ChatHub>("/signalr/chat");
+});
 
 public interface IChatClientContract : ISignalRHubContract
 {

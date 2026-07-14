@@ -30,7 +30,7 @@ sidebar_position: 4
 
 `AI` 模块会声明依赖并注册：
 
-- `Mo.AddAISkillSystem()`：发现 Monica Skill 并适配给 Agent Framework。
-- `Mo.AddMcp()`：发现 Monica MCP Server、外部 MCP Client，并把可用工具接入 Agent。
+- `monica.AddAISkillSystem()`：发现 Monica Skill 并适配给 Agent Framework。
+- `monica.AddMcp()`：发现 Monica MCP Server、外部 MCP Client，并把可用工具接入 Agent。
 
-这两个依赖会随 `Mo.AddAI()` 自动注册。你仍然可以显式调用它们来自定义各自选项。
+这两个依赖会随 `monica.AddAI()` 自动注册。你仍然可以显式调用它们来自定义各自选项。

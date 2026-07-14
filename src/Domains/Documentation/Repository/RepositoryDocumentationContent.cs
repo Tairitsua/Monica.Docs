@@ -21,18 +21,43 @@ public sealed class RepositoryDocumentationContent(
     private static readonly FileExtensionContentTypeProvider ContentTypeProvider = new();
     private readonly DocumentationApiOptions _options = options.Value;
 
-    public async Task<IReadOnlyList<DocumentationTreeNode>> GetTreeAsync(
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<DocumentationLocale>> GetLocalesAsync(
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         var group = await markdownCatalog.GetDocumentGroupAsync(_options.DocumentGroupKey);
-        return group.RootNode.Children
+        return group.Languages
+            .Select(static language => new DocumentationLocale(
+                language.Culture,
+                language.DisplayName,
+                language.DocumentCount))
+            .ToList();
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<DocumentationTreeNode>?> GetTreeAsync(
+        string locale,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var group = await markdownCatalog.GetDocumentGroupAsync(_options.DocumentGroupKey);
+        var language = group.ResolveLanguage(locale);
+        if (language is null)
+        {
+            return null;
+        }
+
+        return OrderNodes(group.GetDocumentTree(language.Culture).Children)
             .Select(node => MapNode(node, string.Empty))
             .ToList();
     }
 
-    public async Task<DocumentationSourceDocument?> GetDocumentBySlugAsync(
+    /// <inheritdoc />
+    public async Task<DocumentationDocumentPage?> GetDocumentPageAsync(
+        string locale,
         string slug,
         CancellationToken cancellationToken = default)
     {
@@ -44,12 +69,19 @@ public sealed class RepositoryDocumentationContent(
             return null;
         }
 
-        var documents = await markdownCatalog.GetDocumentsAsync(_options.DocumentGroupKey);
+        var group = await markdownCatalog.GetDocumentGroupAsync(_options.DocumentGroupKey);
+        var language = group.ResolveLanguage(locale);
+        if (language is null)
+        {
+            return null;
+        }
+
+        var documents = group.GetDocuments(language.Culture);
         var document = documents.FirstOrDefault(candidate =>
             string.Equals(
-                UtilsDocumentationPath.ToSlug(candidate.RelativePath),
+                UtilsDocumentationPath.ToSlug(candidate.NavigationRelativePath),
                 normalizedSlug,
-                StringComparison.Ordinal));
+                StringComparison.OrdinalIgnoreCase));
 
         if (document is null)
         {
@@ -63,17 +95,34 @@ public sealed class RepositoryDocumentationContent(
                 document.FrontMatter.RawMetadata,
                 StringComparer.OrdinalIgnoreCase);
 
-        return new DocumentationSourceDocument(
+        var sourceDocument = new DocumentationSourceDocument(
+            language.Culture,
             normalizedSlug,
             document.Title,
             UtilsDocumentationPath.NormalizeRelativePath(document.RelativePath),
+            UtilsDocumentationPath.NormalizeRelativePath(document.NavigationRelativePath),
             markdown,
             document.LastModifiedUtc,
             document.FrontMatter?.Date,
             document.FrontMatter?.Tags?.ToList() ?? [],
             metadata);
+
+        var orderedDocuments = EnumerateDocumentsInNavigationOrder(group, language.Culture).ToList();
+        var currentIndex = orderedDocuments.FindIndex(candidate =>
+            string.Equals(candidate.FilePath, document.FilePath, StringComparison.OrdinalIgnoreCase));
+
+        return new DocumentationDocumentPage(
+            sourceDocument,
+            BuildAlternates(group, document),
+            currentIndex > 0
+                ? MapNavigationDocument(language.Culture, orderedDocuments[currentIndex - 1])
+                : null,
+            currentIndex >= 0 && currentIndex < orderedDocuments.Count - 1
+                ? MapNavigationDocument(language.Culture, orderedDocuments[currentIndex + 1])
+                : null);
     }
 
+    /// <inheritdoc />
     public async Task<DocumentationAsset?> GetAssetAsync(
         string assetPath,
         CancellationToken cancellationToken = default)
@@ -83,8 +132,7 @@ public sealed class RepositoryDocumentationContent(
         var normalizedAssetPath = UtilsDocumentationPath.NormalizeRelativePath(
             Uri.UnescapeDataString(assetPath));
 
-        if (string.IsNullOrWhiteSpace(normalizedAssetPath)
-            || UtilsDocumentationPath.IsMarkdownDocumentPath(normalizedAssetPath))
+        if (!UtilsDocumentationPath.IsPublicAssetPath(normalizedAssetPath))
         {
             return null;
         }
@@ -111,7 +159,12 @@ public sealed class RepositoryDocumentationContent(
             contentType = "application/octet-stream";
         }
 
-        return new DocumentationAsset(candidatePath, contentType);
+        var fileInfo = new FileInfo(candidatePath);
+        return new DocumentationAsset(
+            candidatePath,
+            contentType,
+            fileInfo.Length,
+            fileInfo.LastWriteTimeUtc);
     }
 
     private static DocumentationTreeNode MapNode(
@@ -119,26 +172,85 @@ public sealed class RepositoryDocumentationContent(
         string currentPath)
     {
         var relativePath = node.Data.IsDocument && node.Data.Document is not null
-            ? UtilsDocumentationPath.NormalizeRelativePath(node.Data.Document.RelativePath)
+            ? UtilsDocumentationPath.NormalizeRelativePath(node.Data.Document.NavigationRelativePath)
             : CombinePath(currentPath, node.Data.Name);
 
-        var children = node.Children
+        var children = OrderNodes(node.Children)
             .Select(child => MapNode(child, relativePath))
-            .OrderBy(child => child.Order.HasValue ? 0 : 1)
-            .ThenBy(child => child.Order)
-            .ThenBy(child => child.IsDocument ? 1 : 0)
-            .ThenBy(child => child.Title, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
         return new DocumentationTreeNode(
             node.Data.ResolvedDisplayName,
             relativePath,
             node.Data.IsDocument && node.Data.Document is not null
-                ? UtilsDocumentationPath.ToSlug(node.Data.Document.RelativePath)
+                ? UtilsDocumentationPath.ToSlug(node.Data.Document.NavigationRelativePath)
                 : null,
             node.Data.IsDocument,
             node.Data.NavigationOrder,
             children);
+    }
+
+    private static IEnumerable<Monica.Tool.Algorithms.Trees.TreeNode<MarkdownDocumentNodeData>> OrderNodes(
+        IEnumerable<Monica.Tool.Algorithms.Trees.TreeNode<MarkdownDocumentNodeData>> nodes)
+    {
+        return nodes
+            .OrderBy(static node => node.Data.NavigationOrder.HasValue ? 0 : 1)
+            .ThenBy(static node => node.Data.NavigationOrder)
+            .ThenBy(static node => node.Data.IsDocument ? 1 : 0)
+            .ThenBy(static node => node.Data.ResolvedDisplayName, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static IEnumerable<MarkdownDocument> EnumerateDocumentsInNavigationOrder(
+        MarkdownDocumentGroup group,
+        string locale)
+    {
+        return EnumerateDocuments(group.GetDocumentTree(locale));
+    }
+
+    private static IEnumerable<MarkdownDocument> EnumerateDocuments(
+        Monica.Tool.Algorithms.Trees.TreeNode<MarkdownDocumentNodeData> node)
+    {
+        foreach (var child in OrderNodes(node.Children))
+        {
+            if (child.Data.IsDocument && child.Data.Document is not null)
+            {
+                yield return child.Data.Document;
+            }
+
+            foreach (var descendant in EnumerateDocuments(child))
+            {
+                yield return descendant;
+            }
+        }
+    }
+
+    private static IReadOnlyList<DocumentationNavigationDocument> BuildAlternates(
+        MarkdownDocumentGroup group,
+        MarkdownDocument document)
+    {
+        return group.Languages
+            .Where(language => !string.Equals(
+                language.Culture,
+                document.Culture,
+                StringComparison.OrdinalIgnoreCase))
+            .Select(language => (Language: language, Document: group.FindDocument(
+                document.NavigationRelativePath,
+                language.Culture)))
+            .Where(static candidate => candidate.Document is not null)
+            .Select(static candidate => MapNavigationDocument(
+                candidate.Language.Culture,
+                candidate.Document!))
+            .ToList();
+    }
+
+    private static DocumentationNavigationDocument MapNavigationDocument(
+        string locale,
+        MarkdownDocument document)
+    {
+        return new DocumentationNavigationDocument(
+            locale,
+            UtilsDocumentationPath.ToSlug(document.NavigationRelativePath),
+            document.Title);
     }
 
     private static string CombinePath(string prefix, string name)

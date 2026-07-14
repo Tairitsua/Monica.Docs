@@ -20,7 +20,7 @@ sidebar_position: 4
 |---|---|---|
 | 当前用户投影 Operator | `CurrentUserSignalRHubOperator<TContract, THub>` | 你的用户模型直接使用 `ICurrentUser` 时。 |
 | 自定义用户投影 Operator | 继承 `SignalRHubOperator<TContract, THub, TUser>` | 你要把 Claims 投影到自定义用户模型时。 |
-| 调试 UI | `Mo.AddSignalRUI()` | 你需要浏览器内调试与连接检查时。 |
+| 调试 UI | `monica.AddSignalRUI()` | 你需要浏览器内调试与连接检查时。 |
 
 ## Module dependencies
 

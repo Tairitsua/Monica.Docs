@@ -17,10 +17,13 @@ dotnet add package Monica.AI
 ```csharp
 using Monica.Modules;
 
-Mo.AddMcp();
+builder.AddMonica(monica =>
+{
+    monica.AddMcp();
+});
 ```
 
-`Mo.AddAI()` 会自动依赖并注册 MCP 模块。需要单独托管 MCP endpoint 或提前配置 MCP endpoint 路径时，可以显式调用 `Mo.AddMcp()`。
+`monica.AddAI()` 会自动依赖并注册 MCP 模块。需要单独托管 MCP endpoint 或提前配置 MCP endpoint 路径时，可以显式调用 `monica.AddMcp()`。
 
 ## 定义本地 MCP Server
 
@@ -57,11 +60,14 @@ public sealed class FlightMcpServer : McpServer<FlightMcpServer>
 ## 配置 HTTP endpoint
 
 ```csharp
-Mo.AddMcp()
-    .ConfigureMcpHttpEndpoint(
-        endpointPath: "/mcp",
-        displayUrl: "https://example.com/mcp",
-        stateless: true);
+builder.AddMonica(monica =>
+{
+    monica.AddMcp()
+        .ConfigureMcpHttpEndpoint(
+            endpointPath: "/mcp",
+            displayUrl: "https://example.com/mcp",
+            stateless: true);
+});
 ```
 
 ASP.NET Core Host 仍负责监听地址、端口和 TLS。`endpointPath` 只是应用内路由。

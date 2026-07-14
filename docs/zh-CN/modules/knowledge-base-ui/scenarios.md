@@ -8,7 +8,7 @@ sidebar_position: 5
 
 ## 场景 1 — 让运营人员管理知识库
 
-默认注册 `Mo.AddKnowledgeBaseUI()` 后，用户可以通过 `/ai/knowledge-bases` 创建知识库、导入 Markdown 文档、上传文本、查看文档状态和预览内容。
+默认注册 `monica.AddKnowledgeBaseUI()` 后，用户可以通过 `/ai/knowledge-bases` 创建知识库、导入 Markdown 文档、上传文本、查看文档状态和预览内容。
 
 ## 场景 2 — 与 RAG UI 配合完成索引
 

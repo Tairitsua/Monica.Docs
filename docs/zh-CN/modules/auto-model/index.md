@@ -19,7 +19,7 @@ sidebar_position: 1
 | 项目 | 值 |
 |---|---|
 | 包 | `Monica.AutoModel` |
-| 注册入口 | `Mo.AddAutoModel()` |
+| 注册入口 | `monica.AddAutoModel()` |
 | 相关 UI 模块 | 无 |
 
 ## 公开使用面

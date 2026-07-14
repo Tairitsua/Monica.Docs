@@ -18,17 +18,20 @@ sidebar_position: 5
 using Microsoft.EntityFrameworkCore;
 using Monica.Modules;
 
-Mo.AddJobScheduler(o =>
-    {
-        o.RecurringJobDebugMode = builder.Environment.IsDevelopment();
-        o.TriggeredJobDebugMode = builder.Environment.IsDevelopment();
-    })
-    .UseEfCoreMetadataRepository((sp, optionsBuilder) =>
-    {
-        optionsBuilder.UseNpgsql(builder.Configuration.GetConnectionString("JobScheduler")!);
-    })
-    .UseSchedulerScope(builder.Environment.IsDevelopment() ? "debug" : "prod")
-    .UseDistributeProvider();
+builder.AddMonica(monica =>
+{
+    monica.AddJobScheduler(o =>
+        {
+            o.RecurringJobDebugMode = builder.Environment.IsDevelopment();
+            o.TriggeredJobDebugMode = builder.Environment.IsDevelopment();
+        })
+        .UseEfCoreMetadataRepository((sp, optionsBuilder) =>
+        {
+            optionsBuilder.UseNpgsql(builder.Configuration.GetConnectionString("JobScheduler")!);
+        })
+        .UseSchedulerScope(builder.Environment.IsDevelopment() ? "debug" : "prod")
+        .UseDistributeProvider();
+});
 ```
 
 ## 场景 3 — 通过代码触发带参数的触发式作业

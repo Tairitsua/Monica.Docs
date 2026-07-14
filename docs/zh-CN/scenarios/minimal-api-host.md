@@ -19,29 +19,31 @@ sidebar_position: 1
 ## 示例
 
 ```csharp
+using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Mo.AddDependencyInjection();
-
-Mo.AddEventBus()
-    .UseNoOpDistributedEventBus();
-
-Mo.AddConfiguration();
-
-Mo.AddAutoControllers(
-    crudOptionAction: o =>
-    {
-        o.RoutePath = "api/v1/[controller]";
-    });
-
-Mo.AddProjectUnits(o =>
+builder.AddMonica(monica =>
 {
-    o.ConventionOptions.EnableNameConvention = true;
-});
+    monica.AddDependencyInjection();
 
-builder.UseMonica();
+    monica.AddEventBus()
+        .UseNoOpDistributedEventBus();
+
+    monica.AddConfiguration();
+
+    monica.AddAutoControllers(
+        crudOptionAction: o =>
+        {
+            o.RoutePath = "api/v1/[controller]";
+        });
+
+    monica.AddProjectUnits(o =>
+    {
+        o.ConventionOptions.EnableNameConvention = true;
+    });
+});
 
 var app = builder.Build();
 app.UseMonica();

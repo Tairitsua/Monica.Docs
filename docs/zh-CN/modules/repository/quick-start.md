@@ -17,18 +17,20 @@ dotnet add package Monica.Repository
 ```csharp
 using Microsoft.EntityFrameworkCore;
 using Monica.DependencyInjection.Abstractions;
+using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
 using Monica.Repository.Persistence.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Mo.AddRepository()
-    .AddRepositoryDbContext<AppDbContext>((sp, options) =>
-    {
-        options.UseSqlite(builder.Configuration.GetConnectionString("Default")!);
-    });
-
-builder.UseMonica();
+builder.AddMonica(monica =>
+{
+    monica.AddRepository()
+        .AddRepositoryDbContext<AppDbContext>((sp, options) =>
+        {
+            options.UseSqlite(builder.Configuration.GetConnectionString("Default")!);
+        });
+});
 
 public sealed class AppDbContext(
     DbContextOptions<AppDbContext> options,

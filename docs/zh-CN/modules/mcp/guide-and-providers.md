@@ -26,9 +26,9 @@ sidebar_position: 4
 
 | Dependency | Why it is used |
 |---|---|
-| `Mo.AddXmlDocumentation()` | 为 MCP 工具和参数生成说明。 |
-| `Mo.AddAI()` | 提供 Agent 工具接入、能力启用状态和聊天运行时。 |
-| `Mo.AddAIUI()` | 提供 MCP 目录展示、连通性测试和全局/单项启停 UI。 |
+| `monica.AddXmlDocumentation()` | 为 MCP 工具和参数生成说明。 |
+| `monica.AddAI()` | 提供 Agent 工具接入、能力启用状态和聊天运行时。 |
+| `monica.AddAIUI()` | 提供 MCP 目录展示、连通性测试和全局/单项启停 UI。 |
 
 ## Tool metadata
 

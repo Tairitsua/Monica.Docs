@@ -19,8 +19,8 @@ sidebar_position: 1
 | 项目 | 值 |
 |---|---|
 | 包 | `Monica.EventBus` |
-| 注册入口 | `Mo.AddEventBus()` |
-| 相关 UI 模块 | `Mo.AddEventBusUI()` |
+| 注册入口 | `monica.AddEventBus()` |
+| 相关 UI 模块 | `monica.AddEventBusUI()` |
 
 ## 公开使用面
 

@@ -19,7 +19,7 @@ sidebar_position: 1
 | 项目 | 值 |
 |---|---|
 | 包 | `Monica.Repository` |
-| 注册入口 | `Mo.AddUnitOfWork()` |
+| 注册入口 | `monica.AddUnitOfWork()` |
 | 相关 UI 模块 | 无 |
 
 ## 公开使用面

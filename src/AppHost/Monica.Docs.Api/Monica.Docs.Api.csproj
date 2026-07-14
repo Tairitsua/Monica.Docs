@@ -21,9 +21,14 @@
   <ItemGroup>
     <ProjectReference Include="../../Domains/Documentation/Domains.Documentation.csproj" />
     <ProjectReference Include="../../Domains/LocalRpcProvider/Domains.LocalRpcProvider.csproj" />
+    <ProjectReference Include="../../Domains/Showcase/Domains.Showcase.csproj" />
     <ProjectReference Include="../../../../MoLibrary/Monica.Configuration.EfCore/Monica.Configuration.EfCore.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Configuration.UI/Monica.Configuration.UI.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Framework/Monica.Framework.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Framework.UI/Monica.Framework.UI.csproj" />
     <ProjectReference Include="../../../../MoLibrary/Monica.JobScheduler/Monica.JobScheduler.csproj" />
     <ProjectReference Include="../../../../MoLibrary/Monica.JobScheduler.UI/Monica.JobScheduler.UI.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.ProjectUnits/Monica.ProjectUnits.csproj" />
   </ItemGroup>
 
 </Project>

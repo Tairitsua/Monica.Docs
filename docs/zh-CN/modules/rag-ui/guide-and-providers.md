@@ -10,7 +10,7 @@ sidebar_position: 4
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|
-| `Mo.AddRAGUI(Action<ModuleRAGUIOption>?)` | 注册 RAG 管理、调试和切块器页面 | 否 | 需要内置 RAG 运维和调试 UI 时。 |
+| `monica.AddRAGUI(Action<ModuleRAGUIOption>?)` | 注册 RAG 管理、调试和切块器页面 | 否 | 需要内置 RAG 运维和调试 UI 时。 |
 
 `ModuleRAGUIGuide` 当前没有额外 Guide 方法。
 
@@ -26,7 +26,7 @@ sidebar_position: 4
 
 | Dependency | Why it is used |
 |---|---|
-| `Mo.AddRAG()` | 后端索引、搜索、Embedding、向量库和切块器 Facade。 |
-| `Mo.AddKnowledgeBaseUI()` | 组合知识库管理入口和知识库选择能力。 |
-| `Mo.AddLocalization()` | AI UI 本地化资源。 |
-| `Mo.AddUIShell()` | 注册导航和页面。 |
+| `monica.AddRAG()` | 后端索引、搜索、Embedding、向量库和切块器 Facade。 |
+| `monica.AddKnowledgeBaseUI()` | 组合知识库管理入口和知识库选择能力。 |
+| `monica.AddLocalization()` | AI UI 本地化资源。 |
+| `monica.AddUIShell()` | 注册导航和页面。 |

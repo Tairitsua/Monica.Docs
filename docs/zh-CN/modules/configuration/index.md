@@ -22,7 +22,7 @@ sidebar_position: 1
 - 你需要单体 file store 或分布式 DB store 来保存 Monica 管理的 effective values、metadata 和 history。
 - 你需要在 UI 中解释一个值来自 Monica effective store、JSON 文件、环境变量还是其他 provider。
 - 你需要通过 UI 修改 Monica effective store，或修改可写 JSON provider，例如 `appsettings*.json` 或通过 `AddManagedJsonFile(...)` 注册的文件。
-- 你需要在应用 DI 容器构建前读取 Monica effective store 中的启动期静态 Options，并用于模块注册。
+- 你希望启动期输入继续由宿主 `builder.Configuration` 提供，而业务代码通过标准 Options 接口消费 Monica 管理的配置。
 - 你希望最终消费方式仍然保持 Microsoft `IConfiguration`、`IOptions<T>`、`IOptionsSnapshot<T>` 和 `IOptionsMonitor<T>`。
 
 ## 包与注册入口
@@ -32,43 +32,52 @@ sidebar_position: 1
 | 核心包 | `Monica.Configuration` |
 | EF Core 存储包 | `Monica.Configuration.EfCore` |
 | UI 包 | `Monica.Configuration.UI` |
-| 核心注册入口 | `Mo.AddConfiguration()` |
-| UI 注册入口 | [`Mo.AddConfigurationUI()`](../configuration-ui/index.md) |
+| 核心注册入口 | `monica.AddConfiguration()` |
+| UI 注册入口 | [`monica.AddConfigurationUI()`](../configuration-ui/index.md) |
 
 ## 最小注册
 
 单体或本地模式：
 
 ```csharp
-Mo.AddConfiguration()
-    .UseFileConfigurationStore();
+builder.AddMonica(monica =>
+{
+    monica.AddConfiguration()
+        .UseFileConfigurationStore();
+});
 ```
 
 分布式模式：
 
 ```csharp
-Mo.AddConfiguration()
-    .UseDbConfigurationStore((serviceProvider, options) =>
-    {
-        options.UseSqlite(builder.Configuration.GetConnectionString("Configuration"));
-    });
+builder.AddMonica(monica =>
+{
+    monica.AddConfiguration()
+        .UseDbConfigurationStore((serviceProvider, options) =>
+        {
+            options.UseSqlite(builder.Configuration.GetConnectionString("Configuration"));
+        });
+});
 ```
 
 需要把某个 JSON 文件作为高优先级可管理来源时：
 
 ```csharp
-Mo.AddConfiguration()
-    .UseDbConfigurationStore((_, options) => options.UseSqlite(configurationStoreConnectionString))
-    .AddManagedJsonFile(
-        "docs-external-settings.json",
-        optional: false,
-        reloadOnChange: true,
-        options =>
-        {
-            options.DisplayName = "Docs External Demo Settings";
-            options.Description = "通过 Monica.Configuration 注册的外部 JSON 来源。";
-            options.IsWritable = true;
-        });
+builder.AddMonica(monica =>
+{
+    monica.AddConfiguration()
+        .UseDbConfigurationStore((_, options) => options.UseSqlite(configurationStoreConnectionString))
+        .AddManagedJsonFile(
+            "docs-external-settings.json",
+            optional: false,
+            reloadOnChange: true,
+            options =>
+            {
+                options.DisplayName = "Docs External Demo Settings";
+                options.Description = "通过 Monica.Configuration 注册的外部 JSON 来源。";
+                options.IsWritable = true;
+            });
+});
 ```
 
 `AddManagedJsonFile(...)` 背后调用 Microsoft `AddJsonFile(...)`，并记录 Monica UI 需要的 display name、path、optional、reloadOnChange、writable 和 description。它默认追加在 Monica effective provider 之后，因此优先级高于 Monica store；如果宿主后续再追加其他 provider，后追加的 provider 仍可覆盖它。
@@ -97,12 +106,10 @@ flowchart TB
 
 ## 公开使用面
 
-- `Mo.AddConfiguration()`：注册 schema 扫描、Options 绑定、mutation、history、rollback、source inspection 和 facade。
+- `monica.AddConfiguration()`：注册 schema 扫描、Options 绑定、mutation、history、rollback、source inspection 和 facade。
 - `UseFileConfigurationStore(...)`：单体/本地 file store preset。
 - `UseDbConfigurationStore(...)`：分布式 EF Core DB store preset。
 - `AddManagedJsonFile(...)`：追加一个 Monica 可识别的 JSON configuration source，可用于覆盖 Monica effective values。
-- `ModuleConfigurationGuide.CreateEffectiveOptionsReader(...)`：为尚未进入应用 DI 阶段的启动代码创建 Monica effective options reader。
-- `IMonicaEffectiveOptionsReader` / `MonicaEffectiveOptionsSnapshot`：按 bootstrap、Monica effective store、managed JSON 的优先级读取单个或批量 Options 的启动期快照。
 - `ConfigurationAttribute`：把一个 Options 类型声明为 Monica 管理的配置定义。
 - `OptionSettingAttribute`：给配置属性添加展示名、说明、敏感值、重载行为和列表项稳定 key。
 - `ConfigurationFacade`：UI、Minimal API 或应用层使用的配置管理入口，返回 `Res<T>`。

@@ -8,7 +8,7 @@ sidebar_position: 4
 
 ## Guide methods
 
-这个模块没有额外公开的 Guide 方法，通常直接通过 `Mo.AddProjectUnits()` 进入即可。
+这个模块没有额外公开的 Guide 方法，通常直接通过 `monica.AddProjectUnits()` 进入即可。
 
 ## Provider choices
 
@@ -16,7 +16,7 @@ sidebar_position: 4
 |---|---|---|
 | XML 文档细节解析 | `ParseUnitDetails = true`（默认） | 你希望单元详情包含更多描述、方法信息和文档注释时。 |
 | 请求过滤能力 | `EnableRequestFilter = true` | 你需要通过模块管理请求过滤状态时。 |
-| 运维 UI | `Mo.AddProjectUnitsUI()` | 需要可视化查看项目单元、依赖关系和枚举信息时。 |
+| 运维 UI | `monica.AddProjectUnitsUI()` | 需要可视化查看项目单元、依赖关系和枚举信息时。 |
 
 ## Module dependencies
 
@@ -41,7 +41,7 @@ sidebar_position: 4
 | `TriggeredJob` | `TriggeredJob<TArgs>` | `Application/BackgroundWorkers/` |
 | `Configuration` | `[Configuration]` + `*Options` | `Configurations/` |
 
-其中 `Configuration` 还有一个容易漏掉的宿主约束：如果某个 `*Options` 需要在后续模块注册代码里立即使用，必须先执行 `Mo.AddConfiguration(...)`，再调用 `Mo.RegisterInstantly(builder)`；否则它仍会等到默认模块批量注册阶段才真正可用。
+`Configuration` 需要区分两个生命周期：组合阶段必须使用的启动参数直接从 `builder.Configuration` 读取；应用构建后的业务配置通过 `IOptions<T>`、`IOptionsSnapshot<T>` 或 `IOptionsMonitor<T>` 消费。不要为提前读取托管配置而构建临时容器。
 
 ## `Handler` 风格与 `CrudService` 风格
 

@@ -20,9 +20,9 @@ sidebar_position: 1
 
 | 项目 | 值 |
 |---|---|
-| 包 | `Monica.Framework` |
-| 注册入口 | `Mo.AddProjectUnits()` |
-| 相关 UI 模块 | `Mo.AddProjectUnitsUI()` |
+| 包 | `Monica.ProjectUnits` |
+| 注册入口 | `monica.AddProjectUnits()` |
+| 相关 UI 模块 | `monica.AddProjectUnitsUI()` |
 
 ## 它会识别哪些项目单元
 

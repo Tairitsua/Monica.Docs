@@ -9,8 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../../MoLibrary/Monica.Framework/Monica.Framework.csproj" />
-    <ProjectReference Include="../../../../MoLibrary/Monica.Framework.UI/Monica.Framework.UI.csproj" />
-    <ProjectReference Include="..\..\..\..\MoLibrary\Monica.Configuration.UI\Monica.Configuration.UI.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Configuration/Monica.Configuration.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Core/Monica.Core.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.DependencyInjection/Monica.DependencyInjection.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.WebApi/Monica.WebApi.csproj" />
   </ItemGroup>
 </Project>

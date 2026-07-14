@@ -19,8 +19,8 @@ sidebar_position: 1
 | 项目 | 值 |
 |---|---|
 | 包 | `Monica.AI` |
-| 注册入口 | `Mo.AddRAG()` |
-| 相关 UI 模块 | `Mo.AddRAGUI()` |
+| 注册入口 | `monica.AddRAG()` |
+| 相关 UI 模块 | `monica.AddRAGUI()` |
 
 ## 公开使用面
 

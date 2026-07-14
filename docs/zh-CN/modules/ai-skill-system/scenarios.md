@@ -20,6 +20,6 @@ sidebar_position: 5
 
 ## Common mistakes
 
-- 只定义了 `Skill<TSelf>`，但宿主没有启用 `Mo.AddAISkillSystem()` 或 `Mo.AddAI()`。
+- 只定义了 `Skill<TSelf>`，但宿主没有启用 `monica.AddAISkillSystem()` 或 `monica.AddAI()`。
 - Skill 名称没有保持稳定，导致管理状态文件中的单项启用配置失效。
 - 两个方法派生出同一个工具名；应使用 `[SkillTool(Name = "...")]` 明确区分。

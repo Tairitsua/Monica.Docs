@@ -9,24 +9,26 @@ sidebar_position: 2
 ## 安装包
 
 ```bash
-dotnet add package Monica.Framework
+dotnet add package Monica.ProjectUnits
 ```
 
 ## 最小注册与结构发现
 
 ```csharp
-using Monica.Framework.ProjectUnits.Models;
+using Monica.ProjectUnits.Models;
+using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Mo.AddProjectUnits(o =>
+builder.AddMonica(monica =>
 {
-    o.ConventionOptions.EnableNameConvention = true;
-    o.ConventionOptions.NameConventionMode = ENameConventionMode.Warning;
+    monica.AddProjectUnits(o =>
+    {
+        o.ConventionOptions.EnableNameConvention = true;
+        o.ConventionOptions.NameConventionMode = ENameConventionMode.Warning;
+    });
 });
-
-builder.UseMonica();
 
 var app = builder.Build();
 app.UseMonica();

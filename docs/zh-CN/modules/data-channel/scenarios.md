@@ -16,5 +16,5 @@ sidebar_position: 5
 
 ## Common mistakes
 
-- 注册了 `Mo.AddDataChannel()` 却没有调用 `SetChannelBuilder<T>()`。
+- 注册了 `monica.AddDataChannel()` 却没有调用 `UseSetup<TSetup>()`。
 - 把 channel 注册逻辑散落在宿主各处，而不是统一放到 `IDataChannelSetup` 中。

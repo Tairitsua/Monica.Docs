@@ -15,16 +15,18 @@ dotnet add package Monica.AutoModel
 ## 最小注册
 
 ```csharp
+using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Mo.AddAutoModel(o =>
+builder.AddMonica(monica =>
 {
-    o.EnableActiveMode = true;
+    monica.AddAutoModel(o =>
+    {
+        o.EnableActiveMode = true;
+    });
 });
-
-builder.UseMonica();
 
 var app = builder.Build();
 app.UseMonica();

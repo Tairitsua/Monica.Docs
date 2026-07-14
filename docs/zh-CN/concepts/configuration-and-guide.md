@@ -35,7 +35,7 @@ sidebar_position: 2
 - `UseInMemoryMetadataRepository()`
 - `UseSchedulerScope("local-dev")`
 - `MapSignalRHub<THub>("/signalr/chat")`
-- `SetChannelBuilder<TSetup>()`
+- `UseSetup<TSetup>()`
 
 ## 额外选项
 
@@ -54,7 +54,7 @@ sidebar_position: 2
 
 - `JobScheduler`：必须选元数据仓储、Provider、Scope
 - `SignalR`：必须调用 `AddSignalR<...>()`
-- `DataChannel`：必须提供 `SetChannelBuilder<T>()`
+- `DataChannel`：必须提供 `UseSetup<TSetup>()`
 
 ## 文档写法建议
 

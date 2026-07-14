@@ -10,7 +10,7 @@ sidebar_position: 4
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|
-| `Mo.AddConfigurationUI()` | 注册配置操作台页面和页面状态服务 | 否 | 需要内置配置管理 UI 时。 |
+| `monica.AddConfigurationUI()` | 注册配置操作台页面和页面状态服务 | 否 | 需要内置配置管理 UI 时。 |
 
 `ModuleConfigurationUIGuide` 当前没有额外 Guide 方法。
 
@@ -18,10 +18,10 @@ sidebar_position: 4
 
 | Dependency | Why it is used |
 |---|---|
-| `Mo.AddConfiguration()` | 提供 `ConfigurationFacade`、schema、store、mutation、history、rollback 和 source inspection。 |
-| `Mo.AddLocalization()` | 注册 UI 本地化资源。 |
-| `Mo.AddDiffHighlight()` | 在历史、保存预览、JSON 编辑和导入报告中生成 diff。 |
-| `Mo.AddUIShell()` | 注册页面、导航和 Blazor shell。 |
+| `monica.AddConfiguration()` | 提供 `ConfigurationFacade`、schema、store、mutation、history、rollback 和 source inspection。 |
+| `monica.AddLocalization()` | 注册 UI 本地化资源。 |
+| `monica.AddDiffHighlight()` | 在历史、保存预览、JSON 编辑和导入报告中生成 diff。 |
+| `monica.AddUIShell()` | 注册页面、导航和 Blazor shell。 |
 
 ## Store relationship
 

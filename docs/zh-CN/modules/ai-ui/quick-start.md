@@ -17,27 +17,33 @@ dotnet add package Monica.AI.UI
 ```csharp
 using Monica.Modules;
 
-Mo.AddAI()
-    .AddOpenAIProvider(options =>
-    {
-        options.ApiKey = builder.Configuration["OpenAI:ApiKey"]!;
-        options.SupportedModels = ["gpt-4o-mini"];
-        options.IsDefault = true;
-    });
+builder.AddMonica(monica =>
+{
+    monica.AddAI()
+        .AddOpenAIProvider(options =>
+        {
+            options.ApiKey = builder.Configuration["OpenAI:ApiKey"]!;
+            options.SupportedModels = ["gpt-4o-mini"];
+            options.IsDefault = true;
+        });
 
-Mo.AddAIUI();
+    monica.AddAIUI();
+});
 ```
 
-`Mo.AddAIUI()` 会依赖 `Mo.AddAI()`。启用聊天页时，它还会依赖 `Mo.AddKnowledgeBase()`，用于聊天中的知识库选择。
+`monica.AddAIUI()` 会依赖 `monica.AddAI()`。启用聊天页时，它还会依赖 `monica.AddKnowledgeBase()`，用于聊天中的知识库选择。
 
 ## 只启用管理页
 
 ```csharp
-Mo.AddAIUI(options =>
+builder.AddMonica(monica =>
 {
-    options.DisableAIChatPage = true;
-    options.DisableAIProviderPage = false;
-    options.DisableAICapabilityPage = false;
+    monica.AddAIUI(options =>
+    {
+        options.DisableAIChatPage = true;
+        options.DisableAIProviderPage = false;
+        options.DisableAICapabilityPage = false;
+    });
 });
 ```
 

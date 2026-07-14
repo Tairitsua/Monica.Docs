@@ -12,7 +12,7 @@ sidebar_position: 5
 
 ## 场景 2 — 用程序集级 `AutoControllerConfigAttribute` 固定默认路由
 
-真实项目里，除了在 `Mo.AddAutoControllers(...)` 里改 `CrudControllerOption`，还常常会在程序集级用 `AutoControllerConfigAttribute` 统一默认路由前缀和领域名。这样生成器与宿主注册入口都能围绕同一套路由约定工作。
+真实项目里，除了在 `monica.AddAutoControllers(...)` 里改 `CrudControllerOption`，还常常会在程序集级用 `AutoControllerConfigAttribute` 统一默认路由前缀和领域名。这样生成器与宿主注册入口都能围绕同一套路由约定工作。
 
 推荐把 `ApplicationService` 的基础路由固定成 `api/{version}/{DomainName(PascalCase)}`，然后让每个 Handler 方法只声明自己的请求级路由片段。
 
@@ -46,7 +46,7 @@ using Monica.WebApi.AutoControllers.Annotations;
 
 - Producer：领域 / API 项目，导出 `RpcMetadata`
 - Consumer：`Platform.Protocol`，消费元数据并生成 `Contracts` 与 `Implementations.*`
-- Host：通过 `Mo.AddRpcClient()` 选择 `Http` 或 `Local`
+- Host：通过 `monica.AddRpcClient()` 选择 `Http` 或 `Local`
 
 详细步骤见：
 

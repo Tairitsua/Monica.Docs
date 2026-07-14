@@ -16,21 +16,23 @@ dotnet add package Monica.Repository
 
 ```csharp
 using Microsoft.EntityFrameworkCore;
+using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Mo.AddUnitOfWork();
+builder.AddMonica(monica =>
+{
+    monica.AddUnitOfWork();
 
-Mo.AddRepository()
-    .AddRepositoryDbContext<AppDbContext>(
-        (sp, options) =>
-        {
-            options.UseSqlite(builder.Configuration.GetConnectionString("Default")!);
-        },
-        DbContextProviderType.UnitOfWork);
-
-builder.UseMonica();
+    monica.AddRepository()
+        .AddRepositoryDbContext<AppDbContext>(
+            (sp, options) =>
+            {
+                options.UseSqlite(builder.Configuration.GetConnectionString("Default")!);
+            },
+            DbContextProviderType.UnitOfWork);
+});
 ```
 
 ## 第一个有价值的配置
@@ -44,7 +46,7 @@ public sealed class OrderService(IUnitOfWorkManager unitOfWorkManager)
     {
         using var uow = unitOfWorkManager.Begin(new UnitOfWorkOptions(isTransactional: true));
 
-        // 调用仓储与领域服务...
+        // Invoke repositories and domain services here.
 
         await uow.CompleteAsync();
     }

@@ -13,9 +13,12 @@ sidebar_position: 3
 是否在来源清单中展示非受管配置项由核心模块选项控制：
 
 ```csharp
-Mo.AddConfiguration(options =>
+builder.AddMonica(monica =>
 {
-    options.IncludeUnmanagedSourceInventoryItems = true;
+    monica.AddConfiguration(options =>
+    {
+        options.IncludeUnmanagedSourceInventoryItems = true;
+    });
 });
 ```
 
@@ -34,21 +37,20 @@ Mo.AddConfiguration(options =>
 
 UI 修改值时不会立即写入 store 或 JSON 文件，而是进入 scoped `ConfigurationStateStore`。用户点击保存后，UI 才会：
 
-1. 调用 `ConfigurationFacade.BeginMutationGroupAsync(...)`。
-2. 对每条暂存变更调用 `MutateAsync(...)` 或 `MutateSourceAsync(...)`。
-3. 调用 `CompleteMutationGroupAsync(...)` 或 `MarkMutationGroupPartialAsync(...)`。
-4. 清空 UI 暂存状态。
+1. 将暂存变更转换为一个 `ConfigurationMutationGroupApplyRequest`。
+2. 调用 `ConfigurationFacade.ApplyMutationGroupAsync(...)`，由 Facade 统一完成校验、写入与审计记录。
+3. 根据组结果展示成功项与失败项，然后清空已处理的 UI 暂存状态。
 
 ```mermaid
 flowchart LR
     edit["编辑输入框 / JSON / Import"]
     staged["ConfigurationStateStore<br/>PendingChange + ValidationIssue"]
     dialog["保存对话框<br/>Diff + Issues"]
-    group["BeginMutationGroup"]
-    mutate["MutateAsync / MutateSourceAsync"]
-    complete["Complete / Partial"]
+    request["ConfigurationMutationGroupApplyRequest"]
+    apply["ApplyMutationGroupAsync"]
+    result["Success / Failure results"]
 
-    edit --> staged --> dialog --> group --> mutate --> complete
+    edit --> staged --> dialog --> request --> apply --> result
 ```
 
 ## Validation issue

@@ -19,8 +19,8 @@ sidebar_position: 1
 | 项目 | 值 |
 |---|---|
 | 包 | `Monica.DependencyInjection` |
-| 注册入口 | `Mo.AddDependencyInjection()` |
-| 相关 UI 模块 | `Mo.AddDependencyInjectionUI()` |
+| 注册入口 | `monica.AddDependencyInjection()` |
+| 相关 UI 模块 | `monica.AddDependencyInjectionUI()` |
 
 ## 公开使用面
 

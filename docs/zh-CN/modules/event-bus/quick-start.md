@@ -17,14 +17,16 @@ dotnet add package Monica.EventBus
 ```csharp
 using Monica.EventBus.Abstractions.Handlers;
 using Monica.EventBus.Events;
+using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Mo.AddEventBus()
-    .UseNoOpDistributedEventBus();
-
-builder.UseMonica();
+builder.AddMonica(monica =>
+{
+    monica.AddEventBus()
+        .UseNoOpDistributedEventBus();
+});
 
 public sealed class UserCreatedEvent : DomainEvent
 {

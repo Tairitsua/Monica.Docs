@@ -70,40 +70,41 @@ Monica-native 的 CRUD 服务通常有这些共同点：
 - `Worker*` / `Job*` 负责调度、日志、进度、事务边界
 - 实际业务规则继续交给实体和 `DomainService`
 
-## 场景 5 — 在注册阶段就读取 `Configuration`
+## 场景 5 — 区分启动参数与运行期 `Configuration`
 
-有些业务宿主会在注册阶段就读取配置项目单元，例如先根据配置初始化日志、外部基础设施或额外配置源。这时只调用 `Mo.AddConfiguration()` 还不够，因为模块默认会在后续统一注册。
+有些业务宿主需要先根据配置初始化日志、外部基础设施或额外配置源。组合阶段应直接读取 `builder.Configuration`；`[Configuration]` 项目单元则留给已构建容器中的标准 Options 生命周期。
 
-更稳妥的写法是先注册 `Configuration`，然后立刻执行一次 `Mo.RegisterInstantly(builder)`：
+下面的目录是启动参数，因此在进入 `AddMonica(...)` 回调前读取：
 
 ```csharp
 using Monica.Tool.Runtime;
 
-const string configDirectory = "Configurations";
+var configDirectory = builder.Configuration["Monica:ConfigurationDirectory"]
+    ?? "Configurations";
 
-Mo.AddConfiguration(o =>
+builder.AddMonica(monica =>
 {
-    o.GenerateFileForEachOption = true;
-    o.GenerateOptionFileParentDirectory = configDirectory;
-    o.SetOtherSourceAction = manager =>
+    monica.AddConfiguration(o =>
     {
-        manager.AddJsonFile(
-            RuntimePathHelper.GetRelativePathInRunningPath($"{configDirectory}/global-appsettings.json"),
-            optional: false,
-            reloadOnChange: true);
-        manager.AddJsonFile(
-            RuntimePathHelper.GetRelativePathInRunningPath("appsettings.json"),
-            optional: true,
-            reloadOnChange: true);
-    };
+        o.GenerateFileForEachOption = true;
+        o.GenerateOptionFileParentDirectory = configDirectory;
+        o.SetOtherSourceAction = manager =>
+        {
+            manager.AddJsonFile(
+                RuntimePathHelper.GetRelativePathInRunningPath($"{configDirectory}/global-appsettings.json"),
+                optional: false,
+                reloadOnChange: true);
+            manager.AddJsonFile(
+                RuntimePathHelper.GetRelativePathInRunningPath("appsettings.json"),
+                optional: true,
+                reloadOnChange: true);
+        };
+    });
+
 });
-
-Mo.RegisterInstantly(builder);
-
-// 这里之后的注册代码，才可以安全消费已经绑定的配置类型。
 ```
 
-这样后续注册代码才能安全消费已经绑定的配置类型。只有当“注册阶段必须读取配置”时才需要这样做；普通运行期注入场景继续保持默认顺序即可。
+回调可以闭包捕获这个启动参数。业务服务在运行期消费 Monica 管理的配置时，继续注入 `IOptions<T>`、`IOptionsSnapshot<T>` 或 `IOptionsMonitor<T>`，不要提前构建临时容器。
 
 ## 场景 6 — 用 Warning 模式逐步收紧命名治理
 
@@ -119,4 +120,4 @@ Mo.RegisterInstantly(builder);
 - 把请求 DTO 放在 API 项目本地，而不是 Published Language。
 - 一开始就启用 `Strict` 模式，导致历史项目接入成本过高。
 - 关闭 `ParseUnitDetails` 后仍然期望看到完整的单元细节和文档信息。
-- 需要在注册阶段使用配置类型，却只调用 `Mo.AddConfiguration()`，忘记紧接着 `Mo.RegisterInstantly(builder)`。
+- 为了在组合阶段读取托管配置而提前构建临时容器，导致服务与 Options 生命周期分裂。

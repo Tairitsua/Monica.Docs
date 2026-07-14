@@ -6,15 +6,17 @@ sidebar_position: 2
 
 # 安装与主机接入
 
-Monica 不要求你一次性安装整套框架。通常的做法是：**先安装你真正需要的模块包，再把它们通过 `Mo.Add*()` 注册到主机中。**
+Monica 不要求你一次性安装整套框架。通常的做法是：**先安装真正需要的包，再把它们组合到当前宿主的显式模块图中。**
 
 ## 你至少需要知道的模式
 
-Monica 主机通常遵循下面的三段式流程：
+Monica Web 主机遵循下面的三段式流程：
 
-1. 在 `builder` 阶段调用 `Mo.Add*()` 注册模块
-2. 在 `builder` 阶段调用 `builder.UseMonica()` 完成 Monica 主机构建
-3. 在 `app` 阶段调用 `app.UseMonica()` / `app.MapMonica()` 让模块端点与中间件生效
+1. 在 `builder.AddMonica(monica => { ... })` 中声明完整模块图和 Guide 选择。
+2. 调用 `builder.Build()` 构建宿主。
+3. 在 `app` 阶段调用 `app.UseMonica()` / `app.MapMonica()`，让模块中间件与端点生效。
+
+`AddMonica(...)` 回调属于单个宿主。多个测试宿主或同进程宿主不会互相覆盖 Option、运行时目录或模块状态。
 
 ## 安装包
 
@@ -35,10 +37,11 @@ using Monica.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Mo.AddDependencyInjection();
-Mo.AddEventBus().UseNoOpDistributedEventBus();
-
-builder.UseMonica();
+builder.AddMonica(monica =>
+{
+    monica.AddDependencyInjection();
+    monica.AddEventBus().UseNoOpDistributedEventBus();
+});
 
 var app = builder.Build();
 app.UseMonica();
@@ -66,7 +69,7 @@ app.Run();
 ```
 
 4. 必要时检查编译输出中的 `.StaticWebAssets.xml` 或 `*.staticwebassets.runtime.json`，确认 `Monica.UI`、`MudBlazor` 等依赖资源的映射已经生成。
-5. 最后回到 `Program.cs`，确认 Monica 主机闭环没有缺失：`builder.UseMonica()`、`app.UseMonica()`、`app.MapMonica()`。
+5. 最后回到 `Program.cs`，确认 Monica 主机闭环没有缺失：`builder.AddMonica(...)`、`app.UseMonica()`、`app.MapMonica()`。
 
 ### Debug 启动后 UI 没有样式
 
@@ -118,8 +121,8 @@ static void UseDevelopmentEnvironmentByDefaultForLocalDebugging()
 
 ## 什么时候需要继续往下配
 
-- 只要模块有 `ModuleOption`，你就可以在 `Mo.Add*()` 的 lambda 中配置它
-- 只要模块有 `ModuleGuide`，你就可以继续链式调用启用附加能力
+- 只要模块有 `ModuleOption`，你就可以在 `AddMonica(...)` 回调中的 `monica.Add*()` lambda 配置它
+- 只要模块有 `ModuleGuide`，你就可以在同一个回调中继续链式调用以启用附加能力
 - 只要模块存在配套 UI 模块，通常都应该把基础设施模块和 UI 模块分开理解、按需组合
 
 ## 下一步

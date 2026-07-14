@@ -17,19 +17,21 @@ dotnet add package Monica.JobScheduler
 ```csharp
 using Monica.JobScheduler.Abstractions;
 using Monica.JobScheduler.Annotations;
+using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Mo.AddJobScheduler(o =>
+builder.AddMonica(monica =>
 {
-    o.MaxWorkerExecutionThreads = 4;
-})
-.UseInMemoryMetadataRepository()
-.UseSchedulerScope("local-dev")
-.UseInMemoryProvider();
-
-builder.UseMonica();
+    monica.AddJobScheduler(o =>
+    {
+        o.MaxWorkerExecutionThreads = 4;
+    })
+    .UseInMemoryMetadataRepository()
+    .UseSchedulerScope("local-dev")
+    .UseInMemoryProvider();
+});
 
 [JobConfig(JobName = "Ping Job", CronSchedule = "0 */5 * * * *")]
 public sealed class PingJob : IRecurringJob

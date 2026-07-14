@@ -16,13 +16,15 @@ dotnet add package Monica.DependencyInjection
 
 ```csharp
 using Monica.DependencyInjection.Abstractions;
+using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Mo.AddDependencyInjection();
-
-builder.UseMonica();
+builder.AddMonica(monica =>
+{
+    monica.AddDependencyInjection();
+});
 
 public interface IClockService
 {

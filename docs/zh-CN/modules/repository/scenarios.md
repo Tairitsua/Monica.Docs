@@ -32,5 +32,5 @@ public sealed class UserRepository(IDbContextProvider<AppDbContext> dbContextPro
 
 ## Common mistakes
 
-- 只注册了 `Mo.AddRepository()`，却忘了调用 `AddRepositoryDbContext<TDbContext>(...)`。
+- 只注册了 `monica.AddRepository()`，却忘了调用 `AddRepositoryDbContext<TDbContext>(...)`。
 - 把所有场景都切到 `ContextFactory` 或 `UnitOfWork`，而没有先从默认 Provider 开始。

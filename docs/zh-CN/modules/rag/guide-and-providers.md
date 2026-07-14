@@ -38,6 +38,6 @@ sidebar_position: 4
 
 ## Module dependencies
 
-- `Mo.AddKnowledgeBase()`：提供知识库、文档库存和源文档内容。
-- `Mo.AddMarkdown()`：支持 Markdown 文档解析和导入。
-- `Mo.AddAI()`：提供 Embedding Provider 和 Agent 集成。
+- `monica.AddKnowledgeBase()`：提供知识库、文档库存和源文档内容。
+- `monica.AddMarkdown()`：支持 Markdown 文档解析和导入。
+- `monica.AddAI()`：提供 Embedding Provider 和 Agent 集成。

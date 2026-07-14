@@ -1,30 +1,34 @@
 ---
-title: Monica Documentation
-description: The English documentation set is still being migrated. Use the language switcher to check translated pages as they become available.
+title: Monica documentation
+description: Build observable .NET backends with an architecture that coding agents and human teams can follow together.
 sidebar_position: 1
 ---
 
-# Monica Documentation
+# Architecture agents can follow
 
-The documentation tree now uses a language-first layout.
+Monica is an agent-governed application architecture for observable .NET backends. It turns infrastructure registration, DDD application roles, and runtime inspection into one explicit contract.
 
-Configure host-level Monica defaults through root `Mo.Config*()` methods before module registration:
+Use Monica when you want coding agents to move quickly without inventing a different architecture in every feature—and when operators need to understand the system that actually started.
 
-```csharp
-Mo.ConfigApplication(options =>
-{
-    options.AppName = "My Application";
-});
+## Start here
 
-Mo.ConfigModuleSystem(options =>
-{
-    options.DefaultApiGroupName = "Core";
-});
+- [Getting started](getting-started/index.md) — install the Stable packages and run a host.
+- [Host-bound composition](concepts/host-bound-composition.md) — understand the module graph and lifecycle.
+- [ProjectUnits](concepts/project-units.md) — give application code explicit architectural roles.
+- [Stable module catalog](modules/index.md) — choose the supported capabilities your host actually needs.
+- [Package maturity](packages/index.md) — choose between Stable, Integrations, and Labs.
+- [Runtime observability](guides/runtime-observability.md) — inspect modules, jobs, configuration, and telemetry.
+
+## The core idea
+
+```text
+agent guidance -> typed ProjectUnits -> validated module graph -> inspectable runtime
 ```
 
-Module-specific options remain the highest-priority configuration source.
+The same vocabulary appears in source code, agent skills, module diagnostics, and operational UI. That continuity is the product: the architecture does not disappear after startup.
 
-- Current available language folders: `zh-CN`, `en-US`
-- Most detailed content is still authored under `zh-CN`
+## Runnable references
 
-Use the language switcher in `/markdown-docs` to move between language folders.
+- `examples/Monica.ReferenceApplication` is a domain-first Ordering application with ProjectUnits, generated HTTP endpoints, and OpenTelemetry.
+- `examples/JobSchedulerMinimal` is the smallest host that exposes the JobScheduler dashboard.
+- `Monica.Templates` provides the `dotnet new monica-api` starting point.

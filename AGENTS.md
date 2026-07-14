@@ -44,7 +44,7 @@ Key facts for navigation:
 - Keep domain-owned application units in `Application/HandlersCommand`, `Application/HandlersQuery`, `Application/HandlersEvent`, and `Application/BackgroundWorkers`.
 - Keep repository implementations in `Repository/`, and keep pure helper code in `Utilities/` with `Utils*` names when adding new utility helpers.
 - Keep cross-domain collaboration pointed at `src/Shared/Platform.Protocol/PublishedLanguages` or other protocol-level contracts. Do not reference another domain's internal implementation directly.
-- When AppHost registration needs a `Configuration` ProjectUnit value during startup, register `Mo.AddConfiguration(...)` first and call `Mo.RegisterInstantly(builder)` before the dependent registration executes.
+- Host composition must use `builder.Configuration` for values needed before `Build()`. Consume Monica-managed `Configuration` ProjectUnit values through typed `IOptions<T>` or `IOptionsSnapshot<T>` at runtime; there is no ambient or instant-registration phase.
 
 ## Build and Run
 

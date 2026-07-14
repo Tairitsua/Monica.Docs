@@ -12,17 +12,20 @@ sidebar_position: 2
 dotnet add package Monica.AI
 ```
 
-如果只是在非 AI 项目中声明 Skill 基类和 `[SkillTool]`，公共类型来自 `Monica.Core`；真正自动发现和 Agent 适配仍需要 `Monica.AI` 中的 `Mo.AddAISkillSystem()` 或 `Mo.AddAI()`。
+如果只是在非 AI 项目中声明 Skill 基类和 `[SkillTool]`，公共类型来自 `Monica.Core`；真正自动发现和 Agent 适配仍需要 `Monica.AI` 中的 `monica.AddAISkillSystem()` 或 `monica.AddAI()`。
 
 ## 最小注册
 
 ```csharp
 using Monica.Modules;
 
-Mo.AddAISkillSystem();
+builder.AddMonica(monica =>
+{
+    monica.AddAISkillSystem();
+});
 ```
 
-`Mo.AddAI()` 会自动依赖并注册 Skill System。只有在你想单独启用 Skill 发现时，才需要显式调用 `Mo.AddAISkillSystem()`。
+`monica.AddAI()` 会自动依赖并注册 Skill System。只有在你想单独启用 Skill 发现时，才需要显式调用 `monica.AddAISkillSystem()`。
 
 ## 定义 Skill
 
@@ -53,7 +56,7 @@ public sealed class FlightOpsSkill : Skill<FlightOpsSkill>
 
 ## 在聊天中显式引用
 
-组合 `Mo.AddAIUI()` 后，聊天输入框支持 `/` 斜杠命令。输入 Skill 名称的一部分并按 `Tab`，UI 会把 Skill 补全成一个显式引用 Badge，发送消息时该引用会写入聊天运行时上下文。
+组合 `monica.AddAIUI()` 后，聊天输入框支持 `/` 斜杠命令。输入 Skill 名称的一部分并按 `Tab`，UI 会把 Skill 补全成一个显式引用 Badge，发送消息时该引用会写入聊天运行时上下文。
 
 ## 接下来读什么
 

@@ -26,6 +26,15 @@ public static class UtilsDocumentationPath
 
         var decoded = Uri.UnescapeDataString(value.Trim());
         var normalized = NormalizeRelativePath(decoded).Trim('/');
+        if (normalized.EndsWith(".markdown", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = normalized[..^".markdown".Length];
+        }
+        else if (normalized.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = normalized[..^".md".Length];
+        }
+
         if (string.IsNullOrWhiteSpace(normalized))
         {
             return string.Empty;
@@ -60,6 +69,26 @@ public static class UtilsDocumentationPath
                || normalized.EndsWith(".markdown", StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// Determines whether a repository-relative file path is eligible for public asset delivery.
+    /// </summary>
+    /// <remarks>
+    /// Hidden authoring folders and build/dependency directories are never public assets, even when they live below
+    /// the configured documentation root. Markdown source is delivered through the document API instead.
+    /// </remarks>
+    public static bool IsPublicAssetPath(string? path)
+    {
+        var normalizedPath = NormalizeRelativePath(path);
+        if (string.IsNullOrWhiteSpace(normalizedPath) || IsMarkdownDocumentPath(normalizedPath))
+        {
+            return false;
+        }
+
+        return normalizedPath
+            .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .All(static segment => !IsPrivateAssetSegment(segment));
+    }
+
     public static bool TryResolveLocalAssetPath(
         string currentDocumentRelativePath,
         string referencePath,
@@ -71,7 +100,7 @@ public static class UtilsDocumentationPath
             return false;
         }
 
-        if (IsMarkdownDocumentPath(resolvedPath))
+        if (!IsPublicAssetPath(resolvedPath))
         {
             return false;
         }
@@ -80,7 +109,10 @@ public static class UtilsDocumentationPath
         return true;
     }
 
-    public static string BuildAssetUrl(string assetBasePath, string assetRelativePath)
+    public static string BuildAssetUrl(
+        string assetBasePath,
+        string assetRelativePath,
+        Uri? publicApiBaseUrl = null)
     {
         var normalizedBasePath = string.IsNullOrWhiteSpace(assetBasePath)
             ? "/api/v1/Documentation/assets"
@@ -96,7 +128,29 @@ public static class UtilsDocumentationPath
         var encodedPath = Uri.EscapeDataString(NormalizeRelativePath(assetRelativePath));
         var separator = normalizedBasePath.Contains('?', StringComparison.Ordinal) ? '&' : '?';
 
-        return $"{normalizedBasePath}{separator}assetPath={encodedPath}";
+        var relativeUrl = $"{normalizedBasePath}{separator}assetPath={encodedPath}";
+        return publicApiBaseUrl is null
+            ? relativeUrl
+            : new Uri(publicApiBaseUrl, relativeUrl).AbsoluteUri;
+    }
+
+    public static string BuildPublicDocumentPath(
+        string locale,
+        string slug,
+        string defaultLocale)
+    {
+        var normalizedSlug = NormalizeSlug(slug);
+        var publicSlug = normalizedSlug.EndsWith("/index", StringComparison.OrdinalIgnoreCase)
+            ? normalizedSlug[..^"/index".Length]
+            : normalizedSlug;
+        var docsPath = string.IsNullOrEmpty(publicSlug)
+                       || string.Equals(publicSlug, "index", StringComparison.OrdinalIgnoreCase)
+            ? "/docs"
+            : $"/docs/{publicSlug}";
+
+        return string.Equals(locale, defaultLocale, StringComparison.OrdinalIgnoreCase)
+            ? docsPath
+            : $"/{locale}{docsPath}";
     }
 
     private static bool TryResolveRelativeTarget(
@@ -157,5 +211,14 @@ public static class UtilsDocumentationPath
         return splitIndex >= 0
             ? value[..splitIndex]
             : value;
+    }
+
+    private static bool IsPrivateAssetSegment(string segment)
+    {
+        return segment.StartsWith('.')
+               || segment.Equals("bin", StringComparison.OrdinalIgnoreCase)
+               || segment.Equals("obj", StringComparison.OrdinalIgnoreCase)
+               || segment.Equals("node_modules", StringComparison.OrdinalIgnoreCase)
+               || segment.Equals("packages", StringComparison.OrdinalIgnoreCase);
     }
 }

@@ -1,267 +1,180 @@
 # Monica.Docs Architecture Spec
 
-This file preserves the detailed architecture memo that used to live in the root README.
+Monica.Docs is both Monica's public documentation product and an executable example of a Monica modular monolith. This specification describes the architecture that is implemented in this repository.
 
-## Running With Mounted Docs
+## Product boundaries
 
-Monica.Docs now supports a recurring markdown catalog sync job and container-friendly docs path resolution.
+The repository contains three deliberately separate deployable surfaces:
 
-- Default preferred mount path: `/docs`
-- Default recurring sync cron: `0 */5 * * * *` (every 5 minutes)
-- Override with `DocumentationApi:DocsBasePath`, `DocumentationApi:PreferredDocsMountPath`, and `DocumentationApi:DocsSyncCronExpression`
-- Path resolution order: explicit `DocsBasePath` -> preferred mount path -> `src/AppHost/Monica.Docs.Api/docs` -> repository `docs/`
-- The Job Scheduler UI and Observable Instance UI are enabled in the AppHost so you can inspect the docs sync worker, hosted-service state transitions, and in-memory scheduler settings from the Monica shell
+1. `frontend/monica-docs-web` is the public product site and documentation reader.
+2. `src/AppHost/Monica.Docs.PublicApi` is the read-only public documentation API.
+3. `src/AppHost/Monica.Docs.Api` is a broad, resettable demo host for exploring Monica modules and UI.
 
-Example container mount:
+The public API must never acquire demo, admin, mutation, local-RPC, or operational-dashboard endpoints. Demo behavior belongs to the demo host and the `Showcase` bounded context.
 
-```bash
-docker run -p 8080:8080 \
-  -v $(pwd)/docs:/docs \
-  monica-docs
-```
+## Technology baseline
 
-## Project Goals
+- Next.js 16 and React 19
+- TypeScript and Tailwind CSS 4
+- .NET 10 and ASP.NET Core
+- Monica host-bound composition through `builder.AddMonica(...)`
+- Repository Markdown under `docs/` as the content source of truth
 
-- Keep this repository useful as Monica product documentation.
-- Make the backend a Monica-native modular monolith, not a generic layered app.
-- Keep the frontend and backend fully decoupled.
-- Start with a small, defensible v1: the frontend reads docs from backend APIs and presents them well.
-- Let the repository act as a living example of how Monica should be used in a real solution.
+The website and API are independently deployable. The frontend consumes only HTTP contracts and never references backend projects or types.
 
-## Current State
-
-Today the repository already has the first modular-monolith backend extraction in place:
-
-- `src/AppHost/Monica.Docs.Api` is the API entry project.
-- `src/Domains/Documentation` is the current bounded context.
-- `src/Shared/Platform.Protocol` and `src/Shared/Platform.Infrastructure` hold the shared platform language and runtime wiring.
-- `docs/` contains the markdown documentation source.
-- The solution still depends on Monica framework libraries from `../MoLibrary`.
-
-That is a valid transitional step, but the structure still needs to stay disciplined as the repository grows. In particular, AppHost should remain composition-only and domain-owned application units should stay inside the owning bounded context.
-
-## Target Architecture
-
-### Backend
-
-The backend should become a Monica modular monolith that follows the `monica-business-modular-monolith` rules:
-
-- Domain-first layout, not global `Application` / `Domain` / `Infrastructure` buckets.
-- Shared language in `Shared/Platform.Protocol/PublishedLanguages`.
-- Domain-owned application units live under `Domains/{Subdomain}/Application/...`.
-- AppHost entry projects stay composition-only.
-- Clear persistence ownership per bounded context.
-- No direct cross-domain references to another domain's internal implementation.
-
-### Frontend
-
-The frontend should be a separate web app. I recommend:
-
-- `Next.js 15`
-- `TypeScript`
-- `Tailwind CSS`
-- `shadcn/ui`
-
-Reasoning:
-
-- It is a strong fit for a polished docs experience.
-- It supports clean route-based pages for docs.
-- It stays fully decoupled from the backend and talks only over HTTP.
-- It gives room for future SEO, search, and static optimization without changing the backend model.
-
-### Content Source
-
-For v1, the source of truth remains the existing repository content:
-
-- `docs/**/*.md`
-- `docs/attachments/**`
-
-The backend owns parsing, normalization, and API exposure of that content. The frontend owns presentation only.
-
-## Proposed Repository Shape
+## Repository shape
 
 ```text
+docs/                                      localized Markdown source
+frontend/monica-docs-web/                  public Next.js website
 src/
 ├── AppHost/
-│   └── Monica.Docs.Api/
-│       ├── Monica.Docs.Api.csproj
-│       └── Program.cs
-├── Shared/
-│   ├── Platform.BuildingBlocks/
-│   │   └── Platform.BuildingBlocks.csproj
-│   ├── Platform.Infrastructure/
-│   │   └── Platform.Infrastructure.csproj
-│   └── Platform.Protocol/
-│       ├── Platform.Protocol.csproj
-│       └── PublishedLanguages/
-│           └── DomainDocumentation/
-│               ├── Requests/
-│               ├── Models/
-│               ├── Events/
-│               └── AppInterfaces/          # optional, only if really needed
+│   ├── Monica.Docs.PublicApi/             read-only production API
+│   └── Monica.Docs.Api/                   broad demo host
 ├── Domains/
-│   └── Documentation/
-│       ├── Domains.Documentation.csproj
-│       ├── Application/
-│       │   ├── HandlersCommand/
-│       │   ├── HandlersQuery/
-│       │   ├── HandlersEvent/
-│       │   └── BackgroundWorkers/
-│       ├── Entities/
-│       ├── ValueObjects/
-│       ├── Interfaces/
-│       ├── Configurations/
-│       ├── DomainServices/
-│       ├── Repository/
-│       ├── Persistence/
-│       └── Providers/
-└── Database/
-    └── DbMigrator/
-        └── DbMigrator.csproj
-
-frontend/
-└── monica-docs-web/
-
-docs/
-└── ... markdown source files ...
+│   ├── Documentation/                     public documentation behavior
+│   ├── Showcase/                          demo-only jobs and examples
+│   └── LocalRpcProvider/                  demo-only local RPC boundary
+└── Shared/
+    ├── Platform.BuildingBlocks/
+    ├── Platform.Infrastructure/
+    └── Platform.Protocol/
+        └── PublishedLanguages/
+            └── DomainDocumentation/       stable public requests and DTOs
 ```
 
-Notes:
+AppHost projects are composition roots. Query handlers, domain services, repositories, and content rules remain in `Domains/Documentation`. Stable external contracts remain in `Platform.Protocol`.
 
-- `frontend/` is intentionally outside the backend `src/` tree.
-- `AppHost/Monica.Docs.Api` shows the preferred naming style: use the solution-specific project name directly, typically ending with `Api`.
-- AppHost entry projects stay composition-only and should be kept down to the project file plus `Program.cs`.
-- Domain-owned handlers and jobs live inside `Domains/Documentation/Application/HandlersCommand`, `HandlersQuery`, `HandlersEvent`, and `BackgroundWorkers`.
-- `Shared/Platform.*` folders own their `Platform.*.csproj` directly. No extra `Monica.Docs.*Platform` nesting is needed there.
-- `Monica.Docs.slnx` should mirror the physical `src/AppHost`, `src/Shared`, and `src/Domains` folders in solution view.
-- `Database/DbMigrator` can exist even if v1 is mostly file-system based. If relational persistence appears later, ownership still stays with the owning domain.
-- Do not create a separate `Documentation.Contracts` project. Shared contracts belong in `Shared/Platform.Protocol/PublishedLanguages/DomainDocumentation`.
+## Content delivery flow
 
-## V1 Bounded Context
+```text
+docs/**/*.md
+    -> Monica Markdown catalog
+    -> Documentation repository and processors
+    -> read-only HTTP contracts
+    -> Next.js server components and asset proxy
+    -> localized public routes
+```
 
-V1 should start with one real bounded context only:
+The backend owns source discovery, locale resolution, navigation ordering, slug normalization, Markdown metadata, heading extraction, search ranking, and safe asset resolution. The frontend owns presentation, interaction, fallback content, SEO metadata, and route localization.
 
-- `Documentation`
+The documentation root is resolved in this order:
 
-This matches the Monica rule of not creating a new domain package for every page or CRUD screen. Right now the business language is centered on documentation content, navigation, metadata, and delivery. That is one bounded context.
+1. `DocumentationApi:DocsBasePath`
+2. `DocumentationApi:PreferredDocsMountPath` (default `/docs`)
+3. repository-relative development paths
 
-Future bounded contexts should only be added when they have distinct language and ownership, for example:
+In container deployments, mount the repository documentation at `/docs` or set `DocumentationApi__DocsBasePath` explicitly.
 
-- `Search` if search indexing and ranking become their own concern
-- `Identity` if login, permissions, and authorship become real business concerns
-- `Feedback` if comments, reactions, or review workflows become meaningful
+## Public API
 
-## Documentation Responsibilities
+The public API exposes only read operations:
 
-### `Domains.Documentation`
-
-Own the business concepts and rules for docs:
-
-- query handlers and background workflows under `Application/`
-- doc identity and slug rules
-- doc metadata and front matter normalization
-- navigation order and grouping rules
-- attachment reference rules
-- visibility or publication rules if introduced later
-- repository implementations
-- markdown providers and other technical integrations that belong only to this bounded context
-
-### `Monica.Docs.Api`
-
-Own the host-level composition only:
-
-- register Monica modules
-- load controllers and OpenAPI
-- compose the Documentation domain into the running application
-
-## Published Language
-
-Cross-domain and external-facing contracts should live here:
-
-`src/Shared/Platform.Protocol/PublishedLanguages/DomainDocumentation/`
-
-Suggested v1 contracts:
-
-- `Requests/GetDocTreeRequest`
-- `Requests/GetDocBySlugRequest`
-- `Models/DocTreeItemDto`
-- `Models/DocContentDto`
-- `Models/DocHeadingDto`
-- `Models/DocBreadcrumbDto`
-
-Rules:
-
-- Keep only stable requests, DTOs, enums, events, and optional app interfaces here.
-- Do not leak entities, repositories, EF mappings, or file-system details into this layer.
-- The frontend must consume backend HTTP contracts, not backend internal projects.
-
-## Backend API V1
-
-The backend only needs a small read-only API at first.
-
-Suggested endpoints:
-
-- `GET /api/v1/Documentation/tree`
-- `GET /api/v1/Documentation/doc?slug={slug}`
+- `GET /api/v1/Documentation/locales`
+- `GET /api/v1/Documentation/tree?locale={culture}`
+- `GET /api/v1/Documentation/doc?locale={culture}&slug={slug}`
+- `GET /api/v1/Documentation/search?locale={culture}&query={query}`
 - `GET /api/v1/Documentation/assets?assetPath={path}`
+- `GET /healthz`
 
-Suggested response responsibilities:
+Document responses include canonical public paths, locale alternates, headings, breadcrumbs, and previous/next navigation. Asset responses are traversal-protected, MIME-aware, range-enabled, and emit `ETag` and `Last-Modified` validators.
 
-- resolve markdown from `docs/`
-- expose normalized metadata from front matter
-- expose heading or table-of-contents data
-- resolve attachment URLs
-- return a frontend-friendly document shape
+Production constraints:
 
-The API should be documented with OpenAPI from the backend host.
+- CORS allows only configured website origins.
+- Requests are rate limited by the trusted client address.
+- Forwarded headers are accepted only from configured/trusted proxy networks.
+- Successful documentation JSON and asset responses receive explicit public cache policy.
+- Problem details handle unhandled failures without exposing demo behavior.
 
-## Frontend V1
+The public host composes only the modules needed for documentation delivery:
 
-Frontend v1 is intentionally simple in scope:
+```csharp
+builder.AddMonica(monica =>
+{
+    monica.ConfigureTypeDiscovery(options =>
+        options
+            .ExcludeDefault()
+            .Add(typeof(QueryHandlerGetDocTree).Assembly));
 
-- call the backend API only
-- render a polished docs shell
-- show sidebar navigation from the backend tree
-- show document content page
-- show headings or table of contents
-- support mobile and desktop layouts
-- render code blocks and markdown content cleanly
+    monica.AddResultEnvelope();
+    monica.AddDependencyInjection();
+    monica.AddMediator();
+    monica.AddAutoControllers();
+    monica.AddSwagger();
+    monica.AddCors();
+    monica.AddMarkdown(options => options.ParseFrontMatter = true)
+        .EnableMultilingualDocuments()
+        .AddDocumentGroup("monica", "Monica Docs", docsBasePath);
+});
+```
 
-Not required in v1:
+## Demo host
 
-- editing docs in browser
-- authentication
-- authoring workflow
-- comments
-- advanced search indexing
+`Monica.Docs.Api` is an integration showcase, not a production API. It may compose Monica UI, Configuration, JobScheduler, synchronization workers, local RPC, and other exploratory surfaces. Its state can be reset and its dependency graph can be intentionally broad.
 
-## Architecture Guardrails
+Moving a capability into the demo host does not authorize exposing it through `Monica.Docs.PublicApi`. Shared code must remain read-oriented unless it is owned by a demo-only bounded context.
 
-These rules matter because this repository is also supposed to be a Monica example project:
+## Frontend routes
 
-- Keep the solution domain-first.
-- Keep AppHost entry projects focused on composition and delivery wiring only.
-- Keep domain models, repositories, providers, and persistence ownership out of AppHost.
-- Keep domain-owned handlers and jobs inside the owning domain package under `Application/`.
-- Keep shared business language in `Platform.Protocol`.
-- Keep persistence ownership inside the owning domain.
-- Do not let the frontend couple to backend implementation details.
-- Do not create fake microservices inside one repository. This is one deployment, not distributed services.
+The website provides first-class English and Simplified Chinese launch routes:
 
-## Migration Plan
+- `/` and `/zh-CN`
+- `/docs` and `/zh-CN/docs`
+- `/docs/[...slug]` and `/zh-CN/docs/[...slug]`
+- `/modules` and `/zh-CN/modules`
+- `/reference` and `/zh-CN/reference`
+- `/roadmap` and `/zh-CN/roadmap`
 
-1. Keep `docs/` as the source of truth.
-2. Extract the backend into the domain-first modular-monolith `src/` layout.
-3. Create the `Documentation` domain package and `DomainDocumentation` published language.
-4. Expose the read-only docs API from `AppHost/Monica.Docs.Api`.
-5. Build the separate frontend app in `frontend/monica-docs-web`.
-6. Remove direct backend UI coupling once the frontend is in place.
+The homepage uses a technical-editorial visual system and interactive architecture evidence rather than a generic feature grid. Runtime snapshots are labeled as examples and align with the executable Ordering reference application.
 
-## What This Repository Should Demonstrate
+When `MONICA_DOCS_API_URL` is configured, server-side readers use the public API with bounded request timeouts and revalidation. When it is absent or temporarily unavailable, a small curated launch guide keeps critical routes usable. The fallback is a resilience layer, not a second complete content source.
 
-When this migration is complete, Monica.Docs should show two things clearly:
+The frontend also owns:
 
-- how Monica documentation is delivered as a real product
-- how a Monica business solution should be structured as a modular monolith with explicit boundaries
+- localized metadata, canonical routes, language alternates, sitemap, and robots policy
+- accessible keyboard interaction and reduced-motion behavior
+- local font and icon assets with no browser-loaded CDN dependency
+- documentation search proxying with no-store result responses
+- a validated asset proxy that preserves byte ranges and cache validators
+- redirects for the previous documentation URLs
 
-That is the right direction for this repository: not just docs about Monica, but a working Monica example solution that happens to be the docs product itself.
+## Content language policy
+
+English is the default language for the public launch routes and core adoption guides. Simplified Chinese remains a first-class, broader documentation corpus. Host composition, package maturity, templates, the reference application, and Stable user-facing capabilities must not contradict each other across languages.
+
+An untranslated page is preferable to an inaccurate machine-shaped duplicate. New pages must be grounded in current source, use the host-bound composition API, and avoid presenting Labs contracts as Stable.
+
+## Architecture guardrails
+
+- Keep both AppHost projects composition-only.
+- Keep public documentation behavior inside the Documentation bounded context.
+- Keep demo jobs and mutations outside the public API graph.
+- Keep external contracts in `Platform.Protocol`; do not leak entities or repositories.
+- Keep the frontend coupled only to HTTP contracts.
+- Preserve one-way project references and do not create fake microservices inside one deployment.
+- Treat Stable, Integrations, and Labs as release promises, not marketing adjectives.
+- Keep the framework package manifest authoritative; review the mirrored website catalog whenever it changes.
+- Use `app.UseMonica()` and `app.MapMonica()` only after `builder.Build()`.
+
+## Verification
+
+Backend:
+
+```bash
+dotnet build Monica.Docs.slnx -m
+```
+
+Frontend:
+
+```bash
+cd frontend/monica-docs-web
+npm run check
+npm audit --omit=dev
+```
+
+Release review also exercises localized tree/document/search routes, asset validators and ranges, CORS, cache headers, the public API's absence of Showcase endpoints, responsive layouts, keyboard interaction, and the separate demo host.
+
+## Future boundaries
+
+Create another bounded context only when it owns distinct language and lifecycle. Examples might include author feedback, identity, or a separately operated search index. Editing, authentication, comments, and authoring workflows are intentionally outside the current public product.

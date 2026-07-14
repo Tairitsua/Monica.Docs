@@ -14,13 +14,22 @@
 
   <ItemGroup>
     <ProjectReference Include="../../Shared/Platform.Infrastructure/Platform.Infrastructure.csproj" />
-    <ProjectReference Include="../../../../MoLibrary/Monica.JobScheduler/Monica.JobScheduler.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Configuration/Monica.Configuration.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Core/Monica.Core.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.DependencyInjection/Monica.DependencyInjection.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Generators.AutoController/Monica.Generators.AutoController.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
     <ProjectReference Include="../../../../MoLibrary/Monica.Markdown/Monica.Markdown.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.WebApi/Monica.WebApi.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Markdig" Version="0.45.0" />
-    <PackageReference Include="Monica.Generators.AutoController" Version="0.1.0-preview.4" PrivateAssets="all" />
+    <PackageReference Include="Monica.Generators.AutoController"
+                      Version="0.1.0-preview.4"
+                      ExcludeAssets="analyzers"
+                      PrivateAssets="all" />
   </ItemGroup>
 
 </Project>

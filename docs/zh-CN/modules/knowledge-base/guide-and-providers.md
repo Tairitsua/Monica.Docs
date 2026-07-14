@@ -26,6 +26,6 @@ sidebar_position: 4
 
 ## Module dependencies
 
-- `Mo.AddAISkillSystem()`：注册内置知识库查询 Skill 所需的基础能力。
-- `Mo.AddMarkdown()`：支持从 Markdown 文档组导入知识库文档。
-- `Mo.AddRAG()`：在知识库基础上提供向量索引、搜索和清理。
+- `monica.AddAISkillSystem()`：注册内置知识库查询 Skill 所需的基础能力。
+- `monica.AddMarkdown()`：支持从 Markdown 文档组导入知识库文档。
+- `monica.AddRAG()`：在知识库基础上提供向量索引、搜索和清理。

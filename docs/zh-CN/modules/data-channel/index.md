@@ -19,8 +19,8 @@ sidebar_position: 1
 | 项目 | 值 |
 |---|---|
 | 包 | `Monica.DataChannel` |
-| 注册入口 | `Mo.AddDataChannel()` |
-| 相关 UI 模块 | `Mo.AddDataChannelUI()` |
+| 注册入口 | `monica.AddDataChannel()` |
+| 相关 UI 模块 | `monica.AddDataChannelUI()` |
 
 ## 公开使用面
 

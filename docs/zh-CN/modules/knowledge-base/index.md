@@ -19,8 +19,8 @@ sidebar_position: 1
 | 项目 | 值 |
 |---|---|
 | 包 | `Monica.AI` |
-| 注册入口 | `Mo.AddKnowledgeBase()` |
-| 相关 UI 模块 | `Mo.AddKnowledgeBaseUI()` |
+| 注册入口 | `monica.AddKnowledgeBase()` |
+| 相关 UI 模块 | `monica.AddKnowledgeBaseUI()` |
 
 ## 公开使用面
 

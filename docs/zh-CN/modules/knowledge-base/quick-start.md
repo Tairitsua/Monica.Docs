@@ -17,7 +17,10 @@ dotnet add package Monica.AI
 ```csharp
 using Monica.Modules;
 
-Mo.AddKnowledgeBase();
+builder.AddMonica(monica =>
+{
+    monica.AddKnowledgeBase();
+});
 ```
 
 模块会注册文件型状态存储、源文档存储、知识库服务和 `KnowledgeBaseFacade`。默认数据写入应用运行目录下的 `monica_data/rag/...`。
@@ -51,11 +54,14 @@ public sealed class KnowledgeBaseBootstrapper(KnowledgeBaseFacade facade)
 如果要索引和搜索知识库，需要再注册 [RAG](../rag/index.md)：
 
 ```csharp
-Mo.AddKnowledgeBase();
+builder.AddMonica(monica =>
+{
+    monica.AddKnowledgeBase();
 
-Mo.AddRAG()
-    .UseVectorStoreInMemoryProvider()
-    .AddFakeEmbeddingsModel();
+    monica.AddRAG()
+        .UseVectorStoreInMemoryProvider()
+        .AddFakeEmbeddingsModel();
+});
 ```
 
 ## 接下来读什么

@@ -17,27 +17,33 @@ dotnet add package Monica.AI.UI
 ```csharp
 using Monica.Modules;
 
-Mo.AddKnowledgeBase();
+builder.AddMonica(monica =>
+{
+    monica.AddKnowledgeBase();
 
-Mo.AddRAG()
-    .UseVectorStoreInMemoryProvider()
-    .AddFakeEmbeddingsModel();
+    monica.AddRAG()
+        .UseVectorStoreInMemoryProvider()
+        .AddFakeEmbeddingsModel();
 
-Mo.AddKnowledgeBaseUI();
+    monica.AddKnowledgeBaseUI();
+});
 ```
 
-启用知识库管理页时，模块会依赖 `Mo.AddRAG()`。这是因为管理页需要展示和处理 RAG 相关状态，例如 Embedding 绑定、索引状态或向量清理入口。
+启用知识库管理页时，模块会依赖 `monica.AddRAG()`。这是因为管理页需要展示和处理 RAG 相关状态，例如 Embedding 绑定、索引状态或向量清理入口。
 
 ## 只保留可复用组件
 
 ```csharp
-Mo.AddKnowledgeBaseUI(options =>
+builder.AddMonica(monica =>
 {
-    options.DisableKnowledgeBaseManagePage = true;
+    monica.AddKnowledgeBaseUI(options =>
+    {
+        options.DisableKnowledgeBaseManagePage = true;
+    });
 });
 ```
 
-禁用页面后，管理页和导航项不会注册，但基础依赖 `Mo.AddKnowledgeBase()` 仍会声明。
+禁用页面后，管理页和导航项不会注册，但基础依赖 `monica.AddKnowledgeBase()` 仍会声明。
 
 ## 接下来读什么
 

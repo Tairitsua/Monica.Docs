@@ -9,62 +9,108 @@
   <a href="README.md">English</a> | 简体中文
 </p>
 
-> Monica 官方文档站点，同时也是一个用 Monica 自身构建的可运行模块化单体示例。
+> Monica 的公开产品站与双语文档：面向可观测 .NET 后端的、由智能体也能遵循的应用架构。
 
-## 这个仓库是什么
+这个仓库包含三个有意隔离的产品：
 
-- <https://monica.dpdns.org/> 的源码
-- 一个能直接运行的 Monica 示例，展示 domain-first 的 modular monolith 结构
-- 文档产品和后端示例共存的仓库
+- 面向 <https://monica.dpdns.org/> 的 Next.js 官网
+- 面向 `api.monica.dpdns.org` 的只读文档 API
+- 用于探索框架能力的 Monica 模块化单体演示宿主
 
-如果你是来读文档的，先去网站。如果你是来理解 Monica 的项目结构，先看 `src/`。
+公开 API 与可重置的演示面完全隔离，避免生产文档服务意外暴露 showcase 端点。
 
-## 快速开始
+## 运行公开文档栈
 
-### 本地阅读文档
+先启动只读 API：
+
+```bash
+dotnet run --project src/AppHost/Monica.Docs.PublicApi/Monica.Docs.PublicApi.csproj
+```
+
+在另一个终端启动网站：
+
+```bash
+cd frontend/monica-docs-web
+npm install
+MONICA_DOCS_API_URL=http://localhost:5082 npm run dev
+```
+
+打开 <http://localhost:3000>。主要路由包括：
+
+- `/` 与 `/zh-CN`：本地化产品主页
+- `/docs` 与 `/zh-CN/docs`：文档与搜索
+- `/modules`：完整的 Stable / Integrations / Labs 包目录
+- `/reference`：官方模板与 Ordering 参考应用
+- `/roadmap`：公开发布门槛与承诺
+
+未配置 `MONICA_DOCS_API_URL` 或 API 暂时不可达时，前端会显示内置的精简启动指南，而不是空白失败页。
+
+## 运行完整演示宿主
 
 ```bash
 dotnet run --project src/AppHost/Monica.Docs.Api/Monica.Docs.Api.csproj
 ```
 
-然后打开：
+演示宿主会运行 Monica UI、JobScheduler、文档同步与本地 RPC。它有意比公开 API 更宽，不是 `api.monica.dpdns.org` 的部署目标。
 
-- `http://localhost:5298`
-- `/markdown-docs`，查看 markdown 文档页面
+## 主机绑定的 Monica 组合
 
-### 挂载自己的 docs 目录
+每个宿主只拥有一张显式模块图：
 
-```bash
-docker run -p 8080:8080 \
-  -v $(pwd)/docs:/docs \
-  monica-docs
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+builder.AddMonica(monica =>
+{
+    monica.ConfigureApplication(options =>
+    {
+        options.AppName = "Monica Documentation API";
+        options.AppId = "monica-docs-public-api";
+    });
+
+    monica.AddMarkdown()
+        .EnableMultilingualDocuments()
+        .AddDocumentGroup("monica", "Monica Docs", docsBasePath);
+});
+
+var app = builder.Build();
+app.UseMonica();
+app.MapMonica();
+app.Run();
 ```
 
-AppHost 的 docs 解析顺序是：显式路径、首选挂载路径、AppHost 本地 `docs/`、仓库根目录 `docs/`。
+框架不再存在环境式注册单例，也不依赖注册阶段的 service locator。完整模块图会先针对所属宿主完成收集与验证，再进入构建阶段。
 
-## 仓库内容
+## 仓库结构
 
-- `src/AppHost/Monica.Docs.Api` - 仅负责组合的 AppHost
-- `src/Domains/Documentation` - 文档领域
-- `src/Domains/LocalRpcProvider` - 示例宿主的本地 RPC 支持
-- `src/Shared/Platform.*` - 共享协议层与基础设施层
-- `docs/` - 驱动文档站点的 markdown 源文件
-- `frontend/` - 未来的解耦前端预留目录
+```text
+docs/                                      双语 Markdown 源文档
+frontend/monica-docs-web/                  Next.js 16 / React 19 官网
+src/AppHost/Monica.Docs.PublicApi/         只读公开文档 API
+src/AppHost/Monica.Docs.Api/               完整、可重置的 Monica 演示宿主
+src/Domains/Documentation/                 文档限界上下文
+src/Domains/Showcase/                      仅演示环境使用的行为
+src/Domains/LocalRpcProvider/               本地 RPC 示例边界
+src/Shared/Platform.*                      共享协议与基础设施层
+```
 
-## Monica 在这个宿主里
+可以通过 `DocumentationApi__DocsBasePath` 更改文档源位置。未显式配置时，宿主会依次检查首选的 `/docs` 挂载路径与仓库相对开发路径。
 
-这个 AppHost 会和文档站点一起运行真实的 Monica 模块：
+## 质量检查
 
-- ModuleSystem 和 ProjectUnits 展示宿主的组合方式，以及当前可用的 ProjectUnit。
-- JobScheduler 通过 Monica 的调度基础设施运行 docs sync worker。
-- 因此这个仓库既是官方文档源码，也是一个可以直接运行的 Monica modular-monolith 示例。
+```bash
+dotnet build Monica.Docs.slnx -m
 
-## 架构说明
+cd frontend/monica-docs-web
+npm run check
+npm audit --omit=dev
+```
 
-完整的架构说明已移动到 [architecture-spec.md](architecture-spec.md)。
+前端字体和图标均来自本地 npm 依赖；生产渲染不依赖浏览器动态加载 CDN 资源。
 
-## 相关仓库
+## 相关项目
 
 - Monica 框架：<https://github.com/Tairitsua/Monica>
 - 在线文档：<https://monica.dpdns.org/>
-- MIT 许可证：见 [LICENSE.txt](LICENSE.txt)
+- 架构说明：[architecture-spec.md](architecture-spec.md)
+- MIT 许可证：[LICENSE.txt](LICENSE.txt)

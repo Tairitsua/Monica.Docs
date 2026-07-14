@@ -8,14 +8,16 @@ using Domains.Documentation.ValueObjects;
 using Markdig;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Monica.WebApi.Abstractions;
 
 namespace Domains.Documentation.DomainServices;
 
 public sealed partial class DomainDocumentationMarkdownProcessor(
-    IOptions<DocumentationApiOptions> options)
-    : DomainService
+    IOptions<DocumentationApiOptions> options,
+    ILoggerFactory loggerFactory)
+    : DomainService(loggerFactory)
 {
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
         .UseAdvancedExtensions()
@@ -52,7 +54,8 @@ public sealed partial class DomainDocumentationMarkdownProcessor(
 
             var rewrittenUrl = UtilsDocumentationPath.BuildAssetUrl(
                 _options.AssetBasePath,
-                assetRelativePath);
+                assetRelativePath,
+                _options.PublicApiBaseUrl);
 
             return string.Concat(
                 match.Groups["prefix"].Value,

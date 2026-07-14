@@ -17,4 +17,4 @@ sidebar_position: 3
 
 | Requirement | Satisfied by | Notes |
 |---|---|---|
-| `IDataChannelSetup` 实现 | `SetChannelBuilder<TBuilderEntrance>()` | 模块通过该入口完成通道注册；缺少它会被视为必需 Guide 未满足。 |
+| `IDataChannelSetup` 实现 | `UseSetup<TSetup>()` | 模块把当前宿主的 `IDataChannelRegistrar` 传给该入口；缺少它会被视为必需 Guide 未满足。 |

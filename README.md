@@ -9,81 +9,108 @@
   English | <a href="README.zh_CN.md">简体中文</a>
 </p>
 
-> Official Monica docs site, and a working modular-monolith example built with Monica itself.
+> The public product site and bilingual documentation for Monica: agent-governed application architecture for observable .NET backends.
 
-## What This Repo Is
+This repository contains three deliberately separate products:
 
-- The source for <https://monica.dpdns.org/>
-- A live Monica example that shows a domain-first modular monolith in practice
-- A repository where the docs product and the backend example live together
+- a Next.js public website for <https://monica.dpdns.org/>
+- a read-only documentation API intended for `api.monica.dpdns.org`
+- a broad Monica modular-monolith demo host for framework exploration
 
-If you are here to read the docs, start at the site. If you are here to learn the Monica solution shape, start at `src/`.
+The public API is isolated from the resettable demo surface, so production documentation never exposes showcase endpoints by accident.
 
-## Quick Start
+## Run the public documentation stack
 
-### Read the docs locally
+Start the read-only API:
+
+```bash
+dotnet run --project src/AppHost/Monica.Docs.PublicApi/Monica.Docs.PublicApi.csproj
+```
+
+In another terminal, start the website:
+
+```bash
+cd frontend/monica-docs-web
+npm install
+MONICA_DOCS_API_URL=http://localhost:5082 npm run dev
+```
+
+Open <http://localhost:3000>. Useful routes include:
+
+- `/` and `/zh-CN` — localized product homepages
+- `/docs` and `/zh-CN/docs` — documentation and search
+- `/modules` — the complete Stable / Integrations / Labs catalog
+- `/reference` — template and Ordering reference application
+- `/roadmap` — public release gates and promises
+
+If `MONICA_DOCS_API_URL` is not configured or the API is temporarily unreachable, the frontend serves a small built-in launch guide instead of failing with an empty screen.
+
+## Run the broad demo host
 
 ```bash
 dotnet run --project src/AppHost/Monica.Docs.Api/Monica.Docs.Api.csproj
 ```
 
-Then open:
+The demo host exercises Monica UI, JobScheduler, documentation synchronization, and local RPC. It is intentionally broader than the public API and is not the deployment target for `api.monica.dpdns.org`.
 
-- `http://localhost:5298`
-- `/markdown-docs` for the markdown viewer
+## Host-bound Monica composition
 
-### Mount your own docs folder
-
-```bash
-docker run -p 8080:8080 \
-  -v $(pwd)/docs:/docs \
-  monica-docs
-```
-
-The AppHost resolves docs in this order: explicit path, preferred mount path, AppHost-local `docs/`, then the repository `docs/` folder.
-
-## Monica Global Configuration
-
-Host-level Monica defaults should be configured through root `Mo.Config*()` methods before module registration:
+Every host owns one explicit module graph:
 
 ```csharp
-Mo.ConfigApplication(options =>
+var builder = WebApplication.CreateBuilder(args);
+
+builder.AddMonica(monica =>
 {
-    options.AppName = "Monica Docs";
-    options.AppId = "monica-docs";
+    monica.ConfigureApplication(options =>
+    {
+        options.AppName = "Monica Documentation API";
+        options.AppId = "monica-docs-public-api";
+    });
+
+    monica.AddMarkdown()
+        .EnableMultilingualDocuments()
+        .AddDocumentGroup("monica", "Monica Docs", docsBasePath);
 });
 
-Mo.ConfigModuleSystem(options =>
-{
-    options.DefaultApiGroupName = "Documentation";
-});
+var app = builder.Build();
+app.UseMonica();
+app.MapMonica();
+app.Run();
 ```
 
-Module-specific options remain the highest-priority configuration source.
+There is no ambient registration singleton and no registration-time service locator. The complete graph is collected and validated for the owning host before it is built.
 
-## In This Repo
+## Repository layout
 
-- `src/AppHost/Monica.Docs.Api` - composition-only AppHost
-- `src/Domains/Documentation` - the documentation bounded context
-- `src/Domains/LocalRpcProvider` - local RPC support for the example host
-- `src/Shared/Platform.*` - shared protocol and infrastructure layers
-- `docs/` - the markdown source that powers the docs site
-- `frontend/` - reserved for the future decoupled frontend
+```text
+docs/                                      bilingual Markdown source
+frontend/monica-docs-web/                  Next.js 16 / React 19 website
+src/AppHost/Monica.Docs.PublicApi/         read-only public documentation API
+src/AppHost/Monica.Docs.Api/               broad, resettable Monica demo host
+src/Domains/Documentation/                 documentation bounded context
+src/Domains/Showcase/                      demo-only behaviors
+src/Domains/LocalRpcProvider/               local RPC example boundary
+src/Shared/Platform.*                      shared protocol and infrastructure layers
+```
 
-## Monica in This Host
+The documentation source can be relocated with `DocumentationApi__DocsBasePath`. Without an explicit value, the hosts check the preferred `/docs` mount and then repository-relative development paths.
 
-The AppHost runs real Monica modules alongside the docs site:
+## Quality checks
 
-- ModuleSystem and ProjectUnits expose how the host is assembled and which ProjectUnits are available.
-- JobScheduler runs the docs sync worker through Monica scheduling infrastructure.
-- The result is both the official docs source and a runnable Monica modular-monolith example.
+```bash
+dotnet build Monica.Docs.slnx -m
 
-## Architecture Spec
+cd frontend/monica-docs-web
+npm run check
+npm audit --omit=dev
+```
 
-The full architecture memo now lives in [architecture-spec.md](architecture-spec.md).
+The frontend uses local npm font and icon assets; production rendering does not depend on browser-loaded CDNs.
 
-## Related Repos
+## Related projects
 
 - Monica framework: <https://github.com/Tairitsua/Monica>
-- Live docs: <https://monica.dpdns.org/>
-- MIT license: see [LICENSE.txt](LICENSE.txt)
+- Live documentation: <https://monica.dpdns.org/>
+- Architecture notes: [architecture-spec.md](architecture-spec.md)
+- MIT license: [LICENSE.txt](LICENSE.txt)

@@ -48,7 +48,7 @@ if ((await facade.GetAsync(id)).IsFailed(out var error, out var data))
     return error;
 }
 
-// 使用 data
+// Consume the returned data.
 ```
 
 ## `string` 泛型返回值陷阱

@@ -23,14 +23,17 @@ Monica 的很多基础设施模块都提供了配套 UI 或诊断入口。推荐
 ## 一个组合示例
 
 ```csharp
-Mo.AddConfiguration();
-Mo.AddConfigurationUI();
+builder.AddMonica(monica =>
+{
+    monica.AddConfiguration();
+    monica.AddConfigurationUI();
 
-Mo.AddJobScheduler()
-    .UseInMemoryMetadataRepository()
-    .UseSchedulerScope("local-dev")
-    .UseInMemoryProvider();
-Mo.AddJobSchedulerUI();
+    monica.AddJobScheduler()
+        .UseInMemoryMetadataRepository()
+        .UseSchedulerScope("local-dev")
+        .UseInMemoryProvider();
+    monica.AddJobSchedulerUI();
+});
 ```
 
 ## 组合原则
@@ -44,17 +47,18 @@ Mo.AddJobSchedulerUI();
 Monica 的管理面板、诊断接口和部分 Minimal API 通常面向运维人员或开发者，不应该默认暴露给所有业务用户。在完善鉴权前，推荐先把 Monica 自有端点限制到单独端口，再通过防火墙、负载均衡或内网访问策略只允许可信网络访问该端口。
 
 ```csharp
-Mo.ConfigModuleSystem(options =>
+builder.AddMonica(monica =>
 {
-    options.MonicaEndpointPort = 7100;
-    options.AutoAddMonicaHttpListener = true;
-    // 可选：不配置时会沿用宿主已有 URL 的 host，例如 localhost 或 *。
-    // options.MonicaEndpointHost = "localhost";
+    monica.ConfigureModuleSystem(options =>
+    {
+        options.MonicaEndpointPort = 7100;
+        options.AutoAddMonicaHttpListener = true;
+        // Optional: when omitted, Monica reuses the host from an existing URL.
+        // options.MonicaEndpointHost = "localhost";
+    });
+
+    // Register the infrastructure and UI modules here.
 });
-
-// 注册基础模块和 UI 模块...
-
-builder.UseMonica();
 
 var app = builder.Build();
 app.UseMonica();

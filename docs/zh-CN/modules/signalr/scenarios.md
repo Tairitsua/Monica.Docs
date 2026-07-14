@@ -12,21 +12,24 @@ sidebar_position: 5
 
 ## 场景 2 — 同时打开 Swagger 与调试 UI
 
-在对接阶段，经常需要既让后端团队看到 Hub 契约，又让前端或测试人员快速调试连接。真实项目里，常见组合就是把 `AddSignalRSwagger(...)`、`MapSignalRHub<THub>("/signalr")` 和 `Mo.AddSignalRUI()` 一起打开。
+在对接阶段，经常需要既让后端团队看到 Hub 契约，又让前端或测试人员快速调试连接。真实项目里，常见组合就是把 `AddSignalRSwagger(...)`、`MapSignalRHub<THub>("/signalr")` 和 `monica.AddSignalRUI()` 一起打开。
 
 ```csharp
-Mo.AddSignalRUI(o =>
+builder.AddMonica(monica =>
 {
-    o.DefaultAccessToken = "<debug-token>";
-});
-
-Mo.AddSignalR()
-    .AddSignalR<IChatHubOperator, ChatHubOperator, IChatClientContract, ICurrentUser>()
-    .AddSignalRSwagger(_ =>
+    monica.AddSignalRUI(o =>
     {
-        // 在这里配置需要扫描的程序集或 Swagger 选项。
-    })
-    .MapSignalRHub<ChatHub>("/signalr");
+        o.DefaultAccessToken = "<debug-token>";
+    });
+
+    monica.AddSignalR()
+        .AddSignalR<IChatHubOperator, ChatHubOperator, IChatClientContract, ICurrentUser>()
+        .AddSignalRSwagger(_ =>
+        {
+            // Configure assemblies or Swagger options here.
+        })
+        .MapSignalRHub<ChatHub>("/signalr");
+});
 ```
 
 ## Common mistakes

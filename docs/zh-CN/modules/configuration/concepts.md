@@ -130,19 +130,11 @@ flowchart LR
 
 如果当前生效来源不是 Monica provider，而是可写 JSON provider，owner service 可以对那个 JSON 文件执行 source-targeted mutation。该操作仍会写入 Monica history，但历史目标是 `ExternalConfigurationSource`。这不是跨服务分布式写入能力；非 owner service 应写共享 Monica effective store，或把 source mutation 路由到 source owner。
 
-## 启动期 effective options snapshot
+## 启动参数与运行期 Options
 
-应用 DI 容器构建前，有些模块注册代码还不能注入 `IOptions<T>`，但已经需要读取 Monica 管理的静态启动参数。此时可以先通过 `Mo.AddConfiguration()` 得到 `ModuleConfigurationGuide`，完成 `UseFileConfigurationStore(...)` 或 `UseDbConfigurationStore(...)` 以及 `AddManagedJsonFile(...)` 配置后，再调用 `CreateEffectiveOptionsReader(...)` 创建 startup reader。
+模块图组合发生在应用构建前。连接配置 store、初始化日志或注册外部基础设施所需的参数直接来自 `builder.Configuration`，因为它们必须先于 Monica-managed provider 可用。
 
-这个 reader 的边界很明确：
-
-- DB 连接串、store provider 参数等仍然是 bootstrap 配置，因为它们用于连接 Monica effective store 本身。
-- 其他启动期静态 Options 会在连接 store 后按 runtime priority 读取：bootstrap provider 低于 Monica effective store，`AddManagedJsonFile(...)` 注册的 JSON provider 高于 Monica effective store。
-- `GetMany(...)` / `GetManyAsync(...)` 会把多个配置定义合并为一次 batch load，适合模块注册阶段一次性读取所有需要的 Options。
-- reader 在生命周期内缓存已读取的 Options；同一个 reader 重复读取相同类型不会再次访问 store。
-- 返回的是启动期快照，不是 live reload API，也不替代运行期的 `IOptions<T>`、`IOptionsSnapshot<T>` 或 `IOptionsMonitor<T>`。
-
-首次读取缺失的 effective document 时，reader 会使用与 Monica provider 相同的 seed 语义：CLR 默认值叠加 bootstrap `IConfiguration` 中可读到的值，然后调用 store 的 batch `EnsureCreatedAsync(...)` 创建缺失文档。
+应用构建完成后，业务服务通过 `IOptions<T>`、`IOptionsSnapshot<T>` 或 `IOptionsMonitor<T>` 消费 `[Configuration]` 类型。不要为了让组合代码读取托管配置而提前构建临时容器；启动期输入与运行期托管配置应保持清晰的生命周期边界。
 
 ## List 的稳定身份
 

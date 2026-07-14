@@ -19,8 +19,8 @@ sidebar_position: 1
 | 项目 | 值 |
 |---|---|
 | 包 | `Monica.SignalR` |
-| 注册入口 | `Mo.AddSignalR()` |
-| 相关 UI 模块 | `Mo.AddSignalRUI()` |
+| 注册入口 | `monica.AddSignalR()` |
+| 相关 UI 模块 | `monica.AddSignalRUI()` |
 
 ## 公开使用面
 

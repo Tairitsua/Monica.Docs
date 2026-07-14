@@ -25,6 +25,7 @@
     <Project Path="../MoLibrary/Monica.Markdown/Monica.Markdown.csproj" />
     <Project Path="../MoLibrary/Monica.Office/Monica.Office.csproj" />
     <Project Path="../MoLibrary/Monica.Profiling/Monica.Profiling.csproj" />
+    <Project Path="../MoLibrary/Monica.ProjectUnits/Monica.ProjectUnits.csproj" />
     <Project Path="../MoLibrary/Monica.Repository/Monica.Repository.csproj" />
     <Project Path="../MoLibrary/Monica.ServiceDiscovery/Monica.ServiceDiscovery.csproj" />
     <Project Path="../MoLibrary/Monica.SignalR/Monica.SignalR.csproj" />
@@ -38,6 +39,7 @@
   <Folder Name="/src/" />
   <Folder Name="/src/AppHost/">
     <Project Path="src/AppHost/Monica.Docs.Api/Monica.Docs.Api.csproj" />
+    <Project Path="src/AppHost/Monica.Docs.PublicApi/Monica.Docs.PublicApi.csproj" />
   </Folder>
   <Folder Name="/src/Shared/">
     <Project Path="src/Shared/Platform.BuildingBlocks/Platform.BuildingBlocks.csproj" />
@@ -47,5 +49,6 @@
   <Folder Name="/src/Domains/">
     <Project Path="src/Domains/Documentation/Domains.Documentation.csproj" />
     <Project Path="src/Domains/LocalRpcProvider/Domains.LocalRpcProvider.csproj" />
+    <Project Path="src/Domains/Showcase/Domains.Showcase.csproj" />
   </Folder>
 </Solution>

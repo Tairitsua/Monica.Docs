@@ -17,11 +17,14 @@ dotnet add package Monica.AI
 ```csharp
 using Monica.Modules;
 
-Mo.AddAI();
+builder.AddMonica(monica =>
+{
+    monica.AddAI();
 
-Mo.AddRAG()
-    .UseVectorStoreInMemoryProvider()
-    .AddFakeEmbeddingsModel();
+    monica.AddRAG()
+        .UseVectorStoreInMemoryProvider()
+        .AddFakeEmbeddingsModel();
+});
 ```
 
 `UseVectorStoreInMemoryProvider()` 适合本地开发和演示；进程重启后向量数据不会保留。`AddFakeEmbeddingsModel()` 会通过统一 AI Provider 管线注册一个 Fake Embedding 模型，方便不接真实模型也能跑通流程。
@@ -29,21 +32,24 @@ Mo.AddRAG()
 ## Qdrant 注册
 
 ```csharp
-Mo.AddAI()
-    .AddOpenAIProvider(options =>
-    {
-        options.ProviderId = "openai";
-        options.ApiKey = builder.Configuration["OpenAI:ApiKey"]!;
-        options.SupportedModels = ["text-embedding-3-small"];
-    });
+builder.AddMonica(monica =>
+{
+    monica.AddAI()
+        .AddOpenAIProvider(options =>
+        {
+            options.ProviderId = "openai";
+            options.ApiKey = builder.Configuration["OpenAI:ApiKey"]!;
+            options.SupportedModels = ["text-embedding-3-small"];
+        });
 
-Mo.AddRAG()
-    .UseVectorStoreQdrantProvider(options =>
-    {
-        options.Host = "localhost";
-        options.Port = 6334;
-        options.Https = false;
-    });
+    monica.AddRAG()
+        .UseVectorStoreQdrantProvider(options =>
+        {
+            options.Host = "localhost";
+            options.Port = 6334;
+            options.Https = false;
+        });
+});
 ```
 
 索引前，需要在知识库上绑定可用的 Embedding 模型。可以通过 `EmbeddingModelFacade` 或 `RAG UI` 完成。

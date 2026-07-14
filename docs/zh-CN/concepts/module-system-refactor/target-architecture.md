@@ -40,7 +40,7 @@ sidebar_position: 2
 
 建议原则：
 
-- `Option` 可以保留当前 `Mo.Add*()` 的用户体验
+- `Option` 保留当前 `builder.AddMonica(...)` 内 `monica.Add*()` 的用户体验
 - `ResolvedConfig` 是模块内部和跨模块读取的标准对象
 - 模块之间不再读取彼此的 `Option`
 
@@ -138,7 +138,7 @@ Export 是“模块对外公开的只读能力或契约”。
 
 将用户输入、默认值和额外配置绑定到各模块的 `Option Input`。
 
-这里仍可保留当前 `Mo.Add*()` 的调用体验，但内部不再把 option 直接视为最终可共享配置。
+这里保留当前 `builder.AddMonica(...)` 内 `monica.Add*()` 的调用体验，但内部不再把 option 直接视为最终可共享配置。
 
 ## 4. Config Resolve
 

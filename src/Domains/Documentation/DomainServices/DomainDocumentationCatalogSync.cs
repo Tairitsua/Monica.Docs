@@ -12,8 +12,8 @@ namespace Domains.Documentation.DomainServices;
 public sealed class DomainDocumentationCatalogSync(
     IMarkdownDocumentCatalog markdownCatalog,
     IOptions<DocumentationApiOptions> options,
-    ILogger<DomainDocumentationCatalogSync> logger)
-    : DomainService
+    ILoggerFactory loggerFactory)
+    : DomainService(loggerFactory)
 {
     private readonly DocumentationApiOptions _options = options.Value;
 
@@ -22,7 +22,7 @@ public sealed class DomainDocumentationCatalogSync(
     /// </summary>
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        logger.LogInformation(
+        Logger.LogInformation(
             "Refreshing markdown document group {DocumentGroupKey} for Monica.Docs.",
             _options.DocumentGroupKey);
 

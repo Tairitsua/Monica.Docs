@@ -8,7 +8,7 @@ sidebar_position: 5
 
 ## 场景 1 — 完整 AI 工作台
 
-注册 `Mo.AddAIUI()` 的默认配置即可获得聊天、Provider 管理和能力管理三类页面。适合开发、调试和内部管理。
+注册 `monica.AddAIUI()` 的默认配置即可获得聊天、Provider 管理和能力管理三类页面。适合开发、调试和内部管理。
 
 ## 场景 2 — 只开放 Provider 管理
 
@@ -20,6 +20,6 @@ sidebar_position: 5
 
 ## Common mistakes
 
-- 只注册 `Mo.AddAIUI()`，但没有配置可用 Provider，聊天页会加载但没有可用模型。
+- 只注册 `monica.AddAIUI()`，但没有配置可用 Provider，聊天页会加载但没有可用模型。
 - 关闭 `DisableAICapabilityPage` 后仍期望在 UI 管理 Skill / MCP；该页面会完全不注册。
 - 把 `DefaultKnowledgeBaseIds` 当作权限控制；它只是 UI 默认选择。

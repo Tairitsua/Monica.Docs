@@ -28,7 +28,7 @@ sidebar_position: 2
 |---|---|---|
 | Producer | `Domains.*` 或 `*Service.API` | 暴露 Handler，构建后导出 `*.rpc-metadata.json` |
 | Consumer | `Platform.Protocol` | 保存 `PublishedLanguages` 契约，消费 `RpcMetadata`，生成 `Contracts` 与 `Implementations.*` |
-| Host | `AppHost` / API 宿主 | 注册 `Mo.AddRpcClient()`，选择 HTTP 或 Local 传输 |
+| Host | `AppHost` / API 宿主 | 注册 `monica.AddRpcClient()`，选择 HTTP 或 Local 传输 |
 
 推荐目录结构：
 
@@ -141,9 +141,12 @@ Platform.Protocol.PublishedLanguages.DomainLocalRpcProvider
 如果调用方和提供方在同一个进程里，直接注册 `Local` 传输：
 
 ```csharp
-Mo.AddRpcClient()
-    .ConfigDomainInfoProvider(new MonicaDocsRpcClientDomainInfoProvider())
-    .UseLocalTransport();
+builder.AddMonica(monica =>
+{
+    monica.AddRpcClient()
+        .ConfigDomainInfoProvider(new MonicaDocsRpcClientDomainInfoProvider())
+        .UseLocalTransport();
+});
 ```
 
 `Local` 传输的特点：
@@ -158,13 +161,16 @@ Mo.AddRpcClient()
 如果领域之间是跨进程调用，则注册 HTTP 传输，并补上具体 Provider，例如 Dapr：
 
 ```csharp
-Mo.AddRpcClient()
-    .ConfigDomainInfoProvider(new ExtendModuleRpcClient(config))
-    .UseHttpTransport()
-    .UseDaprProvider(o =>
-    {
-        o.Timeout = config.DaprOptions.InvocationTimeout;
-    });
+builder.AddMonica(monica =>
+{
+    monica.AddRpcClient()
+        .ConfigDomainInfoProvider(new ExtendModuleRpcClient(config))
+        .UseHttpTransport()
+        .UseDaprProvider(o =>
+        {
+            o.Timeout = config.DaprOptions.InvocationTimeout;
+        });
+});
 ```
 
 `UseHttpTransport()` 仍然是默认传输，但如果你同时生成了 `Http` 和 `Local`，建议在宿主里**显式写出来**，不要依赖默认值推断。
@@ -176,7 +182,7 @@ Mo.AddRpcClient()
 - `Domains.LocalRpcProvider`：提供方领域，暴露 `QueryHandlerGetLocalRpcGreeting`
 - `Domains.Documentation`：调用方领域，暴露 `QueryHandlerGetLocalRpcSample`
 - `Platform.Protocol`：保存共享请求/响应契约，并生成 `IQueryLocalRpcProvider`
-- `Monica.Docs.Api`：注册 `Mo.AddRpcClient().UseLocalTransport()`
+- `Monica.Docs.Api`：注册 `monica.AddRpcClient().UseLocalTransport()`
 
 调用方 Handler 的核心写法如下：
 
@@ -304,7 +310,7 @@ RPC 生成依赖 Consumer 项目里的共享契约命名空间。如果请求或
 
 - Producer 仍然导出 `RpcMetadata`
 - Consumer 仍然通过 `RpcClientConfig` 生成客户端
-- Host 仍然通过 `Mo.AddRpcClient()` 选择 `Http` 或 `Local`
+- Host 仍然通过 `monica.AddRpcClient()` 选择 `Http` 或 `Local`
 
 真正变简单的是：
 

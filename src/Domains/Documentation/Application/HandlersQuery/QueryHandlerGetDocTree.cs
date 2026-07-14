@@ -1,6 +1,7 @@
 using Domains.Documentation.Interfaces;
 using Domains.Documentation.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Monica.Core.Results;
 using Monica.WebApi.Abstractions;
 using Platform.Protocol.PublishedLanguages.DomainDocumentation.Models;
@@ -12,8 +13,9 @@ namespace Domains.Documentation.Application.HandlersQuery;
 /// Returns the navigation tree for the configured Monica documentation source.
 /// </summary>
 public sealed class QueryHandlerGetDocTree(
-    IRepositoryDocumentationContent repository)
-    : ApplicationService<GetDocTreeRequest, IReadOnlyList<DocTreeItemDto>>
+    IRepositoryDocumentationContent repository,
+    ILoggerFactory loggerFactory)
+    : ApplicationService<GetDocTreeRequest, IReadOnlyList<DocTreeItemDto>>(loggerFactory)
 {
     /// <summary>
     /// Loads the documentation tree and maps repository nodes to published-language DTOs.
@@ -23,7 +25,12 @@ public sealed class QueryHandlerGetDocTree(
         GetDocTreeRequest request,
         CancellationToken cancellationToken)
     {
-        var nodes = await repository.GetTreeAsync(cancellationToken);
+        var nodes = await repository.GetTreeAsync(request.Locale, cancellationToken);
+        if (nodes is null)
+        {
+            return Res.Fail($"Documentation locale '{request.Locale}' is not supported.");
+        }
+
         var response = nodes.Select(MapNode).ToList();
         return Res.Ok<IReadOnlyList<DocTreeItemDto>>(response);
     }

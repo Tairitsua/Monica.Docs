@@ -10,7 +10,7 @@ sidebar_position: 4
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|
-| `Mo.AddAIUI(Action<ModuleAIUIOption>?)` | 注册 AI Chat、Provider 管理和能力管理页面 | 否 | 需要内置 AI 管理 UI 时。 |
+| `monica.AddAIUI(Action<ModuleAIUIOption>?)` | 注册 AI Chat、Provider 管理和能力管理页面 | 否 | 需要内置 AI 管理 UI 时。 |
 
 `ModuleAIUIGuide` 当前没有额外 Guide 方法，主要通过 `ModuleAIUIOption` 控制页面和聊天行为。
 
@@ -18,10 +18,10 @@ sidebar_position: 4
 
 | Dependency | When it is registered | Why it is used |
 |---|---|---|
-| `Mo.AddAI()` | 总是 | Provider、聊天和能力 Facade。 |
-| `Mo.AddKnowledgeBase()` | `DisableAIChatPage == false` | 聊天页知识库选择。 |
-| `Mo.AddLocalization()` | 至少一个页面启用时 | AI UI 本地化资源。 |
-| `Mo.AddUIShell()` | 对应页面启用时 | 注册导航和 Blazor 页面。 |
+| `monica.AddAI()` | 总是 | Provider、聊天和能力 Facade。 |
+| `monica.AddKnowledgeBase()` | `DisableAIChatPage == false` | 聊天页知识库选择。 |
+| `monica.AddLocalization()` | 至少一个页面启用时 | AI UI 本地化资源。 |
+| `monica.AddUIShell()` | 对应页面启用时 | 注册导航和 Blazor 页面。 |
 
 ## Navigation behavior
 

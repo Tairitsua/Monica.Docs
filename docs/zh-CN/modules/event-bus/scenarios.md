@@ -8,7 +8,7 @@ sidebar_position: 5
 
 ## 场景 1 — 使用本地事件驱动模块内部协作
 
-如果事件只在当前进程内消费，那么注册 `Mo.AddEventBus()` 就足够了。处理器会在启动时自动发现并订阅，本地发布方只需要注入 `IEventBus` 调用泛型 `PublishAsync<TEvent>()`。
+如果事件只在当前进程内消费，那么注册 `monica.AddEventBus()` 就足够了。处理器会在启动时自动发现并订阅，本地发布方只需要注入 `IEventBus` 调用泛型 `PublishAsync<TEvent>()`。
 
 ```csharp
 public sealed class UserService(IEventBus eventBus)

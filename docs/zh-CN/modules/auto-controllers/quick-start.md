@@ -15,17 +15,19 @@ dotnet add package Monica.WebApi
 ## 最小注册
 
 ```csharp
+using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Mo.AddAutoControllers(
-    crudOptionAction: o =>
-    {
-        o.RoutePath = "api/v1/[controller]";
-    });
-
-builder.UseMonica();
+builder.AddMonica(monica =>
+{
+    monica.AddAutoControllers(
+        crudOptionAction: o =>
+        {
+            o.RoutePath = "api/v1/[controller]";
+        });
+});
 
 var app = builder.Build();
 app.UseMonica();

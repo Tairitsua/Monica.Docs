@@ -11,9 +11,12 @@ sidebar_position: 5
 组合内存向量库和 Fake Embedding 模型，可以在没有外部服务的情况下演示知识库创建、文档导入、索引和搜索。
 
 ```csharp
-Mo.AddRAG()
-    .UseVectorStoreInMemoryProvider()
-    .AddFakeEmbeddingsModel(dimensions: 384);
+builder.AddMonica(monica =>
+{
+    monica.AddRAG()
+        .UseVectorStoreInMemoryProvider()
+        .AddFakeEmbeddingsModel(dimensions: 384);
+});
 ```
 
 ## 场景 2 — 使用 Qdrant 持久化向量

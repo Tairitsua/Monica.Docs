@@ -26,4 +26,4 @@ sidebar_position: 4
 ## Module dependencies
 
 - 很多高级模块会基于 EventBus 再构建更具体的运行时能力，例如 JobScheduler。
-- 如果需要事件订阅可视化与测试能力，可接入 `Mo.AddEventBusUI()`。
+- 如果需要事件订阅可视化与测试能力，可接入 `monica.AddEventBusUI()`。

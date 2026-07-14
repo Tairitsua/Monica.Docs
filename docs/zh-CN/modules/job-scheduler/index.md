@@ -19,8 +19,8 @@ sidebar_position: 1
 | 项目 | 值 |
 |---|---|
 | 包 | `Monica.JobScheduler` |
-| 注册入口 | `Mo.AddJobScheduler()` |
-| 相关 UI 模块 | `Mo.AddJobSchedulerUI()` |
+| 注册入口 | `monica.AddJobScheduler()` |
+| 相关 UI 模块 | `monica.AddJobSchedulerUI()` |
 
 ## 公开使用面
 

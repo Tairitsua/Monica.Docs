@@ -26,8 +26,8 @@ UI 的核心原则是：**页面展示的是当前运行时真正生效的值；
 | 项目 | 值 |
 |---|---|
 | 包 | `Monica.Configuration.UI` |
-| 注册入口 | `Mo.AddConfigurationUI()` |
-| 相关基础模块 | [`Mo.AddConfiguration()`](../configuration/index.md) |
+| 注册入口 | `monica.AddConfigurationUI()` |
+| 相关基础模块 | [`monica.AddConfiguration()`](../configuration/index.md) |
 
 ## 页面
 
@@ -40,7 +40,7 @@ UI 的核心原则是：**页面展示的是当前运行时真正生效的值；
 
 ## 公开使用面
 
-- `Mo.AddConfigurationUI()`：注册 UI 模块。
+- `monica.AddConfigurationUI()`：注册 UI 模块。
 - `ModuleConfigurationUIOption`：当前没有公开属性。
 - `ConfigurationStateStore`：页面级暂存状态服务。
 

@@ -290,19 +290,24 @@ public class AppSettingsOptions
 - 类名以 `Options` 结尾
 - 用 `IOptions<T>`、`IOptionsSnapshot<T>` 或 `IOptionsMonitor<T>` 注入使用
 - 真正需要热更新时再选 `Snapshot` / `Monitor`
-- 如果后续注册代码要在注册阶段就读取配置，先 `Mo.AddConfiguration()`，再立刻调用 `Mo.RegisterInstantly(builder)`
+- 组合阶段必须使用的启动参数直接从 `builder.Configuration` 读取；运行期业务配置通过 `IOptions<T>`、`IOptionsSnapshot<T>` 或 `IOptionsMonitor<T>` 注入
 
-如果某个 `Configuration` 项目单元需要在宿主注册阶段就被后续代码使用，例如日志工厂、外部客户端或其他基础设施注册依赖这些配置，那么只定义 `[Configuration]` 类还不够，宿主还需要调整注册顺序：
+如果日志、外部客户端或其他基础设施在组合阶段就需要启动参数，应在进入 Monica 回调前直接读取 `builder.Configuration`。Monica 管理的 `[Configuration]` 类型面向已构建容器中的 Options 消费，不提供提前构建或进程级即时注册入口：
 
 ```csharp
-Mo.AddConfiguration();
+var externalApiBaseUrl = builder.Configuration["Infrastructure:ExternalApiBaseUrl"]
+    ?? throw new InvalidOperationException("Missing Infrastructure:ExternalApiBaseUrl.");
 
-Mo.RegisterInstantly(builder);
+builder.AddMonica(monica =>
+{
+    monica.AddConfiguration();
 
-// 这里之后的注册代码，才可以安全使用已经绑定的配置类型。
+    // Guide and provider registration can capture startup inputs through the closure.
+    // Runtime services consume managed configuration through the standard Options APIs.
+});
 ```
 
-这个模式只在“注册阶段就要消费配置”的场景下使用。若配置只在正常运行期通过 `IOptions<T>`、`IOptionsSnapshot<T>` 或 `IOptionsMonitor<T>` 注入使用，保持默认模块注册顺序会更简单。
+这样可以把启动期输入与运行期托管配置分开：前者由 ASP.NET Core 的 `builder.Configuration` 提供，后者继续使用标准 Options 生命周期。
 
 ## 推荐文件布局
 

@@ -10,27 +10,32 @@ sidebar_position: 5
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|
-| `Mo.AddConfiguration()` | 注册核心配置模块、schema 扫描、Options 绑定、mutation、history、rollback、source inspection 和 facade | 是 | 声明 Monica 管理的配置定义时。 |
+| `monica.AddConfiguration()` | 注册核心配置模块、schema 扫描、Options 绑定、mutation、history、rollback、source inspection 和 facade | 是 | 声明 Monica 管理的配置定义时。 |
 | `UseFileConfigurationStore(...)` | 使用文件存储 effective values、metadata 和 history | 是，二选一 | 单体、开发、演示、本地运维。 |
 | `UseDbConfigurationStore(...)` | 使用 EF Core 数据库存储 effective values、metadata 和 history | 是，二选一 | 分布式部署，所有实例共享同一配置事实源。 |
 | `AddManagedJsonFile(...)` | 追加一个 JSON configuration source，并把来源元数据登记给 Monica UI | 否 | 需要让文件优先覆盖 Monica store，或允许操作员通过 UI 修改某个 JSON 文件。 |
-| `CreateEffectiveOptionsReader(...)` | 从 `ModuleConfigurationGuide` 创建 DI 构建前可用的 effective options reader | 否 | 模块注册代码需要读取 Monica-managed 启动期静态 Options。 |
 
-`Mo.AddConfiguration()` 不会隐式选择文件或数据库存储。宿主必须显式选择一种 store preset：
+`monica.AddConfiguration()` 不会隐式选择文件或数据库存储。宿主必须显式选择一种 store preset：
 
 ```csharp
-Mo.AddConfiguration()
-    .UseFileConfigurationStore();
+builder.AddMonica(monica =>
+{
+    monica.AddConfiguration()
+        .UseFileConfigurationStore();
+});
 ```
 
 或：
 
 ```csharp
-Mo.AddConfiguration()
-    .UseDbConfigurationStore((serviceProvider, options) =>
-    {
-        options.UseSqlServer(builder.Configuration.GetConnectionString("Configuration"));
-    });
+builder.AddMonica(monica =>
+{
+    monica.AddConfiguration()
+        .UseDbConfigurationStore((serviceProvider, options) =>
+        {
+            options.UseSqlServer(builder.Configuration.GetConnectionString("Configuration"));
+        });
+});
 ```
 
 ## Storage bundle
@@ -50,11 +55,14 @@ Mo.AddConfiguration()
 文件存储适合单体和本地模式：
 
 ```csharp
-Mo.AddConfiguration()
-    .UseFileConfigurationStore(options =>
-    {
-        options.RootDirectory = Path.Combine(builder.Environment.ContentRootPath, "configuration-store");
-    });
+builder.AddMonica(monica =>
+{
+    monica.AddConfiguration()
+        .UseFileConfigurationStore(options =>
+        {
+            options.RootDirectory = Path.Combine(builder.Environment.ContentRootPath, "configuration-store");
+        });
+});
 ```
 
 默认根目录是应用基目录下的 `monica-configuration`。每个配置定义使用 `DefinitionKey` 作为稳定文件名，因此 file mode 会拒绝包含非法文件名字符或路径分隔符的 key。
@@ -64,72 +72,61 @@ Mo.AddConfiguration()
 数据库存储适合分布式模式。所有实例共享同一个 DB 事实源：
 
 ```csharp
-Mo.AddConfiguration()
-    .UseDbConfigurationStore((serviceProvider, options) =>
-    {
-        options.UseSqlServer(builder.Configuration.GetConnectionString("Configuration"));
-    });
+builder.AddMonica(monica =>
+{
+    monica.AddConfiguration()
+        .UseDbConfigurationStore((serviceProvider, options) =>
+        {
+            options.UseSqlServer(builder.Configuration.GetConnectionString("Configuration"));
+        });
+});
 ```
 
 `UseDbConfigurationStore(...)` 来自 `Monica.Configuration.EfCore`，它会注册 `ConfigurationDbContext` 并把 effective values、metadata 和 history 三个 store contract 都替换为 `DatabaseConfigurationStore`。
 
 DB mode 的 bootstrap 配置只能依赖宿主原生 `IConfiguration`。例如连接串必须来自 `appsettings`、环境变量、User Secrets 或部署系统，不能依赖 Monica-managed configuration。如果启动时无法加载 DB-managed configuration，服务应 fail fast。
 
-## Pre-DI effective options reader
+## 组合期配置边界
 
-`GetMonicaBootstrapConfiguration<TOptions>()` 只适合读取真正的 bootstrap 值，例如连接配置 store 所需的 `DatabaseOptions`。当 store 已经可以连接，但应用 DI 容器还没有构建时，可以从 `ModuleConfigurationGuide` 创建 startup reader，读取其他启动期静态 Options。
+组合 Monica 模块图时，宿主还没有构建完成。连接配置 store、日志初始化和外部基础设施注册所需的启动参数必须直接来自 `builder.Configuration`：
 
 ```csharp
-using Monica.Configuration.Bootstrap;
+var configurationStoreConnectionString =
+    builder.Configuration.GetConnectionString("Configuration")
+    ?? throw new InvalidOperationException("Missing Configuration connection string.");
 
-var bootstrapConfiguration = builder.Configuration;
-var databaseOptions = bootstrapConfiguration.GetMonicaBootstrapConfiguration<DatabaseOptions>();
-
-var configurationGuide = Mo.AddConfiguration()
-    .UseDbConfigurationStore((_, options) =>
-    {
-        options.UseSqlServer(databaseOptions.ConnectionString);
-    })
-    .AddManagedJsonFile(
-        "operator-settings.json",
-        optional: true,
-        reloadOnChange: true);
-
-using var reader = configurationGuide.CreateEffectiveOptionsReader(
-    builder,
-    bootstrapConfiguration);
-
-var snapshot = reader.GetMany(
-    typeof(AppOptions),
-    typeof(DaprOptions),
-    typeof(JwtTokenOptions));
-
-var appOptions = snapshot.Get<AppOptions>();
+builder.AddMonica(monica =>
+{
+    monica.AddConfiguration()
+        .UseDbConfigurationStore((_, options) =>
+        {
+            options.UseSqlServer(configurationStoreConnectionString);
+        });
+});
 ```
 
-推荐在启动阶段使用 `GetMany(...)` / `GetManyAsync(...)` 一次性读取所有需要的 Options。reader 会扫描每个类型的 `[Configuration]` 定义，生成缺失文档的 seed JSON，并对 store 调用一次 batch `EnsureCreatedAsync(...)`。已经读取过的类型会缓存在 reader 生命周期内；后续 `Get(...)` 或 `GetMany(...)` 只会访问尚未加载的类型。
-
-reader 绑定 Options 时使用与运行时一致的优先级：`bootstrapConfiguration` 最低，Monica effective store 居中，`AddManagedJsonFile(...)` 注册的 JSON 文件最高。因此启动期模块注册可以看到 operator-managed JSON 覆盖值，不会只读取 Monica effective document。
-
-reader 会 fail fast：缺少 `[Configuration]`、没有配置 effective store、数据库连接失败、schema 异常或 effective JSON 无法绑定都会抛出异常。它返回的是启动期快照，不会监听运行期变更；应用启动完成后的业务代码仍应使用 `IOptions<T>`、`IOptionsSnapshot<T>` 或 `IOptionsMonitor<T>`。
+应用构建完成后，业务代码通过 `IOptions<T>`、`IOptionsSnapshot<T>` 或 `IOptionsMonitor<T>` 消费 Monica 管理的配置。不要为了在组合阶段读取托管配置而提前构建临时 DI 容器；这会产生第二套服务和 Options 生命周期。
 
 ## Managed JSON source
 
 `AddManagedJsonFile(...)` 适合“少量启动/现场参数必须继续由文件控制”的场景，例如客户现场交付文件、数据库连接串覆盖文件或临时运维开关。
 
 ```csharp
-Mo.AddConfiguration()
-    .UseDbConfigurationStore((_, options) => options.UseSqlite(configurationStoreConnectionString))
-    .AddManagedJsonFile(
-        "docs-external-settings.json",
-        optional: false,
-        reloadOnChange: true,
-        options =>
-        {
-            options.DisplayName = "Docs External Demo Settings";
-            options.Description = "Operator-managed JSON file registered through Monica.Configuration.";
-            options.IsWritable = true;
-        });
+builder.AddMonica(monica =>
+{
+    monica.AddConfiguration()
+        .UseDbConfigurationStore((_, options) => options.UseSqlite(configurationStoreConnectionString))
+        .AddManagedJsonFile(
+            "docs-external-settings.json",
+            optional: false,
+            reloadOnChange: true,
+            options =>
+            {
+                options.DisplayName = "Docs External Demo Settings";
+                options.Description = "Operator-managed JSON file registered through Monica.Configuration.";
+                options.IsWritable = true;
+            });
+});
 ```
 
 该方法做两件事：
@@ -202,7 +199,7 @@ Monica 注册 `[Configuration]` 类型时，会为运行时 `IOptions<T>` / `IOp
 
 这样可以避免官方 Binder 在集合属性已有默认值时把配置项 append 到默认集合后面。例如 `public List<string> Providers { get; set; } = ["local"];` 遇到配置 `Providers:0 = "db"` 时，最终运行时 options 中的值是 `["db"]`，而不是 `["local", "db"]`。
 
-`GetMonicaBootstrapConfiguration<TOptions>()` 使用同一套集合替换语义。因此启动期读取 DB 连接、外部 provider 参数等 bootstrap options 时，也会与运行时 `IOptions<T>` 行为保持一致。
+该集合替换语义属于运行时 Options 绑定。启动参数仍遵守宿主原生 `IConfiguration` 的绑定与 provider 优先级。
 
 ## Mutation flow
 
@@ -240,7 +237,7 @@ sequenceDiagram
 | `GetSourceFileViewAsync(...)` | 查看 display-safe JSON source 文件内容。 |
 | `MutateAsync(...)` | 写入 Monica effective store。 |
 | `MutateSourceAsync(...)` | 写入可写外部 JSON source。 |
-| `BeginMutationGroupAsync(...)` / `CompleteMutationGroupAsync(...)` | 创建并完成审计组。 |
+| `ApplyMutationGroupAsync(...)` | 在一个受审计的变更组中校验并应用多项配置修改。 |
 | `GetHistoryAsync(...)` / `QueryHistoryAsync(...)` | 查询配置历史。 |
 | `RollbackHistoryAsync(...)` / `RollbackHistoriesAsync(...)` / `RollbackGroupAsync(...)` | 回滚单条历史、多条历史或整组变更。 |
 | `GetDebugViewAsync()` | 查看当前 Microsoft configuration debug view。 |

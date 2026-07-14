@@ -31,10 +31,13 @@ sidebar_position: 3
 3. 清理历史代码后，再考虑局部或全局切到 `Strict`
 
 ```csharp
-Mo.AddProjectUnits(o =>
+builder.AddMonica(monica =>
 {
-    o.ConventionOptions.EnableNameConvention = true;
-    o.ConventionOptions.NameConventionMode = ENameConventionMode.Warning;
+    monica.AddProjectUnits(o =>
+    {
+        o.ConventionOptions.EnableNameConvention = true;
+        o.ConventionOptions.NameConventionMode = ENameConventionMode.Warning;
+    });
 });
 ```
 
@@ -45,16 +48,19 @@ Mo.AddProjectUnits(o =>
 如果你的项目同时存在这两种风格，建议不要立刻把 `ApplicationService` 命名治理切到 `Strict`。一种稳妥做法是先对这一类单独关闭强校验：
 
 ```csharp
-using Monica.Framework.ProjectUnits.Models;
+using Monica.ProjectUnits.Models;
 
-Mo.AddProjectUnits(o =>
+builder.AddMonica(monica =>
 {
-    o.ConventionOptions.EnableNameConvention = true;
-    o.ConventionOptions.NameConventionMode = ENameConventionMode.Warning;
-    o.ConventionOptions.Dict[EProjectUnitType.ApplicationService] = new ProjectUnitNamingRule
+    monica.AddProjectUnits(o =>
     {
-        NameConventionMode = ENameConventionMode.Disable
-    };
+        o.ConventionOptions.EnableNameConvention = true;
+        o.ConventionOptions.NameConventionMode = ENameConventionMode.Warning;
+        o.ConventionOptions.Dict[EProjectUnitType.ApplicationService] = new ProjectUnitNamingRule
+        {
+            NameConventionMode = ENameConventionMode.Disable
+        };
+    });
 });
 ```
 

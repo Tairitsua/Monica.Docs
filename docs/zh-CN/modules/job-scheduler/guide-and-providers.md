@@ -30,4 +30,4 @@ sidebar_position: 4
 
 - 模块会自动依赖 HostedService 能力。
 - Provider 选择会继续引入 EventBus、CancellationManager 和 ServiceDiscovery 相关依赖。
-- 如果需要可视化控制面，额外接入 `Mo.AddJobSchedulerUI()`。
+- 如果需要可视化控制面，额外接入 `monica.AddJobSchedulerUI()`。

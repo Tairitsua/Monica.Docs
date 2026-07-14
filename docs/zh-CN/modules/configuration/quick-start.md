@@ -31,15 +31,17 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Options;
 using Monica.Configuration.Annotations;
 using Monica.Configuration.Models;
+using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Mo.AddConfiguration()
-    .UseFileConfigurationStore();
-Mo.AddConfigurationUI();
-
-builder.UseMonica();
+builder.AddMonica(monica =>
+{
+    monica.AddConfiguration()
+        .UseFileConfigurationStore();
+    monica.AddConfigurationUI();
+});
 
 var app = builder.Build();
 app.UseMonica();
@@ -77,7 +79,7 @@ public sealed class HomeService(IOptionsSnapshot<DemoAppOptions> options)
 }
 ```
 
-`Mo.AddConfiguration()` 会在 Monica 扫描业务类型时找到 `[Configuration]` 类型，生成 schema，并注册对应的 Options 绑定。运行期消费配置时仍然使用 Microsoft Options Pattern。
+`monica.AddConfiguration()` 会在 Monica 扫描业务类型时找到 `[Configuration]` 类型，生成 schema，并注册对应的 Options 绑定。运行期消费配置时仍然使用 Microsoft Options Pattern。
 
 `UseFileConfigurationStore()` 是单体和本地模式的最小 store preset。第一次启动时，Monica 会为每个 `DefinitionKey` 创建一份 effective JSON document：优先从宿主当前 `IConfiguration` 的 section seed，缺失时回退到 CLR 默认值。
 
@@ -102,18 +104,21 @@ public sealed class HomeService(IOptionsSnapshot<DemoAppOptions> options)
 当某些值必须继续由 JSON 文件管理时，可以把文件注册成 Monica 可识别的 runtime source：
 
 ```csharp
-Mo.AddConfiguration()
-    .UseFileConfigurationStore()
-    .AddManagedJsonFile(
-        "operator-settings.json",
-        optional: true,
-        reloadOnChange: true,
-        options =>
-        {
-            options.DisplayName = "Operator Settings";
-            options.Description = "现场交付时允许操作员维护的 JSON 文件。";
-            options.IsWritable = true;
-        });
+builder.AddMonica(monica =>
+{
+    monica.AddConfiguration()
+        .UseFileConfigurationStore()
+        .AddManagedJsonFile(
+            "operator-settings.json",
+            optional: true,
+            reloadOnChange: true,
+            options =>
+            {
+                options.DisplayName = "Operator Settings";
+                options.Description = "现场交付时允许操作员维护的 JSON 文件。";
+                options.IsWritable = true;
+            });
+});
 ```
 
 这个文件会追加在 Monica effective provider 之后。也就是说，如果 `operator-settings.json` 提供了 `Demo:App:AppName`，运行时真正绑定到 `IOptions<DemoAppOptions>` 的值会来自这个 JSON 文件。UI 会在 source chain 中标记它是当前生效来源；如果它可写，用户修改该配置项时会写回这个 JSON 文件并记录历史。

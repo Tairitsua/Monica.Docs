@@ -8,16 +8,19 @@ sidebar_position: 5
 
 ## 场景 1 — 内部运维配置台
 
-在内部管理应用中注册 `Mo.AddConfigurationUI()`，即可提供配置查看、编辑、来源链路、导入导出和历史页面。单体应用可使用 file store；分布式应用应使用 DB store，这样所有实例共享同一份 Monica-managed effective values、metadata 和 history。
+在内部管理应用中注册 `monica.AddConfigurationUI()`，即可提供配置查看、编辑、来源链路、导入导出和历史页面。单体应用可使用 file store；分布式应用应使用 DB store，这样所有实例共享同一份 Monica-managed effective values、metadata 和 history。
 
 ## 场景 2 — 演示和开发环境
 
 开发环境通常这样注册：
 
 ```csharp
-Mo.AddConfiguration()
-    .UseFileConfigurationStore();
-Mo.AddConfigurationUI();
+builder.AddMonica(monica =>
+{
+    monica.AddConfiguration()
+        .UseFileConfigurationStore();
+    monica.AddConfigurationUI();
+});
 ```
 
 File store 会在本地生成 effective JSON document，适合观察复杂对象、dictionary、list item key、敏感值、source chain、导入导出和重启提示。
@@ -25,18 +28,21 @@ File store 会在本地生成 effective JSON document，适合观察复杂对象
 ## 场景 3 — 现场交付 JSON 覆盖文件
 
 ```csharp
-Mo.AddConfiguration()
-    .UseFileConfigurationStore()
-    .AddManagedJsonFile(
-        "operator-settings.json",
-        optional: true,
-        reloadOnChange: true,
-        options =>
-        {
-            options.DisplayName = "Operator Settings";
-            options.IsWritable = true;
-        });
-Mo.AddConfigurationUI();
+builder.AddMonica(monica =>
+{
+    monica.AddConfiguration()
+        .UseFileConfigurationStore()
+        .AddManagedJsonFile(
+            "operator-settings.json",
+            optional: true,
+            reloadOnChange: true,
+            options =>
+            {
+                options.DisplayName = "Operator Settings";
+                options.IsWritable = true;
+            });
+    monica.AddConfigurationUI();
+});
 ```
 
 在配置状态页中，如果某个配置项被 `operator-settings.json` 覆盖，行内会显示外部来源提示。用户点击来源按钮可以查看完整链路；保存修改时，UI 会提示目标是外部 JSON 文件，并记录外部 source history。

@@ -158,7 +158,7 @@ sidebar_position: 4
 
 ## 用户体验标准
 
-- `Mo.Add*()` 的对外调用体验尽量保持统一
+- `builder.AddMonica(...)` 内的 `monica.Add*()` 调用体验保持统一
 - 常见集成场景的写法比旧系统更短或至少更清晰
 - 文档中能明确回答“这个场景该读 config 还是发 contribution”
 

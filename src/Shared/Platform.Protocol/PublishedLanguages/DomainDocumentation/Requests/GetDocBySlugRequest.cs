@@ -7,5 +7,6 @@ namespace Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
 /// Requests the processed Markdown document identified by a documentation slug.
 /// </summary>
 /// <param name="Slug">The normalized documentation slug to load.</param>
-public sealed record GetDocBySlugRequest(string Slug)
+/// <param name="Locale">The requested BCP 47 culture name.</param>
+public sealed record GetDocBySlugRequest(string Slug, string Locale = "en-US")
     : IResultRequest<DocContentDto>;
