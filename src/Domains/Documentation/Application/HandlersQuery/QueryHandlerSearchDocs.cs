@@ -2,7 +2,6 @@ using Domains.Documentation.Configurations;
 using Domains.Documentation.Interfaces;
 using Domains.Documentation.Utilities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Monica.Core.Results;
 using Monica.Markdown.Abstractions;
@@ -19,9 +18,8 @@ namespace Domains.Documentation.Application.HandlersQuery;
 public sealed class QueryHandlerSearchDocs(
     IRepositoryDocumentationContent repository,
     IMarkdownDocumentSearcher searcher,
-    IOptions<DocumentationApiOptions> options,
-    ILoggerFactory loggerFactory)
-    : ApplicationService<SearchDocsRequest, IReadOnlyList<DocSearchResultDto>>(loggerFactory)
+    IOptions<DocumentationApiOptions> options)
+    : ApplicationService<SearchDocsRequest, IReadOnlyList<DocSearchResultDto>>
 {
     private const int MAX_QUERY_LENGTH = 160;
     private readonly DocumentationApiOptions _options = options.Value;

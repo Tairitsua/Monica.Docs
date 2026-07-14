@@ -11,9 +11,8 @@ namespace Domains.Documentation.DomainServices;
 /// </summary>
 public sealed class DomainDocumentationCatalogSync(
     IMarkdownDocumentCatalog markdownCatalog,
-    IOptions<DocumentationApiOptions> options,
-    ILoggerFactory loggerFactory)
-    : DomainService(loggerFactory)
+    IOptions<DocumentationApiOptions> options)
+    : DomainService
 {
     private readonly DocumentationApiOptions _options = options.Value;
 

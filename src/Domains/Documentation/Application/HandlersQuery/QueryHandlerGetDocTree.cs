@@ -1,7 +1,6 @@
 using Domains.Documentation.Interfaces;
 using Domains.Documentation.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Monica.Core.Results;
 using Monica.WebApi.Abstractions;
 using Platform.Protocol.PublishedLanguages.DomainDocumentation.Models;
@@ -13,9 +12,8 @@ namespace Domains.Documentation.Application.HandlersQuery;
 /// Returns the navigation tree for the configured Monica documentation source.
 /// </summary>
 public sealed class QueryHandlerGetDocTree(
-    IRepositoryDocumentationContent repository,
-    ILoggerFactory loggerFactory)
-    : ApplicationService<GetDocTreeRequest, IReadOnlyList<DocTreeItemDto>>(loggerFactory)
+    IRepositoryDocumentationContent repository)
+    : ApplicationService<GetDocTreeRequest, IReadOnlyList<DocTreeItemDto>>
 {
     /// <summary>
     /// Loads the documentation tree and maps repository nodes to published-language DTOs.

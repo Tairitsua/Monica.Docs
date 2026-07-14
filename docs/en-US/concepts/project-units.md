@@ -33,6 +33,34 @@ builder.AddMonica(monica =>
 
 ProjectUnits now live in the focused `Monica.ProjectUnits` package. Their catalog is host-owned and available through `IProjectUnitCatalog`; it is not a static registry.
 
+## Host-bound service infrastructure
+
+Monica activates its `ServiceBase`-derived ProjectUnits through dependency injection. This includes `ApplicationService`, `CustomApplicationService`, `DomainService`, `DomainEventHandler`, and `LocalEventHandler`. Their base classes provide protected `Logger` and `Mapper` properties from the host that created the service.
+
+Keep constructors focused on business collaborators:
+
+```csharp
+public sealed class QueryHandlerGetOrders(
+    IRepositoryOrder repository)
+    : ApplicationService<GetOrdersRequest, IReadOnlyList<OrderDto>>
+{
+    public override async Task<Res<IReadOnlyList<OrderDto>>> Handle(
+        GetOrdersRequest request,
+        CancellationToken cancellationToken)
+    {
+        Logger.LogInformation("Loading active orders");
+        var orders = await repository.GetListAsync(cancellationToken: cancellationToken);
+        return Res.Ok<IReadOnlyList<OrderDto>>(
+            orders.Select(order => Mapper.Map<OrderDto>(order)).ToList());
+    }
+}
+```
+
+- Do not add `ILoggerFactory` or a mapper solely to forward infrastructure into a base constructor.
+- Do not construct these service types with `new`; resolve them through Monica DI.
+- Do not access `Logger` or `Mapper` from a derived constructor. Host infrastructure is available after activation, including request and event handler methods.
+- Classes outside these Monica service bases should continue to inject `ILogger<T>` normally.
+
 ## What discovery enables
 
 - Naming and dependency diagnostics.

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Monica.Core.Results;
 using Monica.WebApi.Abstractions;
 using Platform.Protocol.PublishedLanguages.DomainLocalRpcProvider.Contracts;
@@ -13,9 +12,8 @@ namespace Domains.Showcase.Application.HandlersQuery;
 /// Demonstrates calling another bounded context through the generated local RPC contract.
 /// </summary>
 public sealed class QueryHandlerGetLocalRpcSample(
-    IQueryLocalRpcProvider localRpcProvider,
-    ILoggerFactory loggerFactory)
-    : ApplicationService<GetLocalRpcSampleRequest, LocalRpcSampleDto>(loggerFactory)
+    IQueryLocalRpcProvider localRpcProvider)
+    : ApplicationService<GetLocalRpcSampleRequest, LocalRpcSampleDto>
 {
     /// <summary>
     /// Calls the local RPC provider and returns the combined showcase payload.

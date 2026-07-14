@@ -1,7 +1,6 @@
 using Domains.Documentation.Configurations;
 using Domains.Documentation.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Monica.Core.Results;
 using Monica.WebApi.Abstractions;
@@ -15,9 +14,8 @@ namespace Domains.Documentation.Application.HandlersQuery;
 /// </summary>
 public sealed class QueryHandlerGetDocLocales(
     IRepositoryDocumentationContent repository,
-    IOptions<DocumentationApiOptions> options,
-    ILoggerFactory loggerFactory)
-    : ApplicationService<GetDocLocalesRequest, IReadOnlyList<DocLocaleDto>>(loggerFactory)
+    IOptions<DocumentationApiOptions> options)
+    : ApplicationService<GetDocLocalesRequest, IReadOnlyList<DocLocaleDto>>
 {
     private readonly DocumentationApiOptions _options = options.Value;
 

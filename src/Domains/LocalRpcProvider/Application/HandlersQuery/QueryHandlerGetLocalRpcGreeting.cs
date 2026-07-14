@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Monica.Core.Results;
 using Monica.WebApi.Abstractions;
 using Platform.Protocol.PublishedLanguages.DomainLocalRpcProvider.Models;
@@ -10,8 +9,8 @@ namespace Domains.LocalRpcProvider.Application.HandlersQuery;
 /// <summary>
 /// Provides a simple payload used to verify local RPC dispatch inside the Monica.Docs modular-monolith sample.
 /// </summary>
-public sealed class QueryHandlerGetLocalRpcGreeting(ILoggerFactory loggerFactory)
-    : ApplicationService<GetLocalRpcGreetingRequest, LocalRpcGreetingDto>(loggerFactory)
+public sealed class QueryHandlerGetLocalRpcGreeting
+    : ApplicationService<GetLocalRpcGreetingRequest, LocalRpcGreetingDto>
 {
     /// <summary>
     /// Returns a simple greeting payload for the caller domain.

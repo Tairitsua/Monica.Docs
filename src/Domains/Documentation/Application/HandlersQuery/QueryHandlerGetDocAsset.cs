@@ -1,7 +1,6 @@
 using Domains.Documentation.Interfaces;
 using Domains.Documentation.Utilities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Monica.Core.Results;
 using Monica.WebApi.Abstractions;
@@ -13,9 +12,8 @@ namespace Domains.Documentation.Application.HandlersQuery;
 /// Serves binary assets that belong to the configured Monica documentation source.
 /// </summary>
 public sealed class QueryHandlerGetDocAsset(
-    IRepositoryDocumentationContent repository,
-    ILoggerFactory loggerFactory)
-    : CustomApplicationService<GetDocAssetRequest, object>(loggerFactory)
+    IRepositoryDocumentationContent repository)
+    : CustomApplicationService<GetDocAssetRequest, object>
 {
     /// <summary>
     /// Resolves an asset path and returns a ranged physical-file response when the asset exists.

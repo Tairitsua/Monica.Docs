@@ -8,16 +8,14 @@ using Domains.Documentation.ValueObjects;
 using Markdig;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Monica.WebApi.Abstractions;
 
 namespace Domains.Documentation.DomainServices;
 
 public sealed partial class DomainDocumentationMarkdownProcessor(
-    IOptions<DocumentationApiOptions> options,
-    ILoggerFactory loggerFactory)
-    : DomainService(loggerFactory)
+    IOptions<DocumentationApiOptions> options)
+    : DomainService
 {
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
         .UseAdvancedExtensions()

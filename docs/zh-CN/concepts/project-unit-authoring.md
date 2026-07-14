@@ -126,6 +126,13 @@ public sealed record CommandPublishDocument(string Slug) : IResultRequest;
 - 基础路由统一采用 `api/{version}/{DomainName(PascalCase)}`，Handler 方法只保留请求级路由片段
 - 模块化单体把 `[assembly: AutoControllerConfig(...)]` 放在 Domain 项目根目录；微服务把它写在 `{Subdomain}Service.API/Program.cs`
 
+Monica DI 会激活所有继承 `ServiceBase` 的 ProjectUnit，包括 `ApplicationService`、`CustomApplicationService`、`DomainService`、`DomainEventHandler` 与 `LocalEventHandler`。它们的基类会在激活后提供受保护的 `Logger` 与 `Mapper`，因此业务构造函数只需要保留真正的业务协作者：
+
+- 不要为了转交给基类而给每个业务类型增加 `ILoggerFactory` 或 mapper 参数
+- 不要用 `new` 手工创建这些服务，应从 Monica DI 解析
+- 不要在派生类构造函数中访问 `Logger` 或 `Mapper`；应在请求、事件或业务方法中使用
+- 不继承这些 Monica 服务基类的普通 DI 类型，继续按标准方式注入 `ILogger<T>`
+
 `Monica.Docs` 的 `QueryHandlerGetDocBySlug` 就是典型的查询处理器：它先校验请求，再从仓储取文档，最后组装 DTO 并返回 `Res`。
 
 ## ApplicationService 的 CRUD 风格

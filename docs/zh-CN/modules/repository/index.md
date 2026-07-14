@@ -26,6 +26,7 @@ sidebar_position: 1
 
 - `IRepository<TEntity>`、`IRepository<TEntity, TKey>`：仓储公开抽象。
 - `IDbContextProvider<TDbContext>`：向仓储提供当前 `DbContext`。
+- `IDbContextFactory<TDbContext>`：为后台 Worker 或其他长生命周期服务创建拥有独立 DI scope 的上下文；每个上下文必须由调用方处置。
 - `RepositoryDbContext<TDbContext>`：Monica 风格的 EF Core `DbContext` 基类。
 - `IGuidGenerator`：GUID 生成抽象。
 

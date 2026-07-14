@@ -5,7 +5,6 @@ using Domains.Documentation.Interfaces;
 using Domains.Documentation.Utilities;
 using Domains.Documentation.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Monica.Core.Results;
 using Monica.WebApi.Abstractions;
@@ -20,9 +19,8 @@ namespace Domains.Documentation.Application.HandlersQuery;
 public sealed class QueryHandlerGetDocBySlug(
     IRepositoryDocumentationContent repository,
     DomainDocumentationMarkdownProcessor markdownProcessor,
-    IOptions<DocumentationApiOptions> options,
-    ILoggerFactory loggerFactory)
-    : ApplicationService<GetDocBySlugRequest, DocContentDto>(loggerFactory)
+    IOptions<DocumentationApiOptions> options)
+    : ApplicationService<GetDocBySlugRequest, DocContentDto>
 {
     private readonly DocumentationApiOptions _options = options.Value;
 

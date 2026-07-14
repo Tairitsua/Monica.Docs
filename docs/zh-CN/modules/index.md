@@ -25,6 +25,7 @@ sidebar_position: 3
 | [DependencyInjection](./dependency-injection/index.md) | Stable | `Monica.DependencyInjection` | `monica.AddDependencyInjection()` | `monica.AddDependencyInjectionUI()` |
 | [EventBus](./event-bus/index.md) | Stable | `Monica.EventBus` | `monica.AddEventBus()` | `monica.AddEventBusUI()` |
 | [JobScheduler](./job-scheduler/index.md) | Stable | `Monica.JobScheduler` | `monica.AddJobScheduler()` | `monica.AddJobSchedulerUI()` |
+| [Logging](./logging/index.md) | Stable | `Monica.Logging` | `monica.AddLogging()` | `monica.AddLoggingUI()` |
 | [KnowledgeBase](./knowledge-base/index.md) | Labs | `Monica.AI` | `monica.AddKnowledgeBase()` | `monica.AddKnowledgeBaseUI()` |
 | [KnowledgeBase UI](./knowledge-base-ui/index.md) | Labs | `Monica.AI.UI` | `monica.AddKnowledgeBaseUI()` | 无 |
 | [MCP](./mcp/index.md) | Labs | `Monica.AI` | `monica.AddMcp()` | `monica.AddAIUI()` |

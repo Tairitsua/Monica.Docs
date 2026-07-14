@@ -10,7 +10,7 @@ sidebar_position: 4
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|
-| `AddRepositoryDbContext<TDbContext>(..., DbContextProviderType)` | 注册 EF Core `DbContext`、Provider 与仓储发现 | 是（至少一次） | 所有仓储接入的起点。 |
+| `AddRepositoryDbContext<TDbContext>(..., DbContextProviderType)` | 注册 EF Core `DbContext`、仓储 Provider、仓储发现与 `IDbContextFactory<TDbContext>` | 是（至少一次） | 所有仓储接入的起点。 |
 
 ## Provider choices
 
@@ -18,7 +18,10 @@ sidebar_position: 4
 |---|---|---|
 | `DbContextProviderType.Default` | `AddRepositoryDbContext<TDbContext>(..., DbContextProviderType.Default)` | 常规 Web/API 请求里的默认选择。 |
 | `DbContextProviderType.UnitOfWork` | `AddRepositoryDbContext<TDbContext>(..., DbContextProviderType.UnitOfWork)` | 你需要让仓储参与 UnitOfWork 事务边界时。 |
-| `DbContextProviderType.ContextFactory` | `AddRepositoryDbContext<TDbContext>(..., DbContextProviderType.ContextFactory)` | 你更适合通过 `DbContextFactory` 创建上下文时。 |
+
+`DbContextProviderType` 只决定 scoped 仓储如何取得当前上下文。无论选择 `Default` 还是 `UnitOfWork`，`AddRepositoryDbContext<TDbContext>(...)` 都会注册一个 host-owned `IDbContextFactory<TDbContext>`。工厂创建的每个上下文都拥有独立 DI scope，调用方必须处置上下文来释放该 scope。
+
+不要再额外调用 `AddDbContextFactory<TDbContext>()` 覆盖同一个上下文的工厂；数据库 Provider 与相关选项统一写在 `AddRepositoryDbContext(...)` 回调中。
 
 ## Module dependencies
 

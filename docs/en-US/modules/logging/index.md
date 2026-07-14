@@ -38,4 +38,12 @@ Console and file sinks are enabled by default. Thread IDs are enriched by defaul
 
 `AddRequestResponseLoggingMiddleware(disableResponse, disableRequest)` is optional. Request and response bodies can contain credentials, personal data, or large payloads, so enable payload logging only with an explicit redaction and retention policy.
 
-Application code should continue to inject `ILogger<T>`. Do not assign `Serilog.Log.Logger` or rely on other process-global logger state.
+## Consume logging
+
+Application code should use host-owned Microsoft logging:
+
+- Inject `ILogger<T>` into ordinary DI services.
+- Use the protected `Logger` property inside Monica `ServiceBase`-derived types, including `ApplicationService`, `CustomApplicationService`, `DomainService`, `DomainEventHandler`, and `LocalEventHandler`. These types receive their logger after DI activation, so do not access it from a derived constructor.
+- Pass an `ILogger` into manually constructed helpers when they need diagnostics.
+
+There is no process-global `LogManager` or current logger factory. Do not assign `Serilog.Log.Logger`, cache a host logger in static mutable state, or build a temporary service provider to obtain logging.

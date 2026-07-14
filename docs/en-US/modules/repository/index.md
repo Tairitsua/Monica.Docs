@@ -52,4 +52,23 @@ Inject `IRepository<TEntity, TKey>` for keyed entities or define a domain-specif
 | `DisableEntitySelfConfiguration` | `false` | Stops entity-owned model configuration. |
 | `DisableEntitySeparateConfiguration` | `false` | Stops discovery of separate `IEntityTypeConfiguration<TEntity>` types. |
 
-Choose `DbContextProviderType.UnitOfWork` when the context must participate in Monica transaction boundaries; see [Unit of Work](../unit-of-work/index.md).
+## Factory-created contexts
+
+Every `AddRepositoryDbContext<TDbContext>(...)` registration also exposes `IDbContextFactory<TDbContext>`. Each factory-created context owns an independent dependency injection scope, so the singleton factory is safe to inject into a background worker or another long-lived service. Dispose every created context to release that scope:
+
+```csharp
+public sealed class OrderSnapshotWorker(
+    IDbContextFactory<OrderingDbContext> dbContextFactory)
+{
+    public async Task CaptureAsync(CancellationToken cancellationToken)
+    {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+        var orderCount = await dbContext.Set<Order>().CountAsync(cancellationToken);
+        // Persist or publish the snapshot.
+    }
+}
+```
+
+`DbContextProviderType` controls how scoped repositories obtain their current context. Use `Default` for the request scope or `UnitOfWork` for Monica transaction boundaries; factory availability is independent of that choice. Do not layer another `AddDbContextFactory<TDbContext>()` registration over the same context—configure the provider through `AddRepositoryDbContext(...)`.
+
+See [Unit of Work](../unit-of-work/index.md) for transaction-bound repository operations.
