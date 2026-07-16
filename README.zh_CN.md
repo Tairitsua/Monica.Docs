@@ -24,7 +24,7 @@
 先启动只读 API：
 
 ```bash
-dotnet run --project src/AppHost/Monica.Docs.PublicApi/Monica.Docs.PublicApi.csproj
+dotnet run --project src/AppHost/Monica.Docs.Api/Monica.Docs.Api.csproj
 ```
 
 在另一个终端启动网站：
@@ -48,7 +48,7 @@ MONICA_DOCS_API_URL=http://localhost:5082 npm run dev
 ## 运行完整演示宿主
 
 ```bash
-dotnet run --project src/AppHost/Monica.Docs.Api/Monica.Docs.Api.csproj
+dotnet run --project src/AppHost/Monica.Docs.Demo/Monica.Docs.Demo.csproj
 ```
 
 演示宿主会运行 Monica UI、JobScheduler、文档同步与本地 RPC。它有意比公开 API 更宽，不是 `api.monica.dpdns.org` 的部署目标。
@@ -65,7 +65,7 @@ builder.AddMonica(monica =>
     monica.ConfigureApplication(options =>
     {
         options.AppName = "Monica Documentation API";
-        options.AppId = "monica-docs-public-api";
+        options.AppId = "monica-docs-api";
     });
 
     monica.AddMarkdown()
@@ -86,8 +86,8 @@ app.Run();
 ```text
 docs/                                      双语 Markdown 源文档
 frontend/monica-docs-web/                  Next.js 16 / React 19 官网
-src/AppHost/Monica.Docs.PublicApi/         只读公开文档 API
-src/AppHost/Monica.Docs.Api/               完整、可重置的 Monica 演示宿主
+src/AppHost/Monica.Docs.Api/               只读公开文档 API
+src/AppHost/Monica.Docs.Demo/              完整、可重置的 Monica 演示宿主
 src/Domains/Documentation/                 文档限界上下文
 src/Domains/Showcase/                      仅演示环境使用的行为
 src/Domains/LocalRpcProvider/               本地 RPC 示例边界

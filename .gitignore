@@ -8,7 +8,7 @@
 .vscode/
 
 # Local runtime stores
-src/AppHost/Monica.Docs.Api/App_Data/
+src/AppHost/Monica.Docs.Demo/App_Data/
 
 # Obsidian local workspace state
 docs/.obsidian/workspace.json

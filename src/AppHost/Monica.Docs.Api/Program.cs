@@ -1,133 +1,143 @@
-using Domains.Showcase.Application.BackgroundWorkers;
+using System.Threading.RateLimiting;
+using Domains.Documentation.Application.HandlersQuery;
 using Domains.Documentation.Configurations;
 using Domains.Documentation.Utilities;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
-using Monica.Configuration.EfCore.DbContext;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 using Monica.Core;
 using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
-using Monica.UI.Pages;
-using Monica.UI.Theming;
-using Platform.Infrastructure.RpcClient;
 
 var builder = WebApplication.CreateBuilder(args);
-var configurationStoreConnectionString = ResolveConfigurationStoreConnectionString(builder);
-var documentationApiOptions = builder.Configuration
+var documentationOptions = builder.Configuration
     .GetSection(DocumentationApiOptions.SectionName)
     .Get<DocumentationApiOptions>()
     ?? new DocumentationApiOptions();
 var docsBasePath = UtilsDocumentationPathResolver.ResolveDocsBasePath(
     builder.Environment,
-    documentationApiOptions);
+    documentationOptions);
+var allowedOrigins = builder.Configuration
+    .GetSection("PublicApi:AllowedOrigins")
+    .Get<string[]>()
+    ?.Where(static origin => !string.IsNullOrWhiteSpace(origin))
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .ToArray()
+    ?? [];
+
+builder.Services.AddProblemDetails();
+builder.Services.AddHealthChecks();
+builder.Services.Configure<DocumentationApiOptions>(
+    builder.Configuration.GetSection(DocumentationApiOptions.SectionName));
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor
+                               | ForwardedHeaders.XForwardedProto
+                               | ForwardedHeaders.XForwardedHost;
+    options.ForwardLimit = 1;
+});
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            static _ => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 120,
+                QueueLimit = 0,
+                Window = TimeSpan.FromMinutes(1)
+            }));
+});
 
 builder.AddMonica(monica =>
 {
     monica.ConfigureApplication(options =>
     {
-        options.AppName = "Monica.Docs";
-        options.AppId = "monica-docs";
+        options.AppName = "Monica Documentation API";
+        options.AppId = "monica-docs-api";
     });
     monica.ConfigureModuleSystem(options =>
     {
         options.DefaultApiGroupName = "Documentation";
     });
+    monica.ConfigureTypeDiscovery(options =>
+        options
+            .ExcludeDefault()
+            .Add(typeof(QueryHandlerGetDocTree).Assembly));
 
     monica.AddResultEnvelope().UseResultFieldNames(options => options.Status = "code");
-    monica.AddConfiguration()
-        .UseDbConfigurationStore((_, options) => options.UseSqlite(configurationStoreConnectionString))
-        .AddManagedJsonFile(
-            "docs-external-settings.json",
-            optional: false,
-            reloadOnChange: true,
-            options =>
-            {
-                options.DisplayName = "Docs External Demo Settings";
-                options.Description = "Operator-managed JSON file registered through Monica.Configuration for source-chain and source-editing demos.";
-                options.IsWritable = true;
-            });
-    monica.AddConfigurationUI();
-    monica.AddEventBus().UseNoOpDistributedEventBus();
-    monica.AddWebApi();
-
+    monica.AddDependencyInjection();
+    monica.AddMediator();
+    monica.AddAutoControllers();
     monica.AddSwagger(options =>
     {
-        options.AppName = "Monica.Docs API";
+        options.AppName = "Monica Documentation API";
         options.ApiVersion = "v1";
     });
-    monica.AddProjectUnits(options =>
+    monica.AddCors().ConfigureDefaultPolicy(policy =>
     {
-        options.ConventionOptions.EnableNameConvention = true;
-        options.ConventionOptions.NameConventionMode = ENameConventionMode.Strict;
-    });
-    monica.AddProjectUnitsUI();
-    monica.AddHostedService();
-    monica.AddRpcClient()
-        .ConfigDomainInfoProvider(new MonicaDocsRpcClientDomainInfoProvider())
-        .UseLocalTransport();
-    monica.AddJobScheduler(options =>
+        if (allowedOrigins.Length > 0)
         {
-            options.ProjectName = "Monica.Docs";
-        })
-        .UseInMemoryProvider()
-        .UseInMemoryMetadataRepository()
-        .UseSchedulerScope("monica-docs");
-    monica.AddJobSchedulerUI();
-    monica.AddObservableInstanceUI();
+            policy.WithOrigins(allowedOrigins);
+        }
+        else
+        {
+            policy.SetIsOriginAllowed(static _ => false);
+        }
 
-    monica.AddMarkdown(options =>
-        {
-            options.ParseFrontMatter = true;
-        })
+        policy
+            .WithMethods("GET", "HEAD", "OPTIONS")
+            .AllowAnyHeader();
+    });
+    monica.AddMarkdown(options => options.ParseFrontMatter = true)
         .EnableMultilingualDocuments()
         .AddDocumentGroup(
-            key: documentationApiOptions.DocumentGroupKey,
+            key: documentationOptions.DocumentGroupKey,
             title: "Monica Docs",
             basePath: docsBasePath);
-    monica.AddMarkdownUI();
-    monica.AddSwaggerUI().AddNavigationButton("Home", UISystemInfoPage.PAGE_URL);
-    monica.AddSystemInfoUI().AddSwaggerLink();
-    monica.AddUIShell(options =>
-    {
-        options.DefaultDarkMode = true;
-        options.DefaultTheme = MonicaThemeKind.MaterialDesign3;
-    }).AddRouteRedirect("/", UISystemInfoPage.PAGE_URL);
-    monica.AddModuleSystemUI();
-    monica.AddDependencyInjection();
 });
 
 var app = builder.Build();
-await EnsureConfigurationDatabaseCreatedAsync(app.Services);
 
+app.UseForwardedHeaders();
+app.UseExceptionHandler();
+app.UseRateLimiter();
+app.Use(async (context, next) =>
+{
+    if (HttpMethods.IsGet(context.Request.Method)
+        || HttpMethods.IsHead(context.Request.Method))
+    {
+        context.Response.OnStarting(() =>
+        {
+            if (context.Response.StatusCode == StatusCodes.Status200OK
+                && context.Request.Path.StartsWithSegments("/api/v1/Documentation")
+                && !context.Response.Headers.ContainsKey("Cache-Control"))
+            {
+                var isAsset = context.Request.Path.Value?.Contains("/asset", StringComparison.OrdinalIgnoreCase) == true;
+                context.Response.Headers.CacheControl = isAsset
+                    ? "public, max-age=300, stale-while-revalidate=86400"
+                    : "public, max-age=60, stale-while-revalidate=300";
+                context.Response.Headers.Vary = "Accept-Encoding, Origin";
+            }
+
+            return Task.CompletedTask;
+        });
+    }
+
+    await next();
+});
 app.UseMonica();
 app.MapMonica();
+
+app.MapHealthChecks("/healthz").DisableRateLimiting();
+app.MapGet("/", () => Results.Ok(new
+    {
+        name = "Monica Documentation API",
+        docs = "/api/v1/Documentation/tree?locale=en-US",
+        health = "/healthz"
+    }))
+    .ExcludeFromDescription()
+    .DisableRateLimiting();
+
 app.Run();
-
-static string ResolveConfigurationStoreConnectionString(WebApplicationBuilder builder)
-{
-    var configuredConnectionString = builder.Configuration.GetConnectionString("MonicaConfiguration")
-        ?? "Data Source=App_Data/monica-configuration.sqlite";
-    var sqliteConnectionStringBuilder = new SqliteConnectionStringBuilder(configuredConnectionString);
-
-    if (!string.Equals(sqliteConnectionStringBuilder.DataSource, ":memory:", StringComparison.OrdinalIgnoreCase)
-        && !Path.IsPathRooted(sqliteConnectionStringBuilder.DataSource))
-    {
-        sqliteConnectionStringBuilder.DataSource = Path.GetFullPath(
-            Path.Combine(builder.Environment.ContentRootPath, sqliteConnectionStringBuilder.DataSource));
-    }
-
-    var databaseDirectory = Path.GetDirectoryName(sqliteConnectionStringBuilder.DataSource);
-    if (!string.IsNullOrWhiteSpace(databaseDirectory))
-    {
-        Directory.CreateDirectory(databaseDirectory);
-    }
-
-    return sqliteConnectionStringBuilder.ConnectionString;
-}
-
-static async Task EnsureConfigurationDatabaseCreatedAsync(IServiceProvider services)
-{
-    await using var scope = services.CreateAsyncScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
-    await dbContext.Database.EnsureCreatedAsync();
-}

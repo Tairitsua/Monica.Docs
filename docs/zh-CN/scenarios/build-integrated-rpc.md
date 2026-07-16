@@ -35,7 +35,7 @@ sidebar_position: 2
 ```text
 src/
   AppHost/
-    Monica.Docs.Api/
+    Monica.Docs.Demo/
   Domains/
     Documentation/
     LocalRpcProvider/
@@ -182,7 +182,7 @@ builder.AddMonica(monica =>
 - `Domains.LocalRpcProvider`：提供方领域，暴露 `QueryHandlerGetLocalRpcGreeting`
 - `Domains.Documentation`：调用方领域，暴露 `QueryHandlerGetLocalRpcSample`
 - `Platform.Protocol`：保存共享请求/响应契约，并生成 `IQueryLocalRpcProvider`
-- `Monica.Docs.Api`：注册 `monica.AddRpcClient().UseLocalTransport()`
+- `Monica.Docs.Demo`：注册 `monica.AddRpcClient().UseLocalTransport()`
 
 调用方 Handler 的核心写法如下：
 

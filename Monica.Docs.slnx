@@ -39,7 +39,7 @@
   <Folder Name="/src/" />
   <Folder Name="/src/AppHost/">
     <Project Path="src/AppHost/Monica.Docs.Api/Monica.Docs.Api.csproj" />
-    <Project Path="src/AppHost/Monica.Docs.PublicApi/Monica.Docs.PublicApi.csproj" />
+    <Project Path="src/AppHost/Monica.Docs.Demo/Monica.Docs.Demo.csproj" />
   </Folder>
   <Folder Name="/src/Shared/">
     <Project Path="src/Shared/Platform.BuildingBlocks/Platform.BuildingBlocks.csproj" />

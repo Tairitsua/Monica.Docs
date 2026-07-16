@@ -7,8 +7,8 @@ Monica.Docs is both Monica's public documentation product and an executable exam
 The repository contains three deliberately separate deployable surfaces:
 
 1. `frontend/monica-docs-web` is the public product site and documentation reader.
-2. `src/AppHost/Monica.Docs.PublicApi` is the read-only public documentation API.
-3. `src/AppHost/Monica.Docs.Api` is a broad, resettable demo host for exploring Monica modules and UI.
+2. `src/AppHost/Monica.Docs.Api` is the read-only public documentation API.
+3. `src/AppHost/Monica.Docs.Demo` is a broad, resettable demo host for exploring Monica modules and UI.
 
 The public API must never acquire demo, admin, mutation, local-RPC, or operational-dashboard endpoints. Demo behavior belongs to the demo host and the `Showcase` bounded context.
 
@@ -29,8 +29,8 @@ docs/                                      localized Markdown source
 frontend/monica-docs-web/                  public Next.js website
 src/
 ├── AppHost/
-│   ├── Monica.Docs.PublicApi/             read-only production API
-│   └── Monica.Docs.Api/                   broad demo host
+│   ├── Monica.Docs.Api/                   read-only production API
+│   └── Monica.Docs.Demo/                  broad demo host
 ├── Domains/
 │   ├── Documentation/                     public documentation behavior
 │   ├── Showcase/                          demo-only jobs and examples
@@ -111,9 +111,9 @@ builder.AddMonica(monica =>
 
 ## Demo host
 
-`Monica.Docs.Api` is an integration showcase, not a production API. It may compose Monica UI, Configuration, JobScheduler, synchronization workers, local RPC, and other exploratory surfaces. Its state can be reset and its dependency graph can be intentionally broad.
+`Monica.Docs.Demo` is an integration showcase, not a production API. It may compose Monica UI, Configuration, JobScheduler, synchronization workers, local RPC, and other exploratory surfaces. Its state can be reset and its dependency graph can be intentionally broad.
 
-Moving a capability into the demo host does not authorize exposing it through `Monica.Docs.PublicApi`. Shared code must remain read-oriented unless it is owned by a demo-only bounded context.
+Moving a capability into the demo host does not authorize exposing it through `Monica.Docs.Api`. Shared code must remain read-oriented unless it is owned by a demo-only bounded context.
 
 ## Frontend routes
 

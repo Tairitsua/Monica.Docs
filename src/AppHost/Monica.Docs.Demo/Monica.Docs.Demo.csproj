@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <RequiresAspNetWebAssets>true</RequiresAspNetWebAssets>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.9" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="docs-external-settings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../Domains/Documentation/Domains.Documentation.csproj" />
+    <ProjectReference Include="../../Domains/LocalRpcProvider/Domains.LocalRpcProvider.csproj" />
+    <ProjectReference Include="../../Domains/Showcase/Domains.Showcase.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Configuration.EfCore/Monica.Configuration.EfCore.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Configuration.UI/Monica.Configuration.UI.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Framework/Monica.Framework.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.Framework.UI/Monica.Framework.UI.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.JobScheduler/Monica.JobScheduler.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.JobScheduler.UI/Monica.JobScheduler.UI.csproj" />
+    <ProjectReference Include="../../../../MoLibrary/Monica.ProjectUnits/Monica.ProjectUnits.csproj" />
+  </ItemGroup>
+
+</Project>

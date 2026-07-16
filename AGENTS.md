@@ -10,6 +10,8 @@ Monica.Docs is both:
 - a live demo host for Monica modules, including UI-backed demos
 - a teaching/demo repository for the `monica-business-modular-monolith` and `monica-project-unit-development` skills
 
+The public documentation backend is `Monica.Docs.Api`. The broad resettable framework showcase is `Monica.Docs.Demo`; do not treat the demo host as the public deployment target.
+
 The repository intentionally depends on sibling Monica source projects in `../MoLibrary`.
 
 Key facts for navigation:
@@ -52,6 +54,12 @@ Key facts for navigation:
 dotnet restore Monica.Docs.slnx
 dotnet build Monica.Docs.slnx
 dotnet run --project src/AppHost/Monica.Docs.Api/Monica.Docs.Api.csproj
+```
+
+Run the full Monica showcase in a separate terminal when needed:
+
+```bash
+dotnet run --project src/AppHost/Monica.Docs.Demo/Monica.Docs.Demo.csproj
 ```
 
 ## Working Conventions

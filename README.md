@@ -24,7 +24,7 @@ The public API is isolated from the resettable demo surface, so production docum
 Start the read-only API:
 
 ```bash
-dotnet run --project src/AppHost/Monica.Docs.PublicApi/Monica.Docs.PublicApi.csproj
+dotnet run --project src/AppHost/Monica.Docs.Api/Monica.Docs.Api.csproj
 ```
 
 In another terminal, start the website:
@@ -48,7 +48,7 @@ If `MONICA_DOCS_API_URL` is not configured or the API is temporarily unreachable
 ## Run the broad demo host
 
 ```bash
-dotnet run --project src/AppHost/Monica.Docs.Api/Monica.Docs.Api.csproj
+dotnet run --project src/AppHost/Monica.Docs.Demo/Monica.Docs.Demo.csproj
 ```
 
 The demo host exercises Monica UI, JobScheduler, documentation synchronization, and local RPC. It is intentionally broader than the public API and is not the deployment target for `api.monica.dpdns.org`.
@@ -65,7 +65,7 @@ builder.AddMonica(monica =>
     monica.ConfigureApplication(options =>
     {
         options.AppName = "Monica Documentation API";
-        options.AppId = "monica-docs-public-api";
+        options.AppId = "monica-docs-api";
     });
 
     monica.AddMarkdown()
@@ -86,8 +86,8 @@ There is no ambient registration singleton and no registration-time service loca
 ```text
 docs/                                      bilingual Markdown source
 frontend/monica-docs-web/                  Next.js 16 / React 19 website
-src/AppHost/Monica.Docs.PublicApi/         read-only public documentation API
-src/AppHost/Monica.Docs.Api/               broad, resettable Monica demo host
+src/AppHost/Monica.Docs.Api/               read-only public documentation API
+src/AppHost/Monica.Docs.Demo/              broad, resettable Monica demo host
 src/Domains/Documentation/                 documentation bounded context
 src/Domains/Showcase/                      demo-only behaviors
 src/Domains/LocalRpcProvider/               local RPC example boundary
