@@ -38,3 +38,9 @@ Every module follows the same shape:
 | `Module{Name}` | Declares dependencies and applies lifecycle phases. |
 
 Provider choices remain explicit. For example, JobScheduler does not silently choose a persistence provider; the guide makes the decision visible in the composition root.
+
+## Test the same boundary
+
+`MonicaTestApplicationFactory<TDiscoveryAnchor>` creates a complete, independently owned Monica host for each application scenario. Use it when a test must prove module composition, type discovery, options, interception, persistence, or lifecycle behavior.
+
+[Read the testing guide](../guides/testing-monica-applications.md).

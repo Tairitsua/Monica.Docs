@@ -66,4 +66,5 @@ Provider 选择是显式契约。例如 JobScheduler 不会静默选择存储或
 
 - [Option 与 Guide](./configuration-and-guide.md)
 - [项目单元编写](./project-unit-authoring.md)
+- [测试 Monica 应用](../guides/testing-monica-applications.md)
 - [模块文档目录](../modules/index.md)

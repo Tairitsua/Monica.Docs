@@ -15,6 +15,7 @@ Use Monica when you want coding agents to move quickly without inventing a diffe
 - [Getting started](getting-started/index.md) — install the Stable packages and run a host.
 - [Host-bound composition](concepts/host-bound-composition.md) — understand the module graph and lifecycle.
 - [ProjectUnits](concepts/project-units.md) — give application code explicit architectural roles.
+- [Testing Monica applications](guides/testing-monica-applications.md) — choose between complete host scenarios, raw ProjectUnit fixtures, and UI tests.
 - [Stable module catalog](modules/index.md) — choose the supported capabilities your host actually needs.
 - [Package maturity](packages/index.md) — choose between Stable, Integrations, and Labs.
 - [Runtime observability](guides/runtime-observability.md) — inspect modules, jobs, configuration, and telemetry.

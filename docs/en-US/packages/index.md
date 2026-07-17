@@ -10,7 +10,7 @@ Maturity labels describe compatibility expectations and adoption risk. They do n
 
 | Tier | Promise | Representative capabilities |
 |---|---|---|
-| **Stable** | The supported Monica 1.0 application path. | Core, ProjectUnits, WebApi, Configuration, Repository, JobScheduler, OpenTelemetry, UI |
+| **Stable** | The supported Monica 1.0 application path. | Core, ProjectUnits, WebApi, Configuration, Repository, JobScheduler, OpenTelemetry, Testing, UI |
 | **Integrations** | Versioned adapters around external provider boundaries. | EF Core, Kafka, Redis/StackExchange, Dapr, SignalR |
 | **Labs** | Fast-moving capabilities that may change before promotion. | AI/RAG/MCP, DataChannel, DevOps and profiling, Office, Experimental |
 

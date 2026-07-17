@@ -8,6 +8,8 @@ sidebar_position: 5
 
 `ProjectUnits` 模块负责在运行时发现项目结构，而真正决定“一个业务功能应该怎么拆”的，是你如何编写 `RequestDto`、`ApplicationService`、`DomainService`、实体、仓储、事件、事件处理器、作业与配置。这一页把这些单元放到同一张图里说明。
 
+需要验证这些单元时，先阅读[测试 Monica 应用](../guides/testing-monica-applications.md)：只有纯协作测试适合原始 `ProjectUnitFixture<TUnit>`，依赖发现、约定注册、代理、拦截器、Option、持久化或宿主生命周期的行为必须通过完整宿主场景验证。
+
 ## 先分清两种应用层入口
 
 Monica 里的“应用服务”通常有两种写法，它们都建立在 `Monica.WebApi` 之上，但目标不同。

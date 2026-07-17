@@ -69,3 +69,9 @@ public sealed class QueryHandlerGetOrders(
 - Consistent placement and collaboration rules across bounded contexts.
 
 ProjectUnits are not annotations for an anemic model. Keep behavior on the object that owns the state, and use services for orchestration and boundaries.
+
+## Test ProjectUnits
+
+Use `ProjectUnitFixture<TUnit>` only for focused collaboration tests whose dependencies are explicit. Use a complete host-owned application scenario when behavior depends on discovery, conventional registration, proxies, interceptors, options, persistence, or host lifecycle.
+
+[Choose the correct testing boundary](../guides/testing-monica-applications.md).

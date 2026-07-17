@@ -13,6 +13,7 @@ Monica 是面向可观测 .NET 后端的 Agent-governed application architecture
 - [快速开始](./getting-started/index.md)：安装 Stable 包并启动第一个宿主。
 - [主机绑定的模块组合](./concepts/module-pattern.md)：理解 `builder.AddMonica(...)`、模块图与生命周期边界。
 - [项目单元编写](./concepts/project-unit-authoring.md)：用明确的应用与领域角色组织业务代码。
+- [测试 Monica 应用](./guides/testing-monica-applications.md)：在完整宿主场景、原始 ProjectUnit Fixture 与 UI 测试之间选择真实边界。
 - [模块目录](./modules/index.md)：按需选择基础设施、集成与实验能力。
 - [场景指南](./scenarios/index.md)：把多个模块组合成可运行方案。
 
