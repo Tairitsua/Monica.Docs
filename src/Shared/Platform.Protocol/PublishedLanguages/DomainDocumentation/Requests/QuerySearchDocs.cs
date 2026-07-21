@@ -1,12 +1,14 @@
 using Monica.WebApi.Abstractions;
+using Monica.WebApi.Annotations;
 using Platform.Protocol.PublishedLanguages.DomainDocumentation.Models;
 
 namespace Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
 
 /// <summary>
-/// Requests locale-scoped full-text documentation search results.
+/// Returns locale-scoped full-text documentation search results.
 /// </summary>
 /// <param name="Query">The query text. Queries shorter than the configured minimum return no results.</param>
 /// <param name="Locale">The requested BCP 47 culture name.</param>
-public sealed record SearchDocsRequest(string Query, string Locale = "en-US")
+[ApiEndpoint(ApiHttpMethod.Get, "search", Binding = ApiRequestBinding.Query)]
+public sealed record QuerySearchDocs(string Query, string Locale = "en-US")
     : IResultRequest<IReadOnlyList<DocSearchResultDto>>;

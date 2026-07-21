@@ -29,7 +29,7 @@ sidebar_position: 4
 
 | 单元 | 主要入口 | 典型位置 |
 |---|---|---|
-| `RequestDto` | `IResultRequest<T>` / `IResultRequest` | `Shared/.../PublishedLanguages/.../Requests/` |
+| `RequestDto` | `IResultRequest<T>` / `IResultRequest` | 发布请求放 `Shared/.../PublishedLanguages/.../Requests/`；私有请求放 Handler 附近 |
 | `ApplicationService` | `ApplicationService<TRequest, TResponse>` / `ApplicationService<TRequest>` | `Application/HandlersCommand/`、`Application/HandlersQuery/` |
 | `ApplicationService`（CRUD 风格） | `CrudApplicationService<...>` | 应用层里的专用 CRUD 服务目录 |
 | `DomainService` | `DomainService` | `DomainServices/` |

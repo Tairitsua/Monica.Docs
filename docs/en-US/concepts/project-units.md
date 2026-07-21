@@ -40,12 +40,19 @@ Monica activates its `ServiceBase`-derived ProjectUnits through dependency injec
 Keep constructors focused on business collaborators:
 
 ```csharp
+/// <summary>
+/// Returns active orders visible to the caller.
+/// </summary>
+[ApiEndpoint(ApiHttpMethod.Get, "orders", Binding = ApiRequestBinding.Query)]
+public sealed record QueryGetOrders
+    : IResultRequest<IReadOnlyList<OrderDto>>;
+
 public sealed class QueryHandlerGetOrders(
     IRepositoryOrder repository)
-    : ApplicationService<GetOrdersRequest, IReadOnlyList<OrderDto>>
+    : ApplicationService<QueryGetOrders, IReadOnlyList<OrderDto>>
 {
     public override async Task<Res<IReadOnlyList<OrderDto>>> Handle(
-        GetOrdersRequest request,
+        QueryGetOrders request,
         CancellationToken cancellationToken)
     {
         Logger.LogInformation("Loading active orders");
@@ -55,6 +62,10 @@ public sealed class QueryHandlerGetOrders(
     }
 }
 ```
+
+HTTP endpoint metadata and XML documentation belong to the request through `[ApiEndpoint]`; handlers contain no ASP.NET method attributes. Place cross-domain requests under `Platform.Protocol.PublishedLanguages.Domain{Domain}.Requests`. Keep HTTP-only requests beside their handlers so they do not publish RPC APIs accidentally.
+
+Published requests use the `WebApiGenerationConfig` declared by `Platform.Protocol`, including its RPC targets. A service-local request instead uses the configuration in its owning domain or service assembly, whose `DomainName` supplies the route domain.
 
 - Do not add `ILoggerFactory` or a mapper solely to forward infrastructure into a base constructor.
 - Do not construct these service types with `new`; resolve them through Monica DI.

@@ -10,20 +10,20 @@ sidebar_position: 5
 
 这是 Monica 最标准的业务写法：
 
-1. 在 `Shared/.../PublishedLanguages/.../Requests/` 下定义 `Command*` 或 `Query*`
+1. 跨领域调用放在 `Shared/.../PublishedLanguages/.../Requests/`；领域私有 HTTP 请求与 Handler 放在一起
 2. 在 `Application/HandlersCommand/` 或 `Application/HandlersQuery/` 下定义 `ApplicationService`
 3. 把可复用规则放进 `DomainServices/`
 4. 把持久化放进仓储
 
-`Monica.Docs` 的 `GetDocTreeRequest` + `QueryHandlerGetDocTree` 就属于这个模式。对于命令场景，则继续采用同样的 `Command*` + `CommandHandler*` 组合即可。
+`Monica.Docs` 的 `QueryGetDocTree` + `QueryHandlerGetDocTree` 就属于这个模式。对于命令场景，则继续采用同样的 `Command*` + `CommandHandler*` 组合即可。
 
 路由建议也一并固定下来：
 
 - 基础路由统一采用 `api/{version}/{DomainName(PascalCase)}`
-- Handler 方法只写请求级路由片段
-- 例如 `QueryHandlerGetDocTree` 使用 `[HttpGet("tree")]`，最终就是 `GET api/v1/Documentation/tree`
-- 模块化单体把 `[assembly: AutoControllerConfig(...)]` 放在 Domain 项目根目录
-- 微服务把同样的配置写在 `{Subdomain}Service.API/Program.cs`
+- 请求通过 `[ApiEndpoint]` 声明 HTTP 方法、请求级路由与 Binding
+- 例如 `QueryGetDocTree` 使用 `[ApiEndpoint(ApiHttpMethod.Get, "tree")]`，最终就是 `GET api/v1/Documentation/tree`
+- 发布请求由 `Platform.Protocol` 程序集的 `[assembly: WebApiGenerationConfig(...)]` 提供路由前缀与 RPC Target
+- 本地请求由所属 Domain 项目或 `{Subdomain}Service.API` 的配置提供 `DomainName`，并且只生成 HTTP Controller
 
 适合：
 
@@ -117,7 +117,7 @@ builder.AddMonica(monica =>
 - 把所有应用层逻辑都塞进 `CrudApplicationService`，导致真正的业务流程没有清晰边界。
 - 把 `Res` 带进 `DomainService`、仓储或实体，破坏领域层边界。
 - 使用 CRUD 风格应用服务，但忘了同步对齐 `CrudControllerPostfix`。
-- 把请求 DTO 放在 API 项目本地，而不是 Published Language。
+- 把本应领域私有的请求也放进 Published Language，意外发布 RPC API。
 - 一开始就启用 `Strict` 模式，导致历史项目接入成本过高。
 - 关闭 `ParseUnitDetails` 后仍然期望看到完整的单元细节和文档信息。
 - 为了在组合阶段读取托管配置而提前构建临时容器，导致服务与 Options 生命周期分裂。

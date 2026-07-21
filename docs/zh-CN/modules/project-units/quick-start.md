@@ -52,7 +52,13 @@ app.Run();
 ### 1. 定义请求契约
 
 ```csharp
-public sealed record GetDocTreeRequest
+using Monica.WebApi.Annotations;
+
+/// <summary>
+/// 返回指定文档语言的导航树。
+/// </summary>
+[ApiEndpoint(ApiHttpMethod.Get, "tree", Binding = ApiRequestBinding.Query)]
+public sealed record QueryGetDocTree
     : IResultRequest<IReadOnlyList<DocTreeItemDto>>;
 ```
 
@@ -65,15 +71,12 @@ Shared/Platform.Protocol/PublishedLanguages/DomainDocumentation/Requests/
 ### 2. 定义查询处理器
 
 ```csharp
-using Microsoft.AspNetCore.Mvc;
-
 public sealed class QueryHandlerGetDocTree(
     IRepositoryDocumentationContent repository)
-    : ApplicationService<GetDocTreeRequest, IReadOnlyList<DocTreeItemDto>>
+    : ApplicationService<QueryGetDocTree, IReadOnlyList<DocTreeItemDto>>
 {
-    [HttpGet("tree")]
     public override async Task<Res<IReadOnlyList<DocTreeItemDto>>> Handle(
-        GetDocTreeRequest request,
+        QueryGetDocTree request,
         CancellationToken cancellationToken)
     {
         var nodes = await repository.GetTreeAsync(cancellationToken);
@@ -91,19 +94,20 @@ Domains/Documentation/Application/HandlersQuery/
 
 ### 3. 固定领域级基础路由
 
-对于模块化单体，建议在每个 Domain 项目根目录只配置一次默认基础路由：
+这个请求位于 `Platform.Protocol` 的 Published Language 中，因此在协议程序集配置路由前缀与 RPC Target：
 
 ```csharp
-using Monica.WebApi.AutoControllers.Annotations;
+using Monica.WebApi.Annotations;
 
-[assembly: AutoControllerConfig(
-    DefaultRoutePrefix = "api/v1",
-    DomainName = "Documentation")]
+[assembly: WebApiGenerationConfig(
+    "api/v1",
+    RpcClientTargets = RpcClientGenerationTargets.Http
+        | RpcClientGenerationTargets.Local)]
 ```
 
-这样 `QueryHandlerGetDocTree` 的最终路由就是 `GET api/v1/Documentation/tree`，Handler 本身只保留请求级路由片段 `tree`。
+这样 `QueryGetDocTree` 的最终路由就是 `GET api/v1/Documentation/tree`。相对路由与端点文档都由请求拥有。
 
-如果是微服务架构，则把同样的 `[assembly: AutoControllerConfig(...)]` 写在 `{Subdomain}Service.API/Program.cs` 即可。
+Domain 会从严格的 `PublishedLanguages.DomainDocumentation.Requests` 命名空间推导，不需要在协议配置中重复声明。若请求只服务于当前 Domain 或微服务，则把它放在 Handler 附近，并在所属 Domain 项目或 `{Subdomain}Service.API` 中配置 `DomainName = "Documentation"`；这种请求只生成 HTTP Controller。
 
 ### 4. 让 `ProjectUnits` 看到什么
 
@@ -121,7 +125,7 @@ using Monica.WebApi.AutoControllers.Annotations;
 
 如果你的项目除了 `QueryHandler*` / `CommandHandler*` 之外，还同时使用 `CrudApplicationService` 这类不包含 `Handler` 的 CRUD 风格应用服务，也建议先用 `Warning` 模式观察现状，再决定是否要为 `ApplicationService` 单独放宽规则。
 
-另一个值得尽早固定的配置是 `ApplicationService` 的默认基础路由。推荐统一采用 `api/{version}/{DomainName(PascalCase)}`，例如 `api/v1/Documentation`，然后每个请求只补充自己的方法路由，例如 `tree`、`doc`、`publish`。
+另一个值得尽早固定的配置是 `ApplicationService` 的默认基础路由。推荐统一采用 `api/{version}/{DomainName(PascalCase)}`，例如 `api/v1/Documentation`，然后每个请求通过 `[ApiEndpoint]` 补充自己的方法与相对路由，例如 `tree`、`doc`、`publish`。
 
 ## 接下来读什么
 

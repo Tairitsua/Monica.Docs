@@ -1,6 +1,5 @@
 using Domains.Documentation.Configurations;
 using Domains.Documentation.Interfaces;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Monica.Core.Results;
 using Monica.WebApi.Abstractions;
@@ -15,16 +14,12 @@ namespace Domains.Documentation.Application.HandlersQuery;
 public sealed class QueryHandlerGetDocLocales(
     IRepositoryDocumentationContent repository,
     IOptions<DocumentationApiOptions> options)
-    : ApplicationService<GetDocLocalesRequest, IReadOnlyList<DocLocaleDto>>
+    : ApplicationService<QueryGetDocLocales, IReadOnlyList<DocLocaleDto>>
 {
     private readonly DocumentationApiOptions _options = options.Value;
 
-    /// <summary>
-    /// Maps discovered Markdown language roots to stable public locale metadata.
-    /// </summary>
-    [HttpGet("locales")]
     public override async Task<Res<IReadOnlyList<DocLocaleDto>>> Handle(
-        GetDocLocalesRequest request,
+        QueryGetDocLocales request,
         CancellationToken cancellationToken)
     {
         var locales = await repository.GetLocalesAsync(cancellationToken);

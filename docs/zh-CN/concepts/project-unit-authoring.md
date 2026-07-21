@@ -21,18 +21,21 @@ Monica 里的“应用服务”通常有两种写法，它们都建立在 `Monic
 `Monica.Docs` 当前就使用这条路径：
 
 ```csharp
-using Microsoft.AspNetCore.Mvc;
+using Monica.WebApi.Annotations;
 
-public sealed record GetDocTreeRequest
+/// <summary>
+/// 返回指定文档语言的导航树。
+/// </summary>
+[ApiEndpoint(ApiHttpMethod.Get, "tree", Binding = ApiRequestBinding.Query)]
+public sealed record QueryGetDocTree
     : IResultRequest<IReadOnlyList<DocTreeItemDto>>;
 
 public sealed class QueryHandlerGetDocTree(
     IRepositoryDocumentationContent repository)
-    : ApplicationService<GetDocTreeRequest, IReadOnlyList<DocTreeItemDto>>
+    : ApplicationService<QueryGetDocTree, IReadOnlyList<DocTreeItemDto>>
 {
-    [HttpGet("tree")]
     public override async Task<Res<IReadOnlyList<DocTreeItemDto>>> Handle(
-        GetDocTreeRequest request,
+        QueryGetDocTree request,
         CancellationToken cancellationToken)
     {
         var nodes = await repository.GetTreeAsync(cancellationToken);
@@ -79,7 +82,7 @@ public sealed class DocumentCrudService(
 
 | 单元 | Monica 契约 | 典型位置 | 主要职责 |
 |---|---|---|---|
-| `RequestDto` | `IResultRequest<TResponse>` / `IResultRequest` | `Shared/.../PublishedLanguages/.../Requests/` | 表达稳定的用例输入 |
+| `RequestDto` | `IResultRequest<TResponse>` / `IResultRequest` | 发布契约放 `Shared/.../PublishedLanguages/.../Requests/`；领域私有请求放 Handler 附近 | 表达稳定的用例输入 |
 | `ApplicationService` | `ApplicationService<TRequest, TResponse>` / `ApplicationService<TRequest>` | `Application/HandlersCommand/`、`Application/HandlersQuery/` | 边界编排，返回 `Res` |
 | `ApplicationService`（CRUD 风格） | `CrudApplicationService<...>` | 应用层里的专用 CRUD 服务目录 | 标准资源型 HTTP CRUD |
 | `DomainService` | `DomainService` | `DomainServices/` | 可复用业务规则，使用正常返回值和异常 |
@@ -94,12 +97,13 @@ public sealed class DocumentCrudService(
 
 ## RequestDto
 
-`RequestDto` 是用例契约，不是实体，也不是 API Controller 参数包。它应该稳定、序列化友好、字段明确，并且优先放在 `Shared/.../PublishedLanguages/.../Requests/` 下。
+`RequestDto` 是用例契约，不是实体，也不是持久化模型。它应该稳定、序列化友好、字段明确。位置取决于暴露边界：其他领域或进程需要调用时放到 `Shared/.../PublishedLanguages/.../Requests/`；仅当前领域使用时放在 Handler 附近。发布位置会自动生成 RPC API，因此不要把所有请求都放进 `PublishedLanguages`。
 
 `Monica.Docs` 的查询请求：
 
 ```csharp
-public sealed record GetDocBySlugRequest(string Slug)
+[ApiEndpoint(ApiHttpMethod.Get, "doc", Binding = ApiRequestBinding.Query)]
+public sealed record QueryGetDocBySlug(string Slug)
     : IResultRequest<DocContentDto>;
 ```
 
@@ -114,6 +118,8 @@ public sealed record CommandPublishDocument(string Slug) : IResultRequest;
 - `Query*` 表示查询，`Command*` 表示命令
 - 只表达输入，不混入仓储、映射或数据库字段语义
 - 响应 DTO 放在 Published Language 一侧，而不是和 EF 实体放在一起
+- 需要生成 HTTP 端点的请求用 `[ApiEndpoint]` 声明 Method、相对 Route 与 Binding
+- 请求上的 XML 文档就是 Controller 与 RPC 接口的端点文档
 
 ## ApplicationService
 
@@ -125,8 +131,9 @@ public sealed record CommandPublishDocument(string Slug) : IResultRequest;
 - 让 `RequestDto` 实现 `IResultRequest<T>` 或 `IResultRequest`
 - 复杂规则放进实体或 `DomainService`
 - 需要 `string` 成功结果时，使用 `Res.Ok<string>(value)`，不要写成 `Res.Ok(value)`
-- 基础路由统一采用 `api/{version}/{DomainName(PascalCase)}`，Handler 方法只保留请求级路由片段
-- 模块化单体把 `[assembly: AutoControllerConfig(...)]` 放在 Domain 项目根目录；微服务把它写在 `{Subdomain}Service.API/Program.cs`
+- 基础路由统一采用 `api/{version}/{DomainName(PascalCase)}`，请求只声明相对路由片段
+- 发布请求由 `Platform.Protocol` 中的 `[assembly: WebApiGenerationConfig(...)]` 统一配置；本地 HTTP 请求才在所属 Domain 项目或 `{Subdomain}Service.API` 中配置 `DomainName`
+- Handler 不再声明 `[HttpGet]` / `[HttpPost]` 或端点 XML 文档
 
 Monica DI 会激活所有继承 `ServiceBase` 的 ProjectUnit，包括 `ApplicationService`、`CustomApplicationService`、`DomainService`、`DomainEventHandler` 与 `LocalEventHandler`。它们的基类会在激活后提供受保护的 `Logger` 与 `Mapper`，因此业务构造函数只需要保留真正的业务协作者：
 
@@ -342,13 +349,14 @@ Shared/Platform.Protocol/PublishedLanguages/DomainDocumentation/
 └── Events/
 ```
 
-这也是 `Monica.Docs` 当前采用的基本结构。
+领域私有 HTTP 请求可以与 `Application/HandlersCommand` 或 `Application/HandlersQuery` 中的 Handler 同文件或相邻放置。`Monica.Docs` 的二进制 `QueryGetDocAsset` 就保持本地，不会生成 RPC API。
 
 ## 常见误区
 
 - 把 `Res`、`Res<T>` 带进 `DomainService`、仓储或实体
 - 把所有业务动作都塞进 `CrudApplicationService`
-- 把请求 DTO 放到 API 项目本地，而不是 Published Language
+- 把领域私有请求也放进 Published Language，意外扩大 RPC 契约面
+- 把 `[HttpGet]`、路由和端点文档继续写在 Handler 上
 - 在 Handler 里直接散着改实体状态，而不是把行为放回实体或 `DomainService`
 - 用 `Res.Ok(value)` 返回 `string` 成功结果，导致命中非泛型重载
 

@@ -4,7 +4,6 @@ using Domains.Documentation.Entities;
 using Domains.Documentation.Interfaces;
 using Domains.Documentation.Utilities;
 using Domains.Documentation.ValueObjects;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Monica.Core.Results;
 using Monica.WebApi.Abstractions;
@@ -20,16 +19,12 @@ public sealed class QueryHandlerGetDocBySlug(
     IRepositoryDocumentationContent repository,
     DomainDocumentationMarkdownProcessor markdownProcessor,
     IOptions<DocumentationApiOptions> options)
-    : ApplicationService<GetDocBySlugRequest, DocContentDto>
+    : ApplicationService<QueryGetDocBySlug, DocContentDto>
 {
     private readonly DocumentationApiOptions _options = options.Value;
 
-    /// <summary>
-    /// Resolves the requested document, rewrites local assets, extracts headings, and builds breadcrumbs.
-    /// </summary>
-    [HttpGet("doc")]
     public override async Task<Res<DocContentDto>> Handle(
-        GetDocBySlugRequest request,
+        QueryGetDocBySlug request,
         CancellationToken cancellationToken)
     {
         var normalizedSlug = UtilsDocumentationPath.NormalizeSlug(request.Slug);

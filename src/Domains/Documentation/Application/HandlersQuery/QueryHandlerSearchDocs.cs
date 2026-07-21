@@ -1,7 +1,6 @@
 using Domains.Documentation.Configurations;
 using Domains.Documentation.Interfaces;
 using Domains.Documentation.Utilities;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Monica.Core.Results;
 using Monica.Markdown.Abstractions;
@@ -19,17 +18,13 @@ public sealed class QueryHandlerSearchDocs(
     IRepositoryDocumentationContent repository,
     IMarkdownDocumentSearcher searcher,
     IOptions<DocumentationApiOptions> options)
-    : ApplicationService<SearchDocsRequest, IReadOnlyList<DocSearchResultDto>>
+    : ApplicationService<QuerySearchDocs, IReadOnlyList<DocSearchResultDto>>
 {
     private const int MAX_QUERY_LENGTH = 160;
     private readonly DocumentationApiOptions _options = options.Value;
 
-    /// <summary>
-    /// Returns ranked document results with preview highlights and stable website paths.
-    /// </summary>
-    [HttpGet("search")]
     public override async Task<Res<IReadOnlyList<DocSearchResultDto>>> Handle(
-        SearchDocsRequest request,
+        QuerySearchDocs request,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.Query))
