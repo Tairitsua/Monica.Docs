@@ -47,12 +47,9 @@ builder.AddMonica(monica =>
             {
                 options.DisplayName = "Docs External Demo Settings";
                 options.Description = "Operator-managed JSON file registered through Monica.Configuration for source-chain and source-editing demos.";
-                options.IsWritable = !publicDemoMode;
+                options.IsWritable = true;
             });
-    if (!publicDemoMode)
-    {
-        monica.AddConfigurationUI();
-    }
+    monica.AddConfigurationUI();
     monica.AddEventBus().UseNoOpDistributedEventBus();
     monica.AddWebApi();
 
@@ -75,10 +72,7 @@ builder.AddMonica(monica =>
         .UseInMemoryProvider()
         .UseInMemoryMetadataRepository()
         .UseSchedulerScope("monica-docs-demo");
-    if (!publicDemoMode)
-    {
-        monica.AddJobSchedulerUI();
-    }
+    monica.AddJobSchedulerUI();
     monica.AddObservableInstanceUI();
 
     monica.AddMarkdown(options =>
@@ -97,7 +91,9 @@ builder.AddMonica(monica =>
     {
         options.DefaultDarkMode = true;
         options.DefaultTheme = MonicaThemeKind.MaterialDesign3;
-    }).AddRouteRedirect("/", UISystemInfoPage.PAGE_URL);
+    })
+        .AddRouteRedirect("/", UISystemInfoPage.PAGE_URL)
+        .AddRouteRedirect("/configuration", "/configuration/state");
     monica.AddModuleSystemUI();
     monica.AddDependencyInjection();
 });

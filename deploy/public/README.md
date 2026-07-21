@@ -3,7 +3,7 @@
 These files define the production deployment for:
 
 - `https://monica.dpdns.org` — Next.js documentation site and read-only documentation API
-- `https://demo.monica.dpdns.org` — isolated, read-only Monica runtime showcase
+- `https://demo.monica.dpdns.org` — isolated, disposable Monica runtime playground
 
 The Docker build context must contain sibling `Monica.Docs/` and `MoLibrary/`
 directories. Copy this directory's `Dockerfile`, `.dockerignore`,
@@ -13,7 +13,8 @@ running Docker Compose.
 Set `MONICA_DOCS_IMAGE_TAG` to the Monica.Docs commit being released. The Compose
 file defaults to `dev` for local configuration validation.
 
-The public demo runs with `PublicDemo:Enabled=true`. That mode keeps the
-inspectable runtime surfaces but removes the writable Configuration and
-JobScheduler consoles. Its state is disposable, its source documentation mount is
-read-only, and its only network peer is Caddy.
+The public demo runs with `PublicDemo:Enabled=true`. Its Configuration and
+JobScheduler consoles intentionally remain writable so visitors can exercise the
+runtime. Configuration state, the managed JSON source, and scheduled-job metadata
+are disposable and reset when the container starts. The source documentation mount
+remains read-only, and the demo's only network peer is Caddy.
