@@ -1,23 +1,34 @@
 ---
 title: Guide and Providers
-description: AutoControllers 的 Guide 方法、Provider 选择与依赖说明。
+description: 理解 AutoControllers 注册与 RPC 传输选择。
 sidebar_position: 4
 ---
 
 # Guide and Providers
 
-## Guide methods
+## 运行时 Guide
 
-这个模块没有额外公开的 Guide 方法，通常直接通过 `monica.AddAutoControllers(...)` 进入即可。
+`ModuleAutoControllersGuide` 没有额外必需方法。通过 `monica.AddAutoControllers(...)` 注册后，模块会接入 MVC 端点映射、API Explorer、普通 Controller 发现与 CRUD Controller 发现。
 
-## Provider choices
+`ModuleAutoControllers` 声明了 `AutoModel` 依赖，用于约定式 CRUD 筛选。
 
-| Choice | How to enable it | When to use it |
-|---|---|---|
-| 自动 CRUD 发现 | 通过实现 `ICrudApplicationService` 并满足命名约定 | 需要统一生成 CRUD 路由时。 |
-| 普通 Controller 发现 | 直接定义 `ControllerBase` 派生类 | 你仍然需要保留手写控制器时。 |
+## 生成器归属
 
-## Module dependencies
+`Monica.Generators.AutoController` 是编译期 Analyzer 依赖。每个编译端点请求或 `ApplicationService` Handler 的程序集都应私有引用它。生成器不会把 RPC snapshot 写入项目目录，也不要求先构建 Producer。
 
-- 模块会自动声明 `AutoModel` 依赖，用于 CRUD 查询侧的动态筛选能力。
-- 模块内部会接入 MVC / Controller 管线与 API Explorer。
+## RPC 运行时 Provider
+
+同时生成两种传输并不等于选择运行时传输，宿主必须显式决定：
+
+```csharp
+builder.AddMonica(monica =>
+{
+    monica.AddRpcClient()
+        .ConfigDomainInfoProvider(new AppRpcClientDomainInfoProvider())
+        .UseLocalTransport();
+});
+```
+
+- 调用方和提供方在同一进程时使用 `UseLocalTransport()`。
+- 跨进程运行时使用 `UseHttpTransport()`，并配置 HTTP 注册 Provider。
+- Domain Info Provider 决定当前宿主要注册哪些生成客户端。

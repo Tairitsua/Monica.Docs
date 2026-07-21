@@ -1,6 +1,5 @@
 using Domains.Documentation.Interfaces;
 using Domains.Documentation.ValueObjects;
-using Microsoft.AspNetCore.Mvc;
 using Monica.Core.Results;
 using Monica.WebApi.Abstractions;
 using Platform.Protocol.PublishedLanguages.DomainDocumentation.Models;
@@ -13,14 +12,10 @@ namespace Domains.Documentation.Application.HandlersQuery;
 /// </summary>
 public sealed class QueryHandlerGetDocTree(
     IRepositoryDocumentationContent repository)
-    : ApplicationService<GetDocTreeRequest, IReadOnlyList<DocTreeItemDto>>
+    : ApplicationService<QueryGetDocTree, IReadOnlyList<DocTreeItemDto>>
 {
-    /// <summary>
-    /// Loads the documentation tree and maps repository nodes to published-language DTOs.
-    /// </summary>
-    [HttpGet("tree")]
     public override async Task<Res<IReadOnlyList<DocTreeItemDto>>> Handle(
-        GetDocTreeRequest request,
+        QueryGetDocTree request,
         CancellationToken cancellationToken)
     {
         var nodes = await repository.GetTreeAsync(request.Locale, cancellationToken);

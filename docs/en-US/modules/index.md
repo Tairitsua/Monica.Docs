@@ -17,6 +17,7 @@ The pages in this section cover Monica's user-facing Stable path. Stable means t
 | Conventional service registration | [Dependency Injection](./dependency-injection/index.md) | `Monica.DependencyInjection` |
 | Local and distributed events | [EventBus](./event-bus/index.md) | `Monica.EventBus` |
 | HTTP APIs and generated controllers | [WebApi and AutoControllers](./web-api/index.md) | `Monica.WebApi` |
+| Request-owned endpoints and RPC clients | [AutoControllers](./auto-controllers/index.md) | `Monica.WebApi` + `Monica.Generators.AutoController` |
 | EF Core persistence | [Repository](./repository/index.md) | `Monica.Repository` |
 | Transaction boundaries and completion hooks | [Unit of Work](./unit-of-work/index.md) | `Monica.Repository` |
 | Recurring and triggered work | [JobScheduler](./job-scheduler/index.md) | `Monica.JobScheduler` |

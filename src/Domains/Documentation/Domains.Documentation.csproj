@@ -26,10 +26,6 @@
 
   <ItemGroup>
     <PackageReference Include="Markdig" Version="0.45.0" />
-    <PackageReference Include="Monica.Generators.AutoController"
-                      Version="0.1.0-preview.4"
-                      ExcludeAssets="analyzers"
-                      PrivateAssets="all" />
   </ItemGroup>
 
 </Project>

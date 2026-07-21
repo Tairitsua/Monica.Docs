@@ -23,5 +23,11 @@ public enum MonicaDocsRpcDomain
     /// The local RPC provider sample domain.
     /// </summary>
     [Description("Local Rpc Provider")]
-    LocalRpcProvider = 1 << 1
+    LocalRpcProvider = 1 << 1,
+
+    /// <summary>
+    /// The framework showcase domain.
+    /// </summary>
+    [Description("Showcase")]
+    Showcase = 1 << 2
 }

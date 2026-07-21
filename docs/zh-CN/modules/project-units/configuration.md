@@ -72,7 +72,7 @@ builder.AddMonica(monica =>
 
 | 单元 | 推荐命名 | 推荐位置 |
 |---|---|---|
-| `RequestDto` | `Command*` / `Query*` / `Request*` | `Shared/.../PublishedLanguages/.../Requests/` |
+| `RequestDto` | `Command*` / `Query*` | 发布请求放 `Shared/.../PublishedLanguages/.../Requests/`；私有请求放 Handler 附近 |
 | `ApplicationService` | `CommandHandler*` / `QueryHandler*` | `Application/HandlersCommand/`、`Application/HandlersQuery/` |
 | `DomainService` | `Domain*` | `DomainServices/` |
 | `Entity` | 放在 `Entities/` 下 | `Entities/` |

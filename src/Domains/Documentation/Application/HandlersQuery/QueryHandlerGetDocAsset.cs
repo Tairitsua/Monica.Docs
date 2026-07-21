@@ -2,25 +2,29 @@ using Domains.Documentation.Interfaces;
 using Domains.Documentation.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
+using Monica.Core.Mediator;
 using Monica.Core.Results;
 using Monica.WebApi.Abstractions;
-using Platform.Protocol.PublishedLanguages.DomainDocumentation.Requests;
+using Monica.WebApi.Annotations;
 
 namespace Domains.Documentation.Application.HandlersQuery;
+
+/// <summary>
+/// Returns a binary asset from the configured Monica documentation source.
+/// </summary>
+/// <param name="AssetPath">The relative asset path under the configured documentation source.</param>
+[ApiEndpoint(ApiHttpMethod.Get, "assets", Binding = ApiRequestBinding.Query)]
+public sealed record QueryGetDocAsset(string AssetPath) : IRequest<object>;
 
 /// <summary>
 /// Serves binary assets that belong to the configured Monica documentation source.
 /// </summary>
 public sealed class QueryHandlerGetDocAsset(
     IRepositoryDocumentationContent repository)
-    : CustomApplicationService<GetDocAssetRequest, object>
+    : CustomApplicationService<QueryGetDocAsset, object>
 {
-    /// <summary>
-    /// Resolves an asset path and returns a ranged physical-file response when the asset exists.
-    /// </summary>
-    [HttpGet("assets")]
     public override async Task<object> Handle(
-        GetDocAssetRequest request,
+        QueryGetDocAsset request,
         CancellationToken cancellationToken)
     {
         var normalizedAssetPath = UtilsDocumentationPath.NormalizeRelativePath(request.AssetPath);

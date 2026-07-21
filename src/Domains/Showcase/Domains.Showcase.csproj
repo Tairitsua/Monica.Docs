@@ -20,12 +20,4 @@
                       ReferenceOutputAssembly="false" />
     <ProjectReference Include="../../../../MoLibrary/Monica.JobScheduler/Monica.JobScheduler.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Monica.Generators.AutoController"
-                      Version="0.1.0-preview.4"
-                      ExcludeAssets="analyzers"
-                      PrivateAssets="all" />
-  </ItemGroup>
-
 </Project>

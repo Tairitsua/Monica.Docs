@@ -1,37 +1,57 @@
 ---
 title: AutoControllers
-description: 自动发现 `ControllerBase` 与 CRUD 应用服务，统一接入 ASP.NET Core Controller 路由与 API 描述生成。
+description: 根据请求拥有的端点契约生成 HTTP Controller 与 RPC 客户端。
 sidebar_position: 1
 ---
 
 # AutoControllers
 
-自动发现 `ControllerBase` 与 CRUD 应用服务，统一接入 ASP.NET Core Controller 路由与 API 描述生成。
+AutoControllers 把 Monica `ApplicationService` 暴露为生成式 ASP.NET Core Controller。HTTP 方法、相对路由、绑定方式和 API 文档都由请求类型拥有，Handler 只负责用例编排。
 
-## 何时使用这个模块
+## 何时使用
 
-- 你想让 Monica 自动发现控制器，而不是手工维护 MVC ApplicationPart。
-- 你正在使用基于 `ICrudApplicationService` 的自动 CRUD 控制器生成。
-- 你希望在一个模块里同时容纳手写 Controller 与约定式 CRUD API。
+- 你需要把显式 Command / Query Handler 暴露为 HTTP API。
+- 你希望发布请求自动生成强类型 HTTP 或 Local RPC 客户端。
+- 你使用 `ICrudApplicationService` 提供约定式资源 CRUD。
+- 你仍需让手写 `ControllerBase` 与生成端点共存。
 
 ## 包与注册入口
 
-| 项目 | 值 |
+| 关注点 | 公开入口 |
 |---|---|
-| 包 | `Monica.WebApi` |
-| 注册入口 | `monica.AddAutoControllers(...)` |
-| 相关 UI 模块 | 无 |
+| HTTP 运行时模块 | `Monica.WebApi` 与 `monica.AddAutoControllers(...)` |
+| 源生成 | `Monica.Generators.AutoController` |
+| 请求端点 | `[ApiEndpoint(...)]` |
+| 程序集默认值 | `[assembly: WebApiGenerationConfig(...)]` |
 
-## 公开使用面
+## 请求拥有端点契约
 
-- `ApplicationService` / `ApplicationService<TRequest, TResponse>`：面向请求处理的应用服务基类。
-- `CrudApplicationService<...>`：面向标准资源 CRUD 的应用服务基类。
-- `ICrudApplicationService`：标记可参与自动 CRUD 控制器生成的服务类型。
-- `CrudControllerOption`：配置自动 CRUD 路由前缀与类名后缀规则。
-- `AutoControllerConfigAttribute`：在程序集级统一默认路由前缀、领域名和生成行为。
-- `IResultRequest`：与结果模型配套的请求契约。
+```csharp
+using Monica.WebApi.Abstractions;
+using Monica.WebApi.Annotations;
 
-默认推荐的 `ApplicationService` 路由写法是：先用 `AutoControllerConfigAttribute` 固定 `api/{version}/{DomainName(PascalCase)}`，再在 Handler 方法上补充 `tree`、`publish`、`doc` 这类请求级路由片段。
+/// <summary>
+/// 返回指定文档语言的导航树。
+/// </summary>
+[ApiEndpoint(ApiHttpMethod.Get, "tree", Binding = ApiRequestBinding.Query)]
+public sealed record QueryGetDocTree(string Locale = "en-US")
+    : IResultRequest<IReadOnlyList<DocTreeItemDto>>;
+```
+
+生成器会解析 `ApplicationService<TRequest, ...>` 使用的请求符号。不要再把 `[HttpGet]`、`[HttpPost]`、路由片段或端点 XML 文档放到 Handler 上。
+
+每个生成式 `ApplicationService` 端点都必须声明 `[ApiEndpoint]`；缺失声明会得到编译期诊断，而不是回退到隐式路由约定。
+
+## 发布位置决定 RPC 暴露
+
+| 请求位置 | HTTP Controller | 生成 RPC API |
+|---|---|---|
+| `Platform.Protocol.PublishedLanguages.Domain{Domain}.Requests` | 是 | 协议程序集启用 RPC Target 时生成 |
+| 所属领域 Handler 本地 | 是 | 否 |
+
+只有其他领域或进程确实需要依赖时，才发布请求。二进制下载、multipart 上传和领域私有端点应保持本地，除非已经定义了明确的强类型 RPC 传输契约。
+
+生成的 RPC 接口按意图拆分为 `I{Domain}CommandApi` 与 `I{Domain}QueryApi`。
 
 ## 相关页面
 
@@ -39,4 +59,4 @@ sidebar_position: 1
 - [Configuration](./configuration.md)
 - [Guide and Providers](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
-- [项目单元编写](../../concepts/project-unit-authoring.md)
+- [请求拥有的 RPC](../../scenarios/request-owned-rpc.md)

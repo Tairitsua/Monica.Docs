@@ -6,7 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
-    <MonicaRpcMetadataExportDirectory>../../Shared/Platform.Protocol/RpcMetadata</MonicaRpcMetadataExportDirectory>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,12 +18,4 @@
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Monica.Generators.AutoController"
-                      Version="0.1.0-preview.4"
-                      ExcludeAssets="analyzers"
-                      PrivateAssets="all" />
-  </ItemGroup>
-
 </Project>

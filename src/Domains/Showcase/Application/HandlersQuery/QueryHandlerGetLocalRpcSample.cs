@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
 using Monica.Core.Results;
 using Monica.WebApi.Abstractions;
 using Platform.Protocol.PublishedLanguages.DomainLocalRpcProvider.Contracts;
@@ -12,19 +11,16 @@ namespace Domains.Showcase.Application.HandlersQuery;
 /// Demonstrates calling another bounded context through the generated local RPC contract.
 /// </summary>
 public sealed class QueryHandlerGetLocalRpcSample(
-    IQueryLocalRpcProvider localRpcProvider)
-    : ApplicationService<GetLocalRpcSampleRequest, LocalRpcSampleDto>
+    ILocalRpcProviderQueryApi localRpcProvider)
+    : ApplicationService<QueryGetLocalRpcSample, LocalRpcSampleDto>
 {
-    /// <summary>
-    /// Calls the local RPC provider and returns the combined showcase payload.
-    /// </summary>
-    [HttpGet("local-rpc-sample")]
     public override async Task<Res<LocalRpcSampleDto>> Handle(
-        GetLocalRpcSampleRequest request,
+        QueryGetLocalRpcSample request,
         CancellationToken cancellationToken)
     {
         var providerResult = await localRpcProvider.GetLocalRpcGreeting(
-            new GetLocalRpcGreetingRequest(request.ConsumerName));
+            new QueryGetLocalRpcGreeting(request.ConsumerName),
+            cancellationToken);
 
         if (providerResult.IsFailed(out var error, out var providerGreeting))
         {

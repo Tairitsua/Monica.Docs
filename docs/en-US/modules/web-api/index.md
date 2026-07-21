@@ -16,11 +16,11 @@ dotnet add package Monica.Generators.AutoController --prerelease
 ```csharp
 using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
-using Monica.WebApi.AutoControllers.Annotations;
+using Monica.WebApi.Annotations;
 
-[assembly: AutoControllerConfig(
-    DefaultRoutePrefix = "api/v1",
-    DomainName = "ordering")]
+[assembly: WebApiGenerationConfig(
+    "api/v1",
+    DomainName = "Ordering")]
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,7 +35,9 @@ app.MapMonica();
 app.Run();
 ```
 
-The generator creates controllers for supported application-service contracts at compile time. At runtime, `AddAutoControllers(...)` discovers ordinary controllers and `ICrudApplicationService` implementations, maps MVC endpoints, and applies one immutable set of host-owned conventions.
+The generator creates controllers from `[ApiEndpoint]` on application-service request types. Route, HTTP method, binding, and endpoint documentation belong to the request rather than the handler. At runtime, `AddAutoControllers(...)` discovers ordinary controllers and `ICrudApplicationService` implementations, maps MVC endpoints, and applies one immutable set of host-owned conventions.
+
+Published requests under `Platform.Protocol.PublishedLanguages.Domain{Domain}.Requests` can also generate `I{Domain}CommandApi` and `I{Domain}QueryApi` clients. Keep HTTP-only requests local to their owning domain.
 
 ## Configure generated CRUD endpoints
 
@@ -59,3 +61,5 @@ builder.AddMonica(monica =>
 Defaults are 10 results, a 1,000 general maximum, a 100,000 CRUD maximum, and `POST` when no action-name prefix maps to another HTTP method. Lower the CRUD maximum for public or memory-sensitive APIs.
 
 `Monica.Generators.AutoController` is a build-time Stable package. It is not a runtime provider and should remain a development dependency supplied through its package assets.
+
+Read the [AutoControllers guide](../auto-controllers/index.md) for request-owned endpoint contracts and [request-owned RPC](../../scenarios/request-owned-rpc.md) for HTTP and local client generation.
