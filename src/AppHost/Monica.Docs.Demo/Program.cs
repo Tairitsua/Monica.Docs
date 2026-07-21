@@ -12,6 +12,9 @@ using Monica.UI.Theming;
 using Platform.Infrastructure.RpcClient;
 
 var builder = WebApplication.CreateBuilder(args);
+var publicDemoMode = builder.Configuration.GetValue<bool>("PublicDemo:Enabled");
+var managedSettingsPath = builder.Configuration["PublicDemo:ManagedSettingsPath"]
+    ?? "docs-external-settings.json";
 var configurationStoreConnectionString = ResolveConfigurationStoreConnectionString(builder);
 var documentationApiOptions = builder.Configuration
     .GetSection(DocumentationApiOptions.SectionName)
@@ -25,7 +28,7 @@ builder.AddMonica(monica =>
 {
     monica.ConfigureApplication(options =>
     {
-        options.AppName = "Monica.Docs Demo";
+        options.AppName = publicDemoMode ? "Monica Public Demo" : "Monica.Docs Demo";
         options.AppId = "monica-docs-demo";
     });
     monica.ConfigureModuleSystem(options =>
@@ -37,16 +40,19 @@ builder.AddMonica(monica =>
     monica.AddConfiguration()
         .UseDbConfigurationStore((_, options) => options.UseSqlite(configurationStoreConnectionString))
         .AddManagedJsonFile(
-            "docs-external-settings.json",
+            managedSettingsPath,
             optional: false,
             reloadOnChange: true,
             options =>
             {
                 options.DisplayName = "Docs External Demo Settings";
                 options.Description = "Operator-managed JSON file registered through Monica.Configuration for source-chain and source-editing demos.";
-                options.IsWritable = true;
+                options.IsWritable = !publicDemoMode;
             });
-    monica.AddConfigurationUI();
+    if (!publicDemoMode)
+    {
+        monica.AddConfigurationUI();
+    }
     monica.AddEventBus().UseNoOpDistributedEventBus();
     monica.AddWebApi();
 
@@ -69,7 +75,10 @@ builder.AddMonica(monica =>
         .UseInMemoryProvider()
         .UseInMemoryMetadataRepository()
         .UseSchedulerScope("monica-docs-demo");
-    monica.AddJobSchedulerUI();
+    if (!publicDemoMode)
+    {
+        monica.AddJobSchedulerUI();
+    }
     monica.AddObservableInstanceUI();
 
     monica.AddMarkdown(options =>
@@ -98,6 +107,8 @@ await EnsureConfigurationDatabaseCreatedAsync(app.Services);
 
 app.UseMonica();
 app.MapMonica();
+app.MapGet("/healthz", () => Results.Ok(new { status = "healthy", mode = publicDemoMode ? "public-demo" : "development-demo" }))
+    .ExcludeFromDescription();
 app.Run();
 
 static string ResolveConfigurationStoreConnectionString(WebApplicationBuilder builder)

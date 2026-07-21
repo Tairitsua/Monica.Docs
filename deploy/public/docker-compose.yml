@@ -1,0 +1,106 @@
+name: monica-docs-deploy
+
+services:
+  monica-docs:
+    image: monica-docs-api:${MONICA_DOCS_IMAGE_TAG:-dev}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api
+    container_name: monica-docs
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      ASPNETCORE_ENVIRONMENT: Production
+      DocumentationApi__DocsBasePath: /docs
+      DocumentationApi__PublicApiBaseUrl: https://monica.dpdns.org/
+      PublicApi__AllowedOrigins__0: https://monica.dpdns.org
+    expose:
+      - "8080"
+    volumes:
+      - /home/ubuntu/monica-docs-content/repo/docs:/docs:ro
+    networks:
+      - website
+
+  monica-docs-web:
+    image: monica-docs-web:${MONICA_DOCS_IMAGE_TAG:-dev}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web
+    container_name: monica-docs-web
+    restart: unless-stopped
+    depends_on:
+      - monica-docs
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
+      MONICA_DOCS_API_URL: http://monica-docs:8080
+    expose:
+      - "3000"
+    networks:
+      - website
+
+  monica-docs-demo:
+    image: monica-docs-demo:${MONICA_DOCS_IMAGE_TAG:-dev}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: demo
+    container_name: monica-docs-demo
+    restart: unless-stopped
+    init: true
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 256
+    mem_limit: 768m
+    cpus: "1.0"
+    environment:
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      ASPNETCORE_ENVIRONMENT: Production
+      HOME: /tmp
+      PublicDemo__Enabled: "true"
+      ConnectionStrings__MonicaConfiguration: Data Source=/app/state/monica-configuration.sqlite
+      PublicDemo__ManagedSettingsPath: /app/state/docs-external-settings.json
+      DocumentationApi__DocsBasePath: /docs
+    expose:
+      - "8080"
+    volumes:
+      - /home/ubuntu/monica-docs-content/repo/docs:/docs:ro
+    tmpfs:
+      - /app/state:rw,noexec,nosuid,nodev,size=64m,mode=1777
+      - /tmp:rw,noexec,nosuid,nodev,size=64m,mode=1777
+    networks:
+      - demo-sandbox
+
+  caddy:
+    image: caddy:2
+    container_name: monica-docs-caddy
+    restart: unless-stopped
+    depends_on:
+      - monica-docs
+      - monica-docs-web
+      - monica-docs-demo
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - website
+      - demo-sandbox
+
+networks:
+  website:
+  demo-sandbox:
+    internal: true
+
+volumes:
+  caddy_data:
+  caddy_config:

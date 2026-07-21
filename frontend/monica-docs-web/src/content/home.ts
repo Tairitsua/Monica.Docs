@@ -4,6 +4,7 @@ type HomeCopy = {
   skip: string;
   nav: readonly [string, string, string, string, string];
   languageLabel: string;
+  demoLabel: string;
   heroEyebrow: string;
   heroLines: readonly [string, string, string, string];
   heroDescription: string;
@@ -99,6 +100,7 @@ export const homeCopy: Record<Locale, HomeCopy> = {
     skip: "Skip to content",
     nav: ["Product", "Proof", "Start", "Modules", "Roadmap"],
     languageLabel: "阅读中文版",
+    demoLabel: "Live demo",
     heroEyebrow: "Agent-governed architecture / .NET 10",
     heroLines: [
       "Architecture agents",
@@ -274,6 +276,7 @@ export const homeCopy: Record<Locale, HomeCopy> = {
     skip: "跳转到正文",
     nav: ["产品", "实证", "开始", "模块", "路线图"],
     languageLabel: "Read in English",
+    demoLabel: "在线演示",
     heroEyebrow: "智能体可治理的架构 / .NET 10",
     heroLines: ["智能体可遵循的", "应用架构。", "人类可检查的", "运行系统。"],
     heroDescription:

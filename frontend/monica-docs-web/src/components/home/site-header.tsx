@@ -6,16 +6,18 @@ import { useEffect, useState } from "react";
 
 import { Brand } from "@/components/home/brand";
 import type { Locale } from "@/content/home";
+import { MONICA_DEMO_URL, MONICA_GITHUB_URL } from "@/lib/external-links";
 import { localizedPath } from "@/lib/routes";
 
 type SiteHeaderProps = {
   locale: Locale;
   nav: readonly [string, string, string, string, string];
   languageLabel: string;
+  demoLabel: string;
   languageHref?: string;
 };
 
-export function SiteHeader({ locale, nav, languageLabel, languageHref }: SiteHeaderProps) {
+export function SiteHeader({ locale, nav, languageLabel, demoLabel, languageHref }: SiteHeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const alternateHref = languageHref ?? (locale === "en" ? "/zh-CN" : "/");
@@ -61,8 +63,16 @@ export function SiteHeader({ locale, nav, languageLabel, languageHref }: SiteHea
             <span className={locale === "zh-CN" ? "language-active" : undefined}>中文</span>
           </a>
           <a
-            className="github-link"
-            href="https://github.com/Tairitsua/Monica"
+            className="header-external-link demo-link"
+            href={MONICA_DEMO_URL}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {demoLabel} <ArrowUpRight aria-hidden="true" size={15} />
+          </a>
+          <a
+            className="header-external-link github-link"
+            href={MONICA_GITHUB_URL}
             target="_blank"
             rel="noreferrer"
           >
@@ -93,6 +103,12 @@ export function SiteHeader({ locale, nav, languageLabel, languageHref }: SiteHea
             {label}
           </Link>
         ))}
+        <a href={MONICA_DEMO_URL} target="_blank" rel="noreferrer">
+          {demoLabel} <ArrowUpRight aria-hidden="true" size={14} />
+        </a>
+        <a href={MONICA_GITHUB_URL} target="_blank" rel="noreferrer">
+          GitHub <ArrowUpRight aria-hidden="true" size={14} />
+        </a>
         <a href={alternateHref} hrefLang={locale === "en" ? "zh-CN" : "en"}>
           {languageLabel}
         </a>

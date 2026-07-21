@@ -1,0 +1,39 @@
+(security_headers) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
+
+monica.dpdns.org {
+	encode zstd gzip
+	import security_headers
+
+	@documentation_api path /api/v1/* /healthz
+	handle @documentation_api {
+		reverse_proxy monica-docs:8080
+	}
+
+	handle {
+		reverse_proxy monica-docs-web:3000
+	}
+}
+
+demo.monica.dpdns.org {
+	encode zstd gzip
+	import security_headers
+
+	request_body {
+		max_size 1MB
+	}
+
+	header {
+		Cache-Control "no-store"
+		X-Robots-Tag "noindex, nofollow, noarchive"
+	}
+
+	reverse_proxy monica-docs-demo:8080
+}

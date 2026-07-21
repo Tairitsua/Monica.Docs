@@ -18,7 +18,7 @@ export function LaunchShell({ locale, languageHref, children, mainClassName = "l
     <>
       <a className="skip-link" href="#main-content">{copy.skip}</a>
       <div className="page-grid" aria-hidden="true" />
-      <SiteHeader locale={locale} nav={copy.nav} languageLabel={copy.languageLabel} languageHref={languageHref} />
+      <SiteHeader locale={locale} nav={copy.nav} languageLabel={copy.languageLabel} demoLabel={copy.demoLabel} languageHref={languageHref} />
       <main className={mainClassName} id="main-content">{children}</main>
       <SiteFooter locale={locale} />
     </>

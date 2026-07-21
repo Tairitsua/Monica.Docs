@@ -267,6 +267,7 @@ svg {
 }
 
 .language-toggle,
+.header-external-link,
 .github-link,
 .menu-toggle {
     display: flex;
@@ -291,22 +292,30 @@ svg {
     font-weight: 600;
 }
 
-.github-link {
+.header-external-link {
     gap: 9px;
     width: 108px;
-    color: var(--paper-bright);
-    background: var(--ink);
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
 }
 
-.github-link:hover svg {
+.demo-link {
+    color: var(--paper-bright);
+    background: var(--violet);
+}
+
+.github-link {
+    color: var(--paper-bright);
+    background: var(--ink);
+}
+
+.header-external-link:hover svg {
     transform: translate(2px, -2px);
 }
 
-.github-link svg {
+.header-external-link svg {
     transition: transform 160ms ease;
 }
 
@@ -2508,7 +2517,7 @@ html:lang(zh-CN) .trust-intro h2 {
 
 @media (max-width: 1023px) {
     .desktop-nav,
-    .github-link {
+    .header-external-link {
         display: none;
     }
 
@@ -2552,6 +2561,10 @@ html:lang(zh-CN) .trust-intro h2 {
         font-family: var(--font-mono);
         font-size: 10px;
         text-transform: uppercase;
+    }
+
+    .mobile-nav a svg {
+        margin-left: 8px;
     }
 
     .hero {
@@ -4238,6 +4251,12 @@ html:lang(zh-CN) .launch-hero h1 {
     border: 1px solid var(--ink);
     background: var(--paper-bright);
     box-shadow: 8px 8px 0 var(--violet);
+    transition: box-shadow 180ms ease, transform 180ms ease;
+}
+
+.reference-signal:hover {
+    box-shadow: 12px 12px 0 var(--violet);
+    transform: translate(-2px, -2px);
 }
 
 .reference-signal > span {
@@ -4249,6 +4268,9 @@ html:lang(zh-CN) .launch-hero h1 {
 .reference-signal > span:nth-child(3) { height: 100%; background: var(--runtime); }
 
 .reference-signal strong {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     grid-column: 1 / -1;
     margin-top: 12px;
     font: 600 10px var(--font-mono);

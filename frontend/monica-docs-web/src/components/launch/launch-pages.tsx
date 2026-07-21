@@ -4,12 +4,12 @@ import Link from "next/link";
 import { LaunchShell } from "@/components/site/launch-shell";
 import type { Locale } from "@/content/home";
 import { launchCopy, packageCatalog, type PackageTier } from "@/content/launch";
+import { MONICA_DEMO_URL, MONICA_GITHUB_URL } from "@/lib/external-links";
 import { localizedPath, oppositeLocale } from "@/lib/routes";
 
-const GITHUB_URL = "https://github.com/Tairitsua/Monica";
-const TEMPLATE_SOURCE_URL = `${GITHUB_URL}/tree/dev/Monica.Templates`;
+const TEMPLATE_SOURCE_URL = `${MONICA_GITHUB_URL}/tree/dev/Monica.Templates`;
 const TEMPLATE_PACKAGE = "Monica.Templates@1.0.0-rc.2";
-const REFERENCE_SOURCE_URL = `${GITHUB_URL}/tree/dev/examples/Monica.ReferenceApplication`;
+const REFERENCE_SOURCE_URL = `${MONICA_GITHUB_URL}/tree/dev/examples/Monica.ReferenceApplication`;
 const tiers: readonly PackageTier[] = ["stable", "integration", "labs"];
 
 export function ModulesPage({ locale }: { locale: Locale }) {
@@ -82,7 +82,16 @@ export function ReferencePage({ locale }: { locale: Locale }) {
           <h1 id="reference-page-title">{copy.title}</h1>
           <p className="launch-lede">{copy.description}</p>
         </div>
-        <div className="reference-signal" aria-hidden="true"><span /><span /><span /><strong>RUN</strong></div>
+        <a
+          className="reference-signal"
+          href={MONICA_DEMO_URL}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={locale === "en" ? "Open the live Monica demo" : "打开 Monica 在线演示"}
+        >
+          <span aria-hidden="true" /><span aria-hidden="true" /><span aria-hidden="true" />
+          <strong>{locale === "en" ? "LIVE DEMO" : "在线演示"}<ArrowUpRight aria-hidden="true" size={15} /></strong>
+        </a>
       </section>
 
       <section className="launch-section shell reference-path" aria-labelledby="template-title">

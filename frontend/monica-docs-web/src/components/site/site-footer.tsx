@@ -3,15 +3,14 @@ import Link from "next/link";
 
 import { Brand } from "@/components/home/brand";
 import { homeCopy, type Locale } from "@/content/home";
+import { MONICA_DEMO_URL, MONICA_GITHUB_URL } from "@/lib/external-links";
 import { localizedPath } from "@/lib/routes";
-
-const GITHUB_URL = "https://github.com/Tairitsua/Monica";
 
 export function SiteFooter({ locale }: { locale: Locale }) {
   const copy = homeCopy[locale];
   const labels = locale === "en"
-    ? { quick: "Quick start", architecture: "Reference", modules: "Modules", roadmap: "Roadmap", contributing: "Contributing" }
-    : { quick: "快速开始", architecture: "参考应用", modules: "模块目录", roadmap: "路线图", contributing: "参与贡献" };
+    ? { quick: "Quick start", architecture: "Reference", modules: "Modules", demo: "Live demo", roadmap: "Roadmap", contributing: "Contributing" }
+    : { quick: "快速开始", architecture: "参考应用", modules: "模块目录", demo: "在线演示", roadmap: "路线图", contributing: "参与贡献" };
 
   return (
     <footer className="site-footer">
@@ -28,9 +27,10 @@ export function SiteFooter({ locale }: { locale: Locale }) {
         </div>
         <div className="footer-links">
           <span>{copy.footer.project}</span>
-          <a href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub <ArrowUpRight aria-hidden="true" /></a>
+          <a href={MONICA_DEMO_URL} target="_blank" rel="noreferrer">{labels.demo} <ArrowUpRight aria-hidden="true" /></a>
+          <a href={MONICA_GITHUB_URL} target="_blank" rel="noreferrer">GitHub <ArrowUpRight aria-hidden="true" /></a>
           <Link href={localizedPath(locale, "/roadmap")}>{labels.roadmap}</Link>
-          <a href={`${GITHUB_URL}/blob/dev/CONTRIBUTING.md`} target="_blank" rel="noreferrer">{labels.contributing}</a>
+          <a href={`${MONICA_GITHUB_URL}/blob/dev/CONTRIBUTING.md`} target="_blank" rel="noreferrer">{labels.contributing}</a>
         </div>
         <div className="footer-meta">
           <span>MONICA / 1.0.0-RC.2</span>

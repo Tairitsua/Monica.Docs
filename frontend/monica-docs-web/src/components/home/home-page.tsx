@@ -8,9 +8,8 @@ import { SiteHeader } from "@/components/home/site-header";
 import { StarterCode } from "@/components/home/starter-code";
 import { SiteFooter } from "@/components/site/site-footer";
 import { homeCopy, type Locale } from "@/content/home";
+import { MONICA_GITHUB_URL } from "@/lib/external-links";
 import { localizedPath } from "@/lib/routes";
-
-const GITHUB_URL = "https://github.com/Tairitsua/Monica";
 
 export function HomePage({ locale }: { locale: Locale }) {
   const copy = homeCopy[locale];
@@ -19,7 +18,7 @@ export function HomePage({ locale }: { locale: Locale }) {
     <>
       <a className="skip-link" href="#main-content">{copy.skip}</a>
       <div className="page-grid" aria-hidden="true" />
-      <SiteHeader locale={locale} nav={copy.nav} languageLabel={copy.languageLabel} />
+      <SiteHeader locale={locale} nav={copy.nav} languageLabel={copy.languageLabel} demoLabel={copy.demoLabel} />
 
       <main id="main-content">
         <section className="hero shell" id="top" aria-labelledby="hero-title">
@@ -126,7 +125,7 @@ export function HomePage({ locale }: { locale: Locale }) {
             <div className="trust-intro">
               <p className="section-folio inverted">09 / {copy.trust.folio}</p>
               <h2 id="trust-title">{copy.trust.title}</h2><p>{copy.trust.description}</p>
-              <div className="trust-actions"><a className="button button-runtime" href={GITHUB_URL} target="_blank" rel="noreferrer"><span>{copy.trust.github}</span><ArrowUpRight aria-hidden="true" size={16} /></a><Link className="button button-dark-quiet" href={localizedPath(locale, "/roadmap")}><span>{copy.trust.roadmap}</span><ArrowRight aria-hidden="true" size={16} /></Link></div>
+              <div className="trust-actions"><a className="button button-runtime" href={MONICA_GITHUB_URL} target="_blank" rel="noreferrer"><span>{copy.trust.github}</span><ArrowUpRight aria-hidden="true" size={16} /></a><Link className="button button-dark-quiet" href={localizedPath(locale, "/roadmap")}><span>{copy.trust.roadmap}</span><ArrowRight aria-hidden="true" size={16} /></Link></div>
             </div>
             <div className="trust-ledger">{[".NET 10", "0 warnings", "MIT", "EN / 中文", "Reference app"].map((value, index) => <div key={value}><span>0{index + 1}</span><strong>{value}</strong><small>{copy.trust.ledger[index]}</small><Check aria-hidden="true" size={16} /></div>)}</div>
           </div>

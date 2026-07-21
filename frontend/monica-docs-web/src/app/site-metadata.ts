@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 
 import type { Locale } from "@/content/home";
+import { MONICA_GITHUB_URL } from "@/lib/external-links";
 import { localizedPath, routeAlternates } from "@/lib/routes";
 
 export const siteUrl = "https://monica.dpdns.org";
@@ -15,7 +16,7 @@ export const sharedMetadata: Metadata = {
   description:
     "Monica gives .NET teams architecture agents can follow and systems humans can inspect.",
   keywords: [".NET", "ASP.NET Core", "application architecture", "modular framework", "OpenTelemetry", "DDD"],
-  authors: [{ name: "Monica contributors", url: "https://github.com/Tairitsua/Monica" }],
+  authors: [{ name: "Monica contributors", url: MONICA_GITHUB_URL }],
   creator: "Monica contributors",
   openGraph: {
     type: "website",
