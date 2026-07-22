@@ -191,9 +191,9 @@ export const launchCopy: Record<Locale, LaunchCopy> = {
     roadmap: {
       eyebrow: "Release roadmap / evidence before dates",
       title: "1.0 ships when the contract is credible.",
-      description: "Monica is currently 1.0.0-rc.2. The roadmap is organized around release evidence, not invented calendar promises.",
+      description: "Monica is currently 1.0.0-rc.6. The roadmap is organized around release evidence, not invented calendar promises.",
       currentLabel: "CURRENT",
-      currentTitle: "1.0.0-rc.2 / RC hardening",
+      currentTitle: "1.0.0-rc.6 / RC hardening",
       currentBody: "The supported path is taking shape now. Contracts may still change before GA when simplification or correctness requires it.",
       phases: [
         { marker: "01", title: "RC hardening", body: "Simplify public contracts, close architecture gaps, and keep the whole solution warning-free.", state: "NOW" },
@@ -281,9 +281,9 @@ export const launchCopy: Record<Locale, LaunchCopy> = {
     roadmap: {
       eyebrow: "发布路线图 / 证据先于日期",
       title: "当契约足够可信，1.0 才会发布。",
-      description: "Monica 当前版本为 1.0.0-rc.2。路线图围绕发布证据组织，不编造日历承诺。",
+      description: "Monica 当前版本为 1.0.0-rc.6。路线图围绕发布证据组织，不编造日历承诺。",
       currentLabel: "当前",
-      currentTitle: "1.0.0-rc.2 / RC 加固",
+      currentTitle: "1.0.0-rc.6 / RC 加固",
       currentBody: "受支持路径正在成形。GA 之前，只要简化或正确性需要，契约仍可能调整。",
       phases: [
         { marker: "01", title: "RC 加固", body: "简化公开契约、补齐架构缺口，并保持整个解决方案零警告。", state: "进行中" },

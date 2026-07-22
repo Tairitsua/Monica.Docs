@@ -18,6 +18,7 @@ Use Monica when you want coding agents to move quickly without inventing a diffe
 - [Testing Monica applications](guides/testing-monica-applications.md) — choose between complete host scenarios, raw ProjectUnit fixtures, and UI tests.
 - [Stable module catalog](modules/index.md) — choose the supported capabilities your host actually needs.
 - [Package maturity](packages/index.md) — choose between Stable, Integrations, and Labs.
+- [Third-party ecosystem](ecosystem/index.md) — build, brand, license, and publish an independent Monica module package.
 - [Runtime observability](guides/runtime-observability.md) — inspect modules, jobs, configuration, and telemetry.
 
 ## The core idea

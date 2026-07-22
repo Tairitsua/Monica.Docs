@@ -8,6 +8,8 @@ sidebar_position: 1
 
 The pages in this section cover Monica's user-facing Stable path. Stable means the capability belongs to the supported Monica 1.0 application path; it does not mean every application should install every package.
 
+Independent packages may bundle several coherent modules in one NuGet package. Each module still has its own registration contract and package-scoped key. See [Multi-module package architecture](../ecosystem/multi-module-package-architecture.md).
+
 ## Compose an application
 
 | Capability | Start here | Package |

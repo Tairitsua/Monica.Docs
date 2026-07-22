@@ -1,0 +1,132 @@
+---
+title: 包与品牌规范
+description: 为第三方 Monica 包统一包 ID、模块键、元数据与兼容品牌表达。
+sidebar_position: 2
+---
+
+# 包与品牌规范
+
+第三方生态使用“发布者在前”的 ID，让 NuGet 所有权一目了然，并确保官方 `Monica.*` 命名空间保持清晰。
+
+## 包 ID
+
+统一使用：
+
+```text
+<Publisher>.Monica.<Package>[.<Variant>]
+```
+
+示例：
+
+| 用途 | 包 ID |
+|---|---|
+| 同一个包内提供核心与 UI 模块 | `Euynac.Monica.GachaPool` |
+| RabbitMQ Provider 包 | `Acme.Monica.EventBus.RabbitMQ` |
+| 单独发布的 UI 包 | `Acme.Monica.Analytics.UI` |
+
+具体规则：
+
+- 第一个片段必须是作者或组织可控制、可持续使用的发布者标识。
+- 仅使用以点分隔、兼容 C# 标识符的片段。Monica 生态规范比 NuGet 通用语法更严格，不使用连字符或下划线。
+- 完整 ID 不超过 100 个字符。
+- 显式设置 `PackageId`，并让项目名、程序集名与根命名空间保持一致。
+- 第三方不得发布为 `Monica.*` 或 `Monica.Community.*`。
+- 确定 ID 前先检查 NuGet.org。计划长期发布系列包的作者应考虑申请自己的发布者前缀保留。
+
+可选的 `<Variant>` 表示需要独立版本或独立分发的另一个包。一个包内部包含多个模块，并不要求添加 Variant。
+
+## 模块键
+
+包内每个模块都有独立且全局唯一的 `ModuleKey`：
+
+- 模块键必须等于 `PackageId`，或以 `PackageId.` 开头。
+- 如果包存在一个根模块，可以直接使用包 ID 作为其模块键。
+- 其他模块在包 ID 后追加简洁的功能名。
+- 第三方 UI 模块键必须以精确的 `.UI` 片段结尾。
+- 在代码、README 与测试中保持同样的大小写。Monica 以不区分大小写的方式比较模块键，并拒绝不同模块类型之间的键冲突。
+
+对于 `Euynac.Monica.GachaPool`，以下键都有效：
+
+```csharp
+[ModuleKey("Euynac.Monica.GachaPool")]
+public sealed class ModuleGachaPool(ModuleGachaPoolOption option)
+    : ModuleBase<ModuleGachaPool, ModuleGachaPoolOption, ModuleGachaPoolGuide>(option)
+{
+}
+
+[ModuleKey("Euynac.Monica.GachaPool.UI")]
+public sealed class ModuleGachaPoolUI(ModuleGachaPoolUIOption option)
+    : ModuleBase<ModuleGachaPoolUI, ModuleGachaPoolUIOption, ModuleGachaPoolUIGuide>(option)
+{
+}
+```
+
+`Contoso.Monica.OtherFeature` 不属于这个包的身份边界，因此不能在该包中使用。
+
+## 注册命名
+
+每个公开模块都有自己的标准注册面：
+
+| 组成 | 命名方式 | 示例 |
+|---|---|---|
+| Module | `Module{Name}` | `ModuleGachaPool` |
+| Option | `Module{Name}Option` | `ModuleGachaPoolOption` |
+| Guide | `Module{Name}Guide` | `ModuleGachaPoolGuide` |
+| Builder 入口 | `monica.Add{Name}()` | `monica.AddGachaPool()` |
+| UI Builder 入口 | `monica.Add{Name}UI()` | `monica.AddGachaPoolUI()` |
+
+第三方 Module、Guide、Option 与 Builder 扩展统一放在包自有的 `<PackageId>.Modules` 命名空间。消费者通过 `using Acme.Monica.Analytics.Modules` 引入对应发布者的注册入口。`Monica.Modules` 仅供 Monica 官方模块使用；否则两个独立发布者采用相同模块名时会生成完全相同的 CLR 类型名。
+
+第三方 UI 路由必须带上发布者与包族前缀，仅省略固定的 `Monica` 段。例如，`Euynac.Monica.GachaPool` 使用 `/euynac-gacha-pool`，其他页面可以继续放在该路径下。`/dashboard`、`/settings` 等通用路径在组合多个发布者包的宿主中并不安全。
+
+## 必需的包元数据
+
+每个版本至少声明：
+
+- `PackageId`、`PackageVersion`、`Authors`、`Description` 与版权信息
+- 存在仓库时声明 `PackageProjectUrl`、`RepositoryUrl` 与 `RepositoryType`
+- `PackageReadmeFile`，并把 README 嵌入包中
+- `PackageIcon`，并嵌入 128×128 透明背景 PNG
+- `PackageTags`，其中包含 `monica`、`monica-module` 与 `monica-ecosystem-v1`
+- `PackageLicenseExpression` 或 `PackageLicenseFile`，且只能选择一个
+- 每个版本的发布说明
+
+当源码对消费者可用时，应提供 Source Link 与 `.snupkg` 符号包。更多规则见 NuGet 官方的[包创作最佳实践](https://learn.microsoft.com/nuget/create-packages/package-authoring-best-practices)。
+
+## 官方标识与兼容标识
+
+原始紫色 `#512BD4` Monica 包标识与 `Monica.*` 前缀用于识别官方包。第三方不得把官方标识改色、修改或直接作为自己的包图标。
+
+独立发布者可以选择：
+
+- 使用自己的图标；或
+- 使用 Skill 提供的 `monica-compatibility-mark.svg` 与 `monica-compatibility-mark.png`。
+
+兼容标识使用绿色 `#10B981`，并带有清晰的插头/扩展形状，因此并非只依赖颜色区分。NuGet 包中嵌入 PNG，在仓库文档中可使用 SVG；不要修改图形与颜色。
+
+![Monica 兼容标识](../../shared/attachments/monica-compatibility-mark.svg)
+
+第一次使用该标识时，在附近加入以下声明：
+
+> This community package is independently maintained and is not affiliated with, endorsed by, or supported by the Monica project.
+
+同一页面和 NuGet 元数据中还必须标出独立发布者。
+
+v1 的兼容性由发布者自行声明。该标识不代表 Monica 已完成安全审查、质量审核、支持承诺，也不授予超出公开品牌规则的商标许可。
+
+## 开源徽章
+
+开源状态与 Monica 兼容性相互独立，也不会改变包 ID。当包使用 NuGet 接受的开源 `PackageLicenseExpression` 时，发布者可以在 README 中使用生态提供的开源徽章。自定义、Source-available 或专有许可证不能使用该徽章，应改用 `PackageLicenseFile` 并直接说明条款。
+
+![Monica 开源徽章](../../shared/attachments/monica-open-source-badge.svg)
+
+## 面向消费者的披露
+
+包 README 必须列出：
+
+- 独立发布者与支持渠道
+- 支持的 Monica 版本与目标框架
+- 每个模块及其注册方法
+- 模块是否增加端点、中间件、Hosted Service、静态 Web 资产、持久化或外部网络访问
+- 许可证与分发条款
+- 兼容性自我声明
