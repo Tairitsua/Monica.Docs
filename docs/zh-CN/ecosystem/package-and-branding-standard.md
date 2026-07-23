@@ -20,7 +20,7 @@ sidebar_position: 2
 
 | 用途 | 包 ID |
 |---|---|
-| 同一个包内提供核心与 UI 模块 | `Euynac.Monica.GachaPool` |
+| 同一个包内提供核心与 UI 模块 | `Tairitsua.Monica.GachaPool` |
 | RabbitMQ Provider 包 | `Acme.Monica.EventBus.RabbitMQ` |
 | 单独发布的 UI 包 | `Acme.Monica.Analytics.UI` |
 
@@ -45,16 +45,16 @@ sidebar_position: 2
 - 第三方 UI 模块键必须以精确的 `.UI` 片段结尾。
 - 在代码、README 与测试中保持同样的大小写。Monica 以不区分大小写的方式比较模块键，并拒绝不同模块类型之间的键冲突。
 
-对于 `Euynac.Monica.GachaPool`，以下键都有效：
+对于 `Tairitsua.Monica.GachaPool`，以下键都有效：
 
 ```csharp
-[ModuleKey("Euynac.Monica.GachaPool")]
+[ModuleKey("Tairitsua.Monica.GachaPool")]
 public sealed class ModuleGachaPool(ModuleGachaPoolOption option)
     : ModuleBase<ModuleGachaPool, ModuleGachaPoolOption, ModuleGachaPoolGuide>(option)
 {
 }
 
-[ModuleKey("Euynac.Monica.GachaPool.UI")]
+[ModuleKey("Tairitsua.Monica.GachaPool.UI")]
 public sealed class ModuleGachaPoolUI(ModuleGachaPoolUIOption option)
     : ModuleBase<ModuleGachaPoolUI, ModuleGachaPoolUIOption, ModuleGachaPoolUIGuide>(option)
 {
@@ -77,7 +77,7 @@ public sealed class ModuleGachaPoolUI(ModuleGachaPoolUIOption option)
 
 第三方 Module、Guide、Option 与 Builder 扩展统一放在包自有的 `<PackageId>.Modules` 命名空间。消费者通过 `using Acme.Monica.Analytics.Modules` 引入对应发布者的注册入口。`Monica.Modules` 仅供 Monica 官方模块使用；否则两个独立发布者采用相同模块名时会生成完全相同的 CLR 类型名。
 
-第三方 UI 路由必须带上发布者与包族前缀，仅省略固定的 `Monica` 段。例如，`Euynac.Monica.GachaPool` 使用 `/euynac-gacha-pool`，其他页面可以继续放在该路径下。`/dashboard`、`/settings` 等通用路径在组合多个发布者包的宿主中并不安全。
+第三方 UI 路由必须带上发布者与包族前缀，仅省略固定的 `Monica` 段。例如，`Tairitsua.Monica.GachaPool` 使用 `/tairitsua-gacha-pool`，其他页面可以继续放在该路径下。`/dashboard`、`/settings` 等通用路径在组合多个发布者包的宿主中并不安全。
 
 ## 必需的包元数据
 

@@ -20,7 +20,7 @@ Examples:
 
 | Purpose | Package ID |
 |---|---|
-| One package with core and UI modules | `Euynac.Monica.GachaPool` |
+| One package with core and UI modules | `Tairitsua.Monica.GachaPool` |
 | RabbitMQ provider package | `Acme.Monica.EventBus.RabbitMQ` |
 | Separately shipped UI package | `Acme.Monica.Analytics.UI` |
 
@@ -45,16 +45,16 @@ Every module in a package has its own globally unique `ModuleKey`:
 - End a third-party UI module key with the exact `.UI` segment.
 - Preserve the declared casing everywhere. Monica treats module-key identity case-insensitively and rejects a key collision between different module types.
 
-For `Euynac.Monica.GachaPool`, valid keys include:
+For `Tairitsua.Monica.GachaPool`, valid keys include:
 
 ```csharp
-[ModuleKey("Euynac.Monica.GachaPool")]
+[ModuleKey("Tairitsua.Monica.GachaPool")]
 public sealed class ModuleGachaPool(ModuleGachaPoolOption option)
     : ModuleBase<ModuleGachaPool, ModuleGachaPoolOption, ModuleGachaPoolGuide>(option)
 {
 }
 
-[ModuleKey("Euynac.Monica.GachaPool.UI")]
+[ModuleKey("Tairitsua.Monica.GachaPool.UI")]
 public sealed class ModuleGachaPoolUI(ModuleGachaPoolUIOption option)
     : ModuleBase<ModuleGachaPoolUI, ModuleGachaPoolUIOption, ModuleGachaPoolUIGuide>(option)
 {
@@ -77,7 +77,7 @@ Give every public module its own conventional registration surface:
 
 Place third-party module types, Guides, options, and builder extensions in the package-owned `<PackageId>.Modules` namespace. Consumers then import `Acme.Monica.Analytics.Modules` for that publisher's registration surface. Keep `Monica.Modules` reserved for Monica's first-party modules; otherwise two independent publishers choosing the same module name would create identical CLR type names.
 
-Prefix contributed UI routes with the publisher and package family, omitting only the literal `Monica` segment. For example, `Euynac.Monica.GachaPool` owns `/euynac-gacha-pool`, and additional pages may live below that prefix. Generic routes such as `/dashboard` or `/settings` are not safe in a host that composes packages from several publishers.
+Prefix contributed UI routes with the publisher and package family, omitting only the literal `Monica` segment. For example, `Tairitsua.Monica.GachaPool` owns `/tairitsua-gacha-pool`, and additional pages may live below that prefix. Generic routes such as `/dashboard` or `/settings` are not safe in a host that composes packages from several publishers.
 
 ## Required package metadata
 
