@@ -86,7 +86,7 @@ src/Acme.Monica.Analytics/
 - 基础设施模块拥有 Abstraction、Model、Service、Provider 与 Facade。
 - UI 组件注入公开 Facade，不直接访问 `Services/` 或 `Providers/`。
 - UI 模块使用自己以 `.UI` 结尾的模块键和独立 `Add{Name}UI()` 注册方法。
-- UI 路由位于带发布者和包族前缀的路径下，例如 `/acme-analytics`。
+- UI 路由位于移除 `<Publisher>.Monica.` 后的包族路径下，例如 `/analytics`；Monica 会在共享的宿主路由空间中拒绝重复路由。
 - UI 模块通常继承 `ModuleBase`；只有真正配置中间件或端点时才使用 `WebModuleBase`。
 - 路由页保持轻量，把可复用展示、状态与格式化逻辑放入 `UI{Name}/Components`、`State` 和 `Support`。
 - 本地化资源统一位于项目级 `Localization/`，静态资源位于 `wwwroot/`。

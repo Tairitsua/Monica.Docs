@@ -22,7 +22,7 @@ The Monica Compatibility Mark is self-attested. Completing this checklist is the
 
 - [ ] Each module has its own Module, Option, Guide, builder extension, and dependency declarations.
 - [ ] Third-party registration types live under `<PackageId>.Modules`, not the first-party `Monica.Modules` namespace.
-- [ ] UI routes use a publisher/package prefix and cannot collide with generic host or third-party routes.
+- [ ] UI routes derive from the package family without `<Publisher>.Monica.`, and the host composition has no duplicate normalized routes.
 - [ ] `Modules/` contains registration logic only.
 - [ ] Public abstractions and models are separated from internal services and providers.
 - [ ] Facades are thin host/UI entry points returning `Res` or `Res<T>`; internal services use normal .NET exceptions and return types.

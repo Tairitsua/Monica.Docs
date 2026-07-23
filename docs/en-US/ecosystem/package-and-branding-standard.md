@@ -77,7 +77,9 @@ Give every public module its own conventional registration surface:
 
 Place third-party module types, Guides, options, and builder extensions in the package-owned `<PackageId>.Modules` namespace. Consumers then import `Acme.Monica.Analytics.Modules` for that publisher's registration surface. Keep `Monica.Modules` reserved for Monica's first-party modules; otherwise two independent publishers choosing the same module name would create identical CLR type names.
 
-Prefix contributed UI routes with the publisher and package family, omitting only the literal `Monica` segment. For example, `Tairitsua.Monica.GachaPool` owns `/tairitsua-gacha-pool`, and additional pages may live below that prefix. Generic routes such as `/dashboard` or `/settings` are not safe in a host that composes packages from several publishers.
+Derive contributed UI routes from the package family, without the ownership prefix. Remove the leading `<Publisher>.Monica.` segments and a distribution-only final `.UI` segment, then convert the remaining PascalCase segments to lowercase kebab case. For example, `Tairitsua.Monica.GachaPool` owns `/gacha-pool`, while `Acme.Monica.Analytics.UI` owns `/analytics`; additional pages may use extensions such as `/gacha-pool-history`.
+
+Routes are host-global even though package IDs remain publisher-scoped. Monica rejects duplicate normalized routes during registration, so packages that must coexist need distinct package families or distinct package-family subroutes. Do not shorten a package-family route to an unrelated generic path such as `/dashboard` or `/settings`.
 
 ## Required package metadata
 

@@ -77,7 +77,9 @@ public sealed class ModuleGachaPoolUI(ModuleGachaPoolUIOption option)
 
 第三方 Module、Guide、Option 与 Builder 扩展统一放在包自有的 `<PackageId>.Modules` 命名空间。消费者通过 `using Acme.Monica.Analytics.Modules` 引入对应发布者的注册入口。`Monica.Modules` 仅供 Monica 官方模块使用；否则两个独立发布者采用相同模块名时会生成完全相同的 CLR 类型名。
 
-第三方 UI 路由必须带上发布者与包族前缀，仅省略固定的 `Monica` 段。例如，`Tairitsua.Monica.GachaPool` 使用 `/tairitsua-gacha-pool`，其他页面可以继续放在该路径下。`/dashboard`、`/settings` 等通用路径在组合多个发布者包的宿主中并不安全。
+第三方 UI 路由只从包族派生，不携带所有权前缀。先移除开头的 `<Publisher>.Monica.`，再移除仅用于独立分发的末尾 `.UI`，最后把剩余 PascalCase 片段转换为小写 kebab-case。例如，`Tairitsua.Monica.GachaPool` 使用 `/gacha-pool`，`Acme.Monica.Analytics.UI` 使用 `/analytics`；其他页面可以使用 `/gacha-pool-history` 之类的扩展路径。
+
+包 ID 由发布者隔离，但路由仍共享宿主的全局命名空间。Monica 会在注册阶段拒绝重复的规范化路由，因此需要共存的包必须使用不同的包族，或使用不同的包族子路由。不要把包族路由缩短为与包身份无关的 `/dashboard`、`/settings` 等通用路径。
 
 ## 必需的包元数据
 

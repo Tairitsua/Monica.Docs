@@ -22,7 +22,7 @@ Monica 兼容标识采用发布者自我声明。完成本清单是发布者对�
 
 - [ ] 每个模块都有自己的 Module、Option、Guide、Builder 扩展与依赖声明。
 - [ ] 第三方注册类型位于 `<PackageId>.Modules`，而不是官方专用的 `Monica.Modules` 命名空间。
-- [ ] UI 路由带有发布者和包族前缀，不会与宿主或其他第三方包的通用路由冲突。
+- [ ] UI 路由从移除 `<Publisher>.Monica.` 后的包族派生，宿主组合中不存在重复的规范化路由。
 - [ ] `Modules/` 只包含注册逻辑。
 - [ ] 公开 Abstraction/Model 与内部 Service/Provider 边界清晰。
 - [ ] Facade 是返回 `Res` 或 `Res<T>` 的轻量宿主/UI 入口；内部 Service 使用普通 .NET 异常与返回类型。

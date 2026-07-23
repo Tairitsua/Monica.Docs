@@ -86,7 +86,7 @@ A mixed package may contain infrastructure and UI modules in the same Razor SDK 
 - The infrastructure module owns abstractions, models, services, providers, and Facades.
 - UI components inject public Facades; they do not reach into `Services/` or `Providers/`.
 - The UI module gets its own key ending in `.UI` and its own `Add{Name}UI()` registration.
-- UI routes live at or below a publisher/package-prefixed path such as `/acme-analytics`.
+- UI routes live at or below the package-family path without `<Publisher>.Monica.`, such as `/analytics`; Monica rejects duplicate routes in the shared host namespace.
 - A UI module normally derives from `ModuleBase`. Use `WebModuleBase` only when it actually configures middleware or endpoints.
 - Keep route pages thin; move reusable presentation, state, and formatting into `UI{Name}/Components`, `State`, and `Support`.
 - Keep localization resources in the project-level `Localization/` folder and static assets under `wwwroot/`.
