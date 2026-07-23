@@ -36,6 +36,8 @@ Acme.Monica.Analytics.UI。使用 MIT 与 GitHub Actions Trusted Publishing。
 
 接受生成结果前，检查身份清单、模块表、项目引用、包元数据与许可证。
 
+对于每个 UI 模块，Scaffold 会从该模块键移除末尾 `.UI` 得到稳定导航分类 ID，使用 `RegisterLocalizedCategory<TResource>()` 注册分类文本，再通过 `RegisterLocalizedPage<TPage, TResource>()` 注册页面。后续增加页面时继续使用这一显式资源归属模式，不要改回集中资源或按翻译文本分组。
+
 ## 3. 实现公开模块契约
 
 每个模块遵循当前 Monica 注册方式：

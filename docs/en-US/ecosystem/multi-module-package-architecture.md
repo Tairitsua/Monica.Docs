@@ -87,6 +87,8 @@ A mixed package may contain infrastructure and UI modules in the same Razor SDK 
 - UI components inject public Facades; they do not reach into `Services/` or `Providers/`.
 - The UI module gets its own key ending in `.UI` and its own `Add{Name}UI()` registration.
 - UI routes live at or below the package-family path without `<Publisher>.Monica.`, such as `/analytics`; Monica rejects duplicate routes in the shared host namespace.
+- Each UI module derives a stable navigation category ID from its own module key minus the final `.UI`. Multiple UI modules in one package therefore contribute distinct categories without splitting the NuGet distribution.
+- Each page uses `RegisterLocalizedPage<TPage, TResource>()`; package categories use `RegisterLocalizedCategory<TResource>()`. Title and category-label keys stay in the owning resource and that resource is registered through `AddResource<TResource>()`.
 - A UI module normally derives from `ModuleBase`. Use `WebModuleBase` only when it actually configures middleware or endpoints.
 - Keep route pages thin; move reusable presentation, state, and formatting into `UI{Name}/Components`, `State`, and `Support`.
 - Keep localization resources in the project-level `Localization/` folder and static assets under `wwwroot/`.

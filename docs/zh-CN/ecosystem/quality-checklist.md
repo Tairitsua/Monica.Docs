@@ -23,6 +23,9 @@ Monica 兼容标识采用发布者自我声明。完成本清单是发布者对�
 - [ ] 每个模块都有自己的 Module、Option、Guide、Builder 扩展与依赖声明。
 - [ ] 第三方注册类型位于 `<PackageId>.Modules`，而不是官方专用的 `Monica.Modules` 命名空间。
 - [ ] UI 路由从移除 `<Publisher>.Monica.` 后的包族派生，宿主组合中不存在重复的规范化路由。
+- [ ] 每个本地化页面都显式声明 `TResource`，不存在 `RegisterLocalizedComponent` 或集中式页面标题资源。
+- [ ] 每个包自有分类 ID 都等于对应 UI 模块键移除末尾 `.UI`，具有显式顺序，并且只用页面所属资源注册一次。
+- [ ] 每个导航资源都通过 `AddResource<TResource>()` 注册，`en-US` 与 `zh-CN` 键保持同步。
 - [ ] `Modules/` 只包含注册逻辑。
 - [ ] 公开 Abstraction/Model 与内部 Service/Provider 边界清晰。
 - [ ] Facade 是返回 `Res` 或 `Res<T>` 的轻量宿主/UI 入口；内部 Service 使用普通 .NET 异常与返回类型。
@@ -41,6 +44,7 @@ Monica 兼容标识采用发布者自我声明。完成本清单是发布者对�
 - [ ] 重复注册具有幂等语义，或按明确契约拒绝。
 - [ ] 按实际风险覆盖取消、并发、释放、超时与异常行为。
 - [ ] UI 模块具有组件测试，并为主要路由提供可运行 Bridge/Demo。
+- [ ] UI 测试按需断言分类身份/顺序、页面资源/键、导航路由/顺序、重复路由与冲突分类定义。
 - [ ] 测试不依赖机器专属路径、持久共享状态或未声明的外部服务。
 
 ## NuGet 产物

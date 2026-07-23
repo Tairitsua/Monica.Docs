@@ -36,6 +36,8 @@ Acme.Monica.Analytics.UI. Use MIT and GitHub Actions Trusted Publishing.
 
 Review the generated identity manifest, module table, project references, package metadata, and license before accepting the scaffold.
 
+For each UI module, the scaffold derives a stable navigation category ID from that module's key without the final `.UI`, registers its label with `RegisterLocalizedCategory<TResource>()`, and registers its page with `RegisterLocalizedPage<TPage, TResource>()`. Keep this explicit owner-resource pattern when adding more pages; do not replace it with a central resource or translated-string grouping.
+
 ## 3. Implement public module contracts
 
 Each module uses the current Monica registration pattern:

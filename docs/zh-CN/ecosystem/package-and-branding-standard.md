@@ -81,6 +81,39 @@ public sealed class ModuleGachaPoolUI(ModuleGachaPoolUIOption option)
 
 包 ID 由发布者隔离，但路由仍共享宿主的全局命名空间。Monica 会在注册阶段拒绝重复的规范化路由，因此需要共存的包必须使用不同的包族，或使用不同的包族子路由。不要把包族路由缩短为与包身份无关的 `/dashboard`、`/settings` 等通用路径。
 
+## 导航身份与本地化
+
+导航分类身份、翻译后的显示文本和公开路由是三个独立契约。每个 UI 模块都应遵循以下规则：
+
+- 从 UI `ModuleKey` 中只移除末尾 `.UI`，得到稳定分类 ID。因此 `Tairitsua.Monica.GachaPool.UI` 的分类 ID 是 `Tairitsua.Monica.GachaPool`，公开路由仍为 `/gacha-pool`。
+- 使用 `RegisterLocalizedCategory<TResource>()` 只注册一次包自有分类文本。返回的 ID 才是分组键，翻译文本只负责显示。
+- 每个页面都使用 `RegisterLocalizedPage<TPage, TResource>()`。页面标题与包自有分类键属于模块自己的资源，并且该资源必须通过 `AddResource<TResource>()` 注册。
+- 分类与页面都显式设置数值顺序；Monica 不会按翻译文本排序或分组。
+
+```csharp
+DependsOnModule<ModuleLocalizationGuide>().Register()
+    .AddResource<GachaPoolResource>();
+
+DependsOnModule<ModuleShellUIGuide>().Register()
+    .RegisterUIComponents(registry =>
+    {
+        var categoryId = registry.RegisterLocalizedCategory<GachaPoolResource>(
+            "Tairitsua.Monica.GachaPool",
+            "Navigation:Category",
+            order: 450);
+
+        registry.RegisterLocalizedPage<UIGachaPoolPage, GachaPoolResource>(
+            UIGachaPoolPage.PAGE_URL,
+            "Navigation:Title",
+            Icons.Material.Filled.AutoAwesome,
+            categoryId,
+            addToNav: true,
+            navOrder: 42);
+    });
+```
+
+一个 NuGet 包可以包含多个 UI 模块。每个模块都用自身 UI 模块键移除 `.UI` 后的值作为分类 ID，因此 `Acme.Monica.Toolkit.Audit.UI` 与 `Acme.Monica.Toolkit.Admin.UI` 可以保留不同分类，而不必拆成多个包。所有贡献都在启动阶段完成；Shell 会在路由读取前冻结并验证注册表。
+
 ## 必需的包元数据
 
 每个版本至少声明：
@@ -97,20 +130,20 @@ public sealed class ModuleGachaPoolUI(ModuleGachaPoolUIOption option)
 
 ## 官方标识与兼容标识
 
-原始紫色 `#512BD4` Monica 包标识与 `Monica.*` 前缀用于识别官方包。第三方不得把官方标识改色、修改或直接作为自己的包图标。
+紫色 `#512BD4` Monica 包标识与 `Monica.*` 前缀用于识别官方包。第三方不得使用紫色资源、自行制作其他改色或几何变体，也不得把它作为自己的包图标。下方标准绿色兼容标识是唯一允许独立包使用的 Monica 同轮廓配色版本。
 
 独立发布者可以选择：
 
 - 使用自己的图标；或
 - 使用 Skill 提供的 `monica-compatibility-mark.svg` 与 `monica-compatibility-mark.png`。
 
-兼容标识使用绿色 `#10B981`，并带有清晰的插头/扩展形状，因此并非只依赖颜色区分。NuGet 包中嵌入 PNG，在仓库文档中可使用 SVG；不要修改图形与颜色。
+兼容标识保留 Monica 轮廓，并固定使用绿色 `#10B981`。该固定配色用于区分“由发布者自行声明兼容”的生态包与紫色官方身份。NuGet 包中嵌入 PNG，仓库文档中可使用 SVG；两份标准资源都必须保持不变。
 
 ![Monica 兼容标识](../../shared/attachments/monica-compatibility-mark.svg)
 
 第一次使用该标识时，在附近加入以下声明：
 
-> This community package is independently maintained and is not affiliated with, endorsed by, or supported by the Monica project.
+> Monica compatibility is self-attested by the publisher. This community package is independently maintained and is not affiliated with, endorsed by, or supported by the Monica project.
 
 同一页面和 NuGet 元数据中还必须标出独立发布者。
 

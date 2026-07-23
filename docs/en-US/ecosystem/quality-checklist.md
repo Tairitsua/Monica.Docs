@@ -23,6 +23,9 @@ The Monica Compatibility Mark is self-attested. Completing this checklist is the
 - [ ] Each module has its own Module, Option, Guide, builder extension, and dependency declarations.
 - [ ] Third-party registration types live under `<PackageId>.Modules`, not the first-party `Monica.Modules` namespace.
 - [ ] UI routes derive from the package family without `<Publisher>.Monica.`, and the host composition has no duplicate normalized routes.
+- [ ] Every localized page declares `TResource`; no `RegisterLocalizedComponent` or central page-title resource remains.
+- [ ] Each package-owned category ID equals its UI module key without the final `.UI`, has explicit order, and is registered once with the same module-owned resource used by its pages.
+- [ ] Every navigation resource is registered through `AddResource<TResource>()`, with synchronized `en-US` and `zh-CN` keys.
 - [ ] `Modules/` contains registration logic only.
 - [ ] Public abstractions and models are separated from internal services and providers.
 - [ ] Facades are thin host/UI entry points returning `Res` or `Res<T>`; internal services use normal .NET exceptions and return types.
@@ -41,6 +44,7 @@ The Monica Compatibility Mark is self-attested. Completing this checklist is the
 - [ ] Duplicate registrations are idempotent or rejected with a clear contract.
 - [ ] Cancellation, concurrency, disposal, timeout, and exception behavior are covered where relevant.
 - [ ] UI modules have component tests and a runnable bridge/demo for their primary route.
+- [ ] UI tests assert category identity/order, page resource/key, navigation item route/order, duplicate routes, and conflicting category definitions where applicable.
 - [ ] No test relies on machine-specific paths, persistent shared state, or an undeclared external service.
 
 ## NuGet artifact
