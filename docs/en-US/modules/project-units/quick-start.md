@@ -1,21 +1,21 @@
 ---
-title: 快速开始
-description: 注册 ProjectUnits、为单元添加注解，并查看类型化状态面板和接口。
+title: Quick Start
+description: Register ProjectUnits, annotate a unit, and inspect the typed dashboard and APIs.
 sidebar_position: 2
 ---
 
-# 快速开始
+# Quick Start
 
-## 安装
+## Install
 
 ```bash
 dotnet add package Monica.ProjectUnits --prerelease
 dotnet add package Monica.Framework.UI --prerelease
 ```
 
-如果宿主只需要 API 或 Facade，可以不安装 UI 包。
+The UI package is optional when the host only needs APIs or facade access.
 
-## 注册模块
+## Register the module
 
 ```csharp
 using Monica.Core.Modularity.Extensions;
@@ -41,15 +41,15 @@ app.MapMonica();
 app.Run();
 ```
 
-## 为每个发现单元添加注解
+## Annotate each discovered unit
 
 ```csharp
 using Monica.ProjectUnits.Annotations;
 
 [ProjectUnitMetadata(
-    "审核订单",
-    Owner = "订单团队",
-    Description = "审核满足条件的订单。",
+    "Approve Order",
+    Owner = "Ordering Team",
+    Description = "Approves an eligible order.",
     Tags = ["ordering", "approval"])]
 [ProjectUnitRequirement("ORD-REQ-001")]
 public sealed class CommandHandlerApproveOrder(
@@ -66,11 +66,11 @@ public sealed class CommandHandlerApproveOrder(
 }
 ```
 
-同一功能涉及的请求、领域服务、实体、仓储实现、事件、处理器、作业和配置也要分别声明自己的元数据。只有确实与该单元相关时，才复用相同需求 ID。
+Add separate metadata to the request, domain service, entity, repository implementation, event, handler, job, and configuration involved in the same feature. Reuse stable requirement IDs where the requirement genuinely traces to each unit.
 
-## 查看结果
+## Inspect the result
 
-打开 `/project-units`，第一个 Tab 就是“状态概览”。API 客户端可以调用：
+Open `/project-units`; **Status Overview** is the first tab. API clients can use:
 
 ```http
 GET /framework/units/dashboard
@@ -78,4 +78,4 @@ GET /framework/units
 GET /framework/units/Ordering.Application.CommandHandlerApproveOrder
 ```
 
-空目录会显示“无数据”。非空目录会分别显示每种上下文缺口，使现有项目可以渐进接入而不阻止启动。
+An empty catalog reports no data. A non-empty catalog exposes each missing context dimension independently so adoption can proceed without blocking startup.

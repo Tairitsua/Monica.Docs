@@ -1,85 +1,40 @@
 ---
-title: Configuration
-description: ProjectUnits 的公开选项、默认值，以及项目单元命名治理的配置方式。
+title: 配置
+description: 配置项目单元详情解析、命名诊断、请求过滤和 UI 页面。
 sidebar_position: 3
 ---
 
-# Configuration
+# 配置
 
-## Module options
+## `ModuleProjectUnitsOption`
 
-| Property | Type | Default | Required | When to change | Notes |
-|---|---|---|---|---|---|
-| `ConventionOptions` | `ProjectUnitNamingOptions` | `new()` | 否 | 你要启用或调整命名约定治理时 | 命名规则的总入口。 |
-| `EnableRequestFilter` | `bool` | `false` | 否 | 你需要启用请求过滤中间件时 | 会额外接入请求过滤相关能力。 |
-| `ParseUnitDetails` | `bool` | `true` | 否 | 你想关闭详细元数据解析以缩减处理量时 | 开启时会自动声明 XML Documentation 依赖，并尝试补充项目单元描述信息。 |
+| 属性 | 类型 | 默认值 | 作用 |
+|---|---|---|---|
+| `ConventionOptions` | `ProjectUnitNamingOptions` | `new()` | 定义全局及按类型划分的命名诊断。 |
+| `EnableRequestFilter` | `bool` | `false` | 启用宿主本地的请求过滤中间件和管理接口。 |
+| `ParseUnitDetails` | `bool` | `true` | 加载 XML 类型和方法摘要，并声明 XML Documentation 模块依赖。 |
 
-## 额外选项 `ProjectUnitNamingOptions`
+`ParseUnitDetails` 可以通过类型 XML 摘要满足“描述覆盖率”，但不能满足明确元数据、负责人或需求覆盖率。
 
-| Property | Type | Default | Required | When to change | Notes |
-|---|---|---|---|---|---|
-| `Dict` | `Dictionary<EProjectUnitType, ProjectUnitNamingRule>` | `[]` | 否 | 你要为特定项目单元类型覆盖规则时 | 为不同单元类型单独设置命名或校验模式。 |
-| `NameConventionMode` | `ENameConventionMode` | `Warning` | 否 | 你要设置全局命名校验模式时 | 默认只警告，不阻断启动。 |
-| `EnableNameConvention` | `bool` | `false` | 否 | 你准备启用命名治理时 | 总开关。 |
-
-## 项目单元命名治理的推荐起步方式
-
-建议按下面的顺序启用：
-
-1. 先打开 `EnableNameConvention`
-2. 先保持 `NameConventionMode = Warning`
-3. 清理历史代码后，再考虑局部或全局切到 `Strict`
-
-```csharp
-builder.AddMonica(monica =>
-{
-    monica.AddProjectUnits(o =>
-    {
-        o.ConventionOptions.EnableNameConvention = true;
-        o.ConventionOptions.NameConventionMode = ENameConventionMode.Warning;
-    });
-});
-```
-
-## 混合使用显式 Handler 与 CRUD 服务时怎么配
-
-`ProjectUnits` 的应用服务推荐命名是 `CommandHandler*` / `QueryHandler*` 这类 Handler 风格；而 `CrudApplicationService` 的默认类名后缀通常是 `CrudService`。这两种风格混用时，单一命名规则往往不够精确。
-
-如果你的项目同时存在这两种风格，建议不要立刻把 `ApplicationService` 命名治理切到 `Strict`。一种稳妥做法是先对这一类单独关闭强校验：
+## 命名诊断
 
 ```csharp
 using Monica.ProjectUnits.Models;
 
 builder.AddMonica(monica =>
 {
-    monica.AddProjectUnits(o =>
+    monica.AddProjectUnits(options =>
     {
-        o.ConventionOptions.EnableNameConvention = true;
-        o.ConventionOptions.NameConventionMode = ENameConventionMode.Warning;
-        o.ConventionOptions.Dict[EProjectUnitType.ApplicationService] = new ProjectUnitNamingRule
-        {
-            NameConventionMode = ENameConventionMode.Disable
-        };
+        options.ConventionOptions.EnableNameConvention = true;
+        options.ConventionOptions.NameConventionMode = ENameConventionMode.Warning;
     });
 });
 ```
 
-这会让你保留其它项目单元的治理能力，同时避免对 CRUD 风格应用服务产生误报。
+现有服务接入时建议先使用 `Warning`。按单元类型配置的规则放在 `ConventionOptions.Dict` 中。缺少元数据属于覆盖缺口，而不是命名错误；明确填写但格式错误的元数据会显示为目录告警。
 
-## 典型推荐约定
+## UI 选项
 
-下面这些不是“只有这样才会被发现”的硬限制，而是最适合长期协作的默认约定。
+`ModuleProjectUnitsUIOption.DisablePage` 默认为 `false`。当运维界面由其他应用承载、但当前宿主仍需要 ProjectUnits 目录时，可以设为 `true`。
 
-| 单元 | 推荐命名 | 推荐位置 |
-|---|---|---|
-| `RequestDto` | `Command*` / `Query*` | 发布请求放 `Shared/.../PublishedLanguages/.../Requests/`；私有请求放 Handler 附近 |
-| `ApplicationService` | `CommandHandler*` / `QueryHandler*` | `Application/HandlersCommand/`、`Application/HandlersQuery/` |
-| `DomainService` | `Domain*` | `DomainServices/` |
-| `Entity` | 放在 `Entities/` 下 | `Entities/` |
-| `Repository` | `IRepository*` / `Repository*` | `Interfaces/` + `Repository/` |
-| `DomainEvent` | `Event*` | `PublishedLanguages/.../Events/` |
-| `DomainEventHandler` | `DomainEventHandler*` | `Application/HandlersEvent/` |
-| `LocalEventHandler` | `LocalEventHandler*` | `Application/HandlersEvent/` |
-| `RecurringJob` | `Worker*` | `Application/BackgroundWorkers/` |
-| `TriggeredJob` | `Job*` | `Application/BackgroundWorkers/` |
-| `Configuration` | `*Options` | `Configurations/` |
+发现结果在宿主启动后保持稳定，因此状态面板采用手动刷新。
