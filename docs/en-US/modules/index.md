@@ -24,6 +24,7 @@ Independent packages may bundle several coherent modules in one NuGet package. E
 | Transaction boundaries and completion hooks | [Unit of Work](./unit-of-work/index.md) | `Monica.Repository` |
 | Recurring and triggered work | [JobScheduler](./job-scheduler/index.md) | `Monica.JobScheduler` |
 | Architectural role discovery | [ProjectUnits](./project-units/index.md) | `Monica.ProjectUnits` |
+| Source-level workspace architecture analysis | [ProjectUnits Code Analysis](./project-units-code-analysis/index.md) | `Monica.ProjectUnits.CodeAnalysis` |
 
 ## Operate and extend it
 

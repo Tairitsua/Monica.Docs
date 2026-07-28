@@ -47,4 +47,5 @@ The catalog is startup-stable, so refresh is manual. The page always represents 
 - [Configuration](./configuration.md)
 - [Guide and resolver](./guide-and-providers.md)
 - [Adoption scenarios](./scenarios.md)
+- [Source-level workspace analysis](../project-units-code-analysis/index.md)
 - [ProjectUnits as an architecture contract](../../concepts/project-units.md)

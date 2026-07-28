@@ -47,4 +47,5 @@ sidebar_position: 1
 - [配置](./configuration.md)
 - [Guide 与需求解析器](./guide-and-providers.md)
 - [接入场景](./scenarios.md)
+- [源码级工作区分析](../project-units-code-analysis/index.md)
 - [项目单元编写](../../concepts/project-unit-authoring.md)

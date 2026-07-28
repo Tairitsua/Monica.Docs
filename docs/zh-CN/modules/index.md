@@ -30,6 +30,7 @@ sidebar_position: 3
 | [KnowledgeBase UI](./knowledge-base-ui/index.md) | Labs | `Monica.AI.UI` | `monica.AddKnowledgeBaseUI()` | 无 |
 | [MCP](./mcp/index.md) | Labs | `Monica.AI` | `monica.AddMcp()` | `monica.AddAIUI()` |
 | [ProjectUnits](./project-units/index.md) | Stable | `Monica.ProjectUnits` | `monica.AddProjectUnits()` | `monica.AddProjectUnitsUI()` |
+| [ProjectUnits 源码分析](./project-units-code-analysis/index.md) | Stable | `Monica.ProjectUnits.CodeAnalysis` | `monica.AddProjectUnitCodeAnalysis()` | 无 |
 | [RAG](./rag/index.md) | Labs | `Monica.AI` | `monica.AddRAG()` | `monica.AddRAGUI()` |
 | [RAG UI](./rag-ui/index.md) | Labs | `Monica.AI.UI` | `monica.AddRAGUI()` | 无 |
 | [Repository](./repository/index.md) | Stable | `Monica.Repository` | `monica.AddRepository()` | 无 |
