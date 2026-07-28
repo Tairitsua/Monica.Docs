@@ -42,6 +42,8 @@ The generator reads the request symbol used by `ApplicationService<TRequest, ...
 
 Every generated `ApplicationService` endpoint requires `[ApiEndpoint]`; a missing declaration is a compile-time diagnostic rather than an implicit route convention.
 
+Generated application-service endpoints enter the shared [Execution Pipeline](../execution-pipeline/index.md) through Mediator and are marked `[MediatedController]`, so the MVC adapter skips them. Direct MVC and generated CRUD actions use the MVC adapter. A handwritten controller that dispatches through `IMediator` must add `[MediatedController]` explicitly to avoid nested MVC and Mediator boundaries.
+
 ## Publication determines RPC exposure
 
 | Request placement | HTTP controller | Generated RPC API |

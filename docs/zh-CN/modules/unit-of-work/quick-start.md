@@ -1,6 +1,6 @@
 ---
 title: Quick Start
-description: 安装并注册 UnitOfWork。
+description: 接入 UnitOfWork DbContext 并执行显式事务工作。
 sidebar_position: 2
 ---
 
@@ -9,10 +9,11 @@ sidebar_position: 2
 ## 安装包
 
 ```bash
-dotnet add package Monica.Repository
+dotnet add package Monica.Repository --prerelease
+dotnet add package Microsoft.EntityFrameworkCore.Sqlite
 ```
 
-## 最小注册
+## 注册参与工作单元的 DbContext
 
 ```csharp
 using Microsoft.EntityFrameworkCore;
@@ -23,38 +24,36 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddMonica(monica =>
 {
-    monica.AddUnitOfWork();
-
     monica.AddRepository()
-        .AddRepositoryDbContext<AppDbContext>(
-            (sp, options) =>
-            {
-                options.UseSqlite(builder.Configuration.GetConnectionString("Default")!);
-            },
+        .AddRepositoryDbContext<OrderingDbContext>(
+            (_, db) => db.UseSqlite("Data Source=ordering.db"),
             DbContextProviderType.UnitOfWork);
 });
+
+var app = builder.Build();
+app.UseMonica();
+app.MapMonica();
+app.Run();
 ```
 
-## 第一个有价值的配置
+`DbContextProviderType.UnitOfWork` 会引入 UnitOfWork 模块，并把该 DbContext 接到当前 ambient scope。
 
-如果你希望仓储真正参与 UoW，不要只注册模块本身，还要让对应 `DbContext` 使用 `UnitOfWork` Provider，或显式调用 `AddDbContextProvider<TDbContext>()`。
+## 执行一次显式事务
 
 ```csharp
-public sealed class OrderService(IUnitOfWorkManager unitOfWorkManager)
+using Monica.Repository.UnitOfWork.Abstractions;
+
+public sealed class OrderImporter(
+    IUnitOfWorkManager unitOfWorkManager,
+    IOrderRepository repository)
 {
-    public async Task ExecuteAsync()
+    public Task ImportAsync(Order order, CancellationToken cancellationToken)
     {
-        using var uow = unitOfWorkManager.Begin(new UnitOfWorkOptions(isTransactional: true));
-
-        // Invoke repositories and domain services here.
-
-        await uow.CompleteAsync();
+        return unitOfWorkManager.RunAsync(
+            () => repository.InsertAsync(order, cancellationToken),
+            cancellationToken: cancellationToken);
     }
 }
 ```
 
-## 接下来读什么
-
-- [Configuration](./configuration.md)
-- [Guide and Providers](./guide-and-providers.md)
-- [Scenarios](./scenarios.md)
+普通的单事务操作优先使用 `RunAsync(...)`。只有代码需要手工 flush 或提交后回调时，才使用 `BeginScope(...)`。

@@ -55,6 +55,8 @@ app.Run();
 
 Provider 选择是显式契约。例如 JobScheduler 不会静默选择存储或调度 Provider；Guide 链让该决定在组合根、文档与运行时检查中保持可见。
 
+`Monica.Core` 还提供统一的类型化执行管线。Mediator、MVC、EventBus、JobScheduler、Seeder 与 Hosted work item 分别通过模块自己的适配器进入管线；ProjectUnit 角色本身不会触发运行时拦截。完整边界与事务策略见[执行边界](./execution-boundaries.md)和 [Execution Pipeline 模块](../modules/execution-pipeline/index.md)。
+
 ## 为什么边界重要
 
 - 两个测试宿主不会覆盖彼此的模块 Option。
@@ -65,6 +67,7 @@ Provider 选择是显式契约。例如 JobScheduler 不会静默选择存储或
 ## 下一步
 
 - [Option 与 Guide](./configuration-and-guide.md)
+- [执行边界](./execution-boundaries.md)
 - [项目单元编写](./project-unit-authoring.md)
 - [测试 Monica 应用](../guides/testing-monica-applications.md)
 - [模块文档目录](../modules/index.md)

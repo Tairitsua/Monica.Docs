@@ -18,6 +18,12 @@ ProjectUnit 是 Monica 对应用架构的类型化表达。开发者、编码 Ag
 
 ProjectUnit 不会替代良好的领域建模。状态约束仍应留在状态拥有者上，服务只负责边界和编排。
 
+## 架构角色不等于拦截边界
+
+ProjectUnit 角色描述架构职责，不会自动包装该类型的每一次方法调用。运行时执行边界由子系统适配器建立，例如 Mediator 请求、EventBus 处理器、直接 MVC Action、作业、Seeder 与 Hosted work item。`DomainService` 通常在调用方已经建立的边界内运行。
+
+子系统需要共享行为链时使用 [Execution Pipeline](../modules/execution-pipeline/index.md)。只有选定的服务方法缺少原生适配器时，才考虑另外启用可选的 [DynamicProxy 模块](../modules/dynamic-proxy/index.md)。
+
 ## 明确声明 Agent 上下文
 
 每个被发现的类或记录都应声明自己的元数据。该注解不会被继承，因为基类无法准确描述每个派生单元的具体职责。
@@ -84,6 +90,6 @@ public sealed class CommandHandlerApproveOrder(
 
 ## 测试边界
 
-只有依赖明确的纯协作测试适合使用 `ProjectUnitFixture<TUnit>`。依赖发现、约定注册、代理、Options、持久化或宿主生命周期的行为，应通过完整的宿主场景验证。
+只有依赖明确的纯协作测试适合使用 `ProjectUnitFixture<TUnit>`。依赖发现、约定注册、执行管线行为、代理、Options、持久化或宿主生命周期的行为，应通过完整的宿主场景验证。
 
 [选择正确的测试边界](../guides/testing-monica-applications.md)。

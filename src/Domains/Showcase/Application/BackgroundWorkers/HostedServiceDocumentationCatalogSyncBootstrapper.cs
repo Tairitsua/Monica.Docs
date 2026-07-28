@@ -1,7 +1,8 @@
 using Domains.Documentation.Configurations;
 using Domains.Documentation.DomainServices;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Monica.Core.HostedService.Abstractions;
 using Monica.Core.HostedService.Models;
 using Monica.Core.ObservableInstance.Abstractions;
@@ -18,9 +19,10 @@ public sealed class HostedServiceDocumentationCatalogSyncBootstrapper(
     IJobDefinitionCacheService jobDefinitionCacheService,
     IObservableInstanceRegistry observableManager,
     IOptions<ModuleHostedServiceOption> hostedServiceOptions,
+    IServiceScopeFactory serviceScopeFactory,
     IOptions<DocumentationApiOptions> options,
     ILogger<HostedServiceDocumentationCatalogSyncBootstrapper> logger)
-    : MoHostedService(observableManager, hostedServiceOptions, logger)
+    : MoHostedService(observableManager, hostedServiceOptions, serviceScopeFactory, logger)
 {
     private readonly DocumentationApiOptions _options = options.Value;
 

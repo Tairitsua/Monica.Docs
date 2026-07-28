@@ -31,3 +31,9 @@ sidebar_position: 4
 - 模块会自动依赖 HostedService 能力。
 - Provider 选择会继续引入 EventBus、CancellationManager 和 ServiceDiscovery 相关依赖。
 - 如果需要可视化控制面，额外接入 `monica.AddJobSchedulerUI()`。
+
+## 执行与事务所有权
+
+JobScheduler 适配器会创建 `jobs.recurring-attempt` 和 `jobs.triggered-attempt` 执行描述。两者都是业务操作，但事务模式都是 `None`。诊断等执行行为仍可运行，`UnitOfWorkExecutionBehavior<,>` 不会自动包裹整个作业。
+
+这种拆分是有意的：调度器负责尝试、重试、取消和历史，作业实现负责数据库事务大小。写入批次应显式使用 [UnitOfWork](../unit-of-work/index.md)。

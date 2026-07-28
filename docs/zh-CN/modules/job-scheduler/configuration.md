@@ -29,6 +29,8 @@ sidebar_position: 3
 | `MaxRetainedOrphanedInstances` | `int` | `10` | 否 | 你要调整孤儿实例保留数量时 | `0` 表示不限制。 |
 | `JobArgsSerializerOptions` | `JsonSerializerOptions?` | 默认启用 `UnsafeRelaxedJsonEscaping` | 否 | 你需要自定义作业参数序列化策略时 | 默认更适合包含非 ASCII 字符的参数。 |
 
+这些选项控制调度、恢复和元数据生命周期，不会改变事务所有权。作业尝试始终使用 `ExecutionTransactionMode.None`，数据库分块仍由作业实现显式控制。
+
 ## Required setup
 
 | Requirement | Satisfied by | Notes |

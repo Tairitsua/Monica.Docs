@@ -37,6 +37,8 @@ app.Run();
 
 The generator creates controllers from `[ApiEndpoint]` on application-service request types. Route, HTTP method, binding, and endpoint documentation belong to the request rather than the handler. At runtime, `AddAutoControllers(...)` discovers ordinary controllers and `ICrudApplicationService` implementations, maps MVC endpoints, and applies one immutable set of host-owned conventions.
 
+Generated mediated endpoints enter the shared [Execution Pipeline](../execution-pipeline/index.md) through Mediator and carry `[MediatedController]`, so the MVC adapter skips them. Direct MVC and generated CRUD actions enter through the MVC adapter. A handwritten controller that calls `IMediator` must add `[MediatedController]` explicitly to avoid nested MVC and Mediator boundaries.
+
 Published requests under `Platform.Protocol.PublishedLanguages.Domain{Domain}.Requests` can also generate `I{Domain}CommandApi` and `I{Domain}QueryApi` clients. Keep HTTP-only requests local to their owning domain.
 
 ## Configure generated CRUD endpoints

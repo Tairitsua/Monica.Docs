@@ -6,7 +6,7 @@ sidebar_position: 1
 
 # DependencyInjection
 
-提供 Monica 的约定式依赖注入、服务暴露规则与自动注册诊断快照。
+提供 Monica 的约定式依赖注入、服务暴露规则与自动注册诊断快照。这个模块只负责注册，不会代理或拦截服务。
 
 ## 何时使用这个模块
 
@@ -28,6 +28,8 @@ sidebar_position: 1
 - `DependencyAttribute`、`ExposeServicesAttribute`、`ExposeKeyedServiceAttribute`：显式控制注册行为。
 - `ICachedServiceProvider`：Monica 中常见的缓存服务提供者抽象。
 - `DependencyInjectionDiagnosticsFacade`：读取自动注册诊断快照。
+
+同一个 NuGet 包还包含另一个独立、可选的 [DynamicProxy 模块](../dynamic-proxy/index.md)。`AddDependencyInjection()` 不会启用 DynamicProxy，Monica 内置执行边界也不依赖它。
 
 ## 相关页面
 

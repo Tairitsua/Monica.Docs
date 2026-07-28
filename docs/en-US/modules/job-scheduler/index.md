@@ -8,6 +8,8 @@ sidebar_position: 1
 
 `Monica.JobScheduler` discovers `RecurringJob` and `TriggeredJob<TArgs>` types, reconciles definitions, executes work with scoped dependency injection, and tracks execution state. The module deliberately requires a metadata repository, a scheduler scope, and an execution provider.
 
+Each recurring or triggered attempt enters the shared [Execution Pipeline](../execution-pipeline/index.md), but its descriptor uses `ExecutionTransactionMode.None`. The JobScheduler adapter therefore creates no automatic outer Unit of Work. Write-heavy jobs must divide work into business-sized or bounded batches with explicit `IUnitOfWorkManager.RunAsync(...)` scopes.
+
 ```bash
 dotnet add package Monica.JobScheduler --prerelease
 ```
@@ -57,3 +59,10 @@ public sealed class OrderBacklogJob(ILogger<OrderBacklogJob> logger)
 | Execution coordination | `UseInMemoryProvider()` | `UseDistributeProvider()` after configuring distributed EventBus, cancellation, state, and discovery providers. |
 
 The default cron timezone is `TimeZoneInfo.Local`. Zombie detection, long-interval scheduling, and history cleanup are enabled. The in-memory path is for local or single-process operation; it does not provide durable history or cross-instance coordination. `Monica.JobScheduler.UI` is a separate Stable dashboard package.
+
+## Next steps
+
+- [Quick start](./quick-start.md)
+- [Configuration](./configuration.md)
+- [Guide and providers](./guide-and-providers.md)
+- [Scenarios](./scenarios.md)

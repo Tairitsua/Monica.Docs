@@ -9,7 +9,7 @@ sidebar_position: 2
 ## 安装包
 
 ```bash
-dotnet add package Monica.JobScheduler
+dotnet add package Monica.JobScheduler --prerelease
 ```
 
 ## 最小注册
@@ -46,6 +46,8 @@ public sealed class PingJob : IRecurringJob
 ## 第一个有价值的配置
 
 `JobScheduler` 不是“只加模块就能跑”的类型。它要求你明确三件事：**元数据存储、调度 Provider、调度 Scope**。本地开发时，最小可运行组合通常是 `UseInMemoryMetadataRepository()` + `UseSchedulerScope("local-dev")` + `UseInMemoryProvider()`。
+
+作业尝试会进入统一执行管线，因此可以获得宿主已注册且匹配的诊断、路由和应用行为，但不会获得自动外层 UnitOfWork。只有数据库写入单元需要显式事务作用域。
 
 ## 接下来读什么
 

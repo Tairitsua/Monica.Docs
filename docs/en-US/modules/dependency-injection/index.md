@@ -6,7 +6,7 @@ sidebar_position: 1
 
 # Dependency Injection
 
-`Monica.DependencyInjection` scans business types and registers services through explicit lifetime markers or `[Dependency]`. It complements Microsoft DI; ordinary `builder.Services` registrations remain valid.
+`Monica.DependencyInjection` scans business types and registers services through explicit lifetime markers or `[Dependency]`. It complements Microsoft DI; ordinary `builder.Services` registrations remain valid. This module performs registration only—it does not proxy or intercept services.
 
 ```bash
 dotnet add package Monica.DependencyInjection --prerelease
@@ -50,8 +50,9 @@ Use `ITransientDependency`, `IScopedDependency`, or `ISingletonDependency` to ma
 | `EnableAutoRegistrationDiagnostics` | `false` | Capture a host-local snapshot of conventional registrations. |
 | `EnableAutoRegistrationLogging` | `false` | Emit a startup entry for each auto-registered type while diagnosing registration. |
 
-The package also exposes `AddDynamicProxy()` and `AddInterceptor<TInterceptor>(...)` for intentional cross-cutting interception. Keep that graph explicit; do not add a proxy merely to hide ordinary service orchestration.
+The same package contains a separate, opt-in [DynamicProxy module](../dynamic-proxy/index.md). `AddDependencyInjection()` does not enable it, and Monica's built-in execution boundaries do not depend on it.
 
 ## Next steps
 
-- [Registration and dynamic-proxy scenarios](./scenarios.md)
+- [Registration scenarios](./scenarios.md)
+- [DynamicProxy](../dynamic-proxy/index.md)

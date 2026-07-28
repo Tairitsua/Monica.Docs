@@ -27,13 +27,15 @@ public sealed class UserService(IEventBus eventBus)
 
 当某个模块需要绑定自己专属的事件总线 service key 时，推荐通过 `AddKeyedEventBus(...)` 或 `AddKeyedLocalEventBus(...)` 组合，而不是让模块自行绕过 EventBus 注册新容器。
 
-## 场景 3 — 为事件处理器应用类代理拦截器
+## 场景 3 — 可选地为处理器应用自定义 DynamicProxy 拦截器
 
-EventBus 可以发现具体的 `ILocalEventHandler<TEvent>` 和 `IDistributedEventHandler<TEvent>` 实现，无论它们是否声明为 `sealed`。只有当宿主配置了 DynamicProxy，并且拦截器谓词选中了以具体类型注册的处理器时，才会增加类代理约束。
+EventBus 处理器已经通过 EventBus 适配器进入统一执行管线。授权、UnitOfWork、诊断、路由和应用行为都不需要 DynamicProxy；管线桥接还会明确排除已经由适配器拥有的处理器，避免重复执行。
+
+EventBus 可以发现具体的 `ILocalEventHandler<TEvent>` 和 `IDistributedEventHandler<TEvent>` 实现，无论它们是否声明为 `sealed`。只有当宿主配置了自定义 DynamicProxy 拦截器，并且谓词选中了以具体类型注册的处理器时，才会增加类代理约束。
 
 Castle 会通过继承处理器来实现类代理。因此处理器类必须可继承，`HandleEventAsync` 也必须保持虚方法语义。继承 Monica 抽象处理器基类的实现已经 `override` 了抽象方法；应用类代理拦截器时，还应让具体处理器保持非 `sealed`。
 
-EventBus 自动发现会按具体处理器类型解析处理器，因此被选中的处理器会使用类代理，并且必须保持可继承。如果处理器不需要拦截，应收窄拦截器谓词。`InterfaceProxy` 仍适用于通过接口暴露并解析的普通服务，但不能直接替代 EventBus 默认自动发现路径中的类代理。完整决策规则见 [DependencyInjection 场景](../dependency-injection/scenarios.md)。
+EventBus 自动发现会按具体处理器类型解析处理器，因此被选中的处理器会使用类代理，并且必须保持可继承。如果处理器不需要自定义拦截，应收窄拦截器谓词。`InterfaceProxy` 仍适用于通过接口暴露并解析的普通服务，但不能直接替代 EventBus 默认自动发现路径中的类代理。完整决策规则见 [DynamicProxy 场景](../dynamic-proxy/scenarios.md)。
 
 ## 故障排查 — Dapr 在处理器执行前反复投递
 
@@ -58,7 +60,7 @@ because the parent type is sealed.
 
 ## 验证生产组合
 
-原始 `ProjectUnitFixture<TUnit>` 会刻意跳过约定发现、DynamicProxy、拦截器和 Hosted lifecycle。它可以验证处理器逻辑，但不能证明运行时能够激活代理后的处理器。
+原始 `ProjectUnitFixture<TUnit>` 会刻意跳过模块发现、统一执行管线、DynamicProxy 和 Hosted lifecycle。它可以验证处理器逻辑，但不能证明运行时行为组合或自定义代理后的处理器激活。
 
 代理相关回归测试应构建使用生产模块组合的完整 Monica 测试宿主，解析或分发到目标处理器，并验证预期拦截链路。参见[测试 Monica 应用](../../guides/testing-monica-applications.md)。
 

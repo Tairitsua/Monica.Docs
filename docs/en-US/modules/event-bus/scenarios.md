@@ -14,13 +14,15 @@ When an event is consumed only inside the current process, `monica.AddEventBus()
 
 When a module needs an event bus under its own service key, compose it through `AddKeyedEventBus(...)` or `AddKeyedLocalEventBus(...)`. Do not bypass EventBus by building a separate service container.
 
-## Scenario 3 — Combine event handlers with class-proxy interceptors
+## Scenario 3 — Optionally combine a handler with a custom DynamicProxy interceptor
 
-EventBus discovery accepts concrete `ILocalEventHandler<TEvent>` and `IDistributedEventHandler<TEvent>` implementations whether or not they are sealed. A separate constraint appears when the host configures DynamicProxy and an interceptor predicate selects a handler registered as its concrete type.
+EventBus handlers already enter the shared execution pipeline through the EventBus adapter. Authorization, Unit of Work, diagnostics, routing, and application execution behaviors therefore do not require DynamicProxy. The pipeline bridge explicitly excludes adapter-owned handlers to prevent duplicate execution.
+
+EventBus discovery accepts concrete `ILocalEventHandler<TEvent>` and `IDistributedEventHandler<TEvent>` implementations whether or not they are sealed. A separate constraint appears only when the host configures a custom DynamicProxy interceptor and its predicate selects a handler registered as its concrete type.
 
 Castle implements that class proxy by deriving from the handler. The handler class must therefore be inheritable, and `HandleEventAsync` must remain virtual. Handlers derived from Monica's abstract handler bases already override an abstract method; keep the concrete handler non-sealed when a class-proxy interceptor applies.
 
-Auto-discovered EventBus handlers are resolved by their concrete handler type. A selected handler therefore uses a class proxy and must remain inheritable. If handler interception is not required, narrow the interceptor predicate instead. `InterfaceProxy` remains an alternative for ordinary services that are exposed and resolved through an interface, but it is not a drop-in replacement for the default EventBus auto-discovery path. See [Dependency Injection scenarios](../dependency-injection/scenarios.md) for the complete decision rules.
+Auto-discovered EventBus handlers are resolved by their concrete handler type. A selected handler therefore uses a class proxy and must remain inheritable. If custom interception is not required, narrow the interceptor predicate instead. `InterfaceProxy` remains an alternative for ordinary services that are exposed and resolved through an interface, but it is not a drop-in replacement for the default EventBus auto-discovery path. See [DynamicProxy scenarios](../dynamic-proxy/scenarios.md) for the complete decision rules.
 
 ## Troubleshooting — Dapr repeatedly redelivers before the handler runs
 
@@ -45,7 +47,7 @@ The retry interval and terminal outcome belong to the deployed Dapr component an
 
 ## Test the production composition
 
-A raw `ProjectUnitFixture<TUnit>` deliberately skips conventional discovery, DynamicProxy, interceptors, and hosted lifecycle. It can prove handler logic but cannot prove that the runtime can activate a proxied handler.
+A raw `ProjectUnitFixture<TUnit>` deliberately skips module discovery, the execution pipeline, DynamicProxy, and hosted lifecycle. It can prove handler logic but cannot prove runtime behavior composition or activation of a custom-proxied handler.
 
 For an interception regression, build a complete Monica test host with the production module composition, resolve or dispatch to the handler, and verify the expected interceptor path. See [Testing Monica applications](../../guides/testing-monica-applications.md).
 

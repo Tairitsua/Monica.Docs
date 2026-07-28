@@ -42,6 +42,8 @@ public sealed record QueryGetDocTree(string Locale = "en-US")
 
 每个生成式 `ApplicationService` 端点都必须声明 `[ApiEndpoint]`；缺失声明会得到编译期诊断，而不是回退到隐式路由约定。
 
+生成式 ApplicationService 端点通过 Mediator 进入统一 [Execution Pipeline](../execution-pipeline/index.md)，生成器还会添加 `[MediatedController]`，让 MVC 适配器跳过这些 Action。直接 MVC 与生成式 CRUD Action 使用 MVC 适配器。手写 Controller 如果调用 `IMediator`，必须显式添加 `[MediatedController]`，否则会形成嵌套的 MVC 与 Mediator 边界。
+
 ## 发布位置决定 RPC 暴露
 
 | 请求位置 | HTTP Controller | 生成 RPC API |

@@ -18,6 +18,12 @@ ProjectUnits are Monica's typed vocabulary for application architecture. They le
 
 ProjectUnits do not replace good domain modeling. Keep invariants on the state owner and use services for orchestration.
 
+## Roles are not interception boundaries
+
+A ProjectUnit role describes architecture; it does not automatically wrap every method call. Runtime boundaries are established by subsystem adapters—for example Mediator requests, EventBus handlers, direct MVC actions, jobs, seeders, and hosted work items. A `DomainService` normally runs inside its caller's boundary.
+
+Use the [Execution Pipeline](../modules/execution-pipeline/index.md) when a subsystem needs a shared behavior chain. Use the separate, optional [DynamicProxy module](../modules/dynamic-proxy/index.md) only for selected service methods that have no native adapter.
+
 ## Declare agent context explicitly
 
 Every discovered class or record should declare its own metadata. The annotation is deliberately not inherited because a base class cannot accurately describe the responsibility of every derived unit.
@@ -84,6 +90,6 @@ Read the [ProjectUnits module guide](../modules/project-units/index.md) for regi
 
 ## Testing ProjectUnits
 
-Use `ProjectUnitFixture<TUnit>` only for focused collaboration tests with explicit dependencies. Use a complete host-owned scenario when behavior depends on discovery, conventional registration, proxies, options, persistence, or host lifecycle.
+Use `ProjectUnitFixture<TUnit>` only for focused collaboration tests with explicit dependencies. Use a complete host-owned scenario when behavior depends on discovery, conventional registration, execution-pipeline behaviors, proxies, options, persistence, or host lifecycle.
 
 [Choose the correct testing boundary](../guides/testing-monica-applications.md).
