@@ -51,3 +51,7 @@ Use `ITransientDependency`, `IScopedDependency`, or `ISingletonDependency` to ma
 | `EnableAutoRegistrationLogging` | `false` | Emit a startup entry for each auto-registered type while diagnosing registration. |
 
 The package also exposes `AddDynamicProxy()` and `AddInterceptor<TInterceptor>(...)` for intentional cross-cutting interception. Keep that graph explicit; do not add a proxy merely to hide ordinary service orchestration.
+
+## Next steps
+
+- [Registration and dynamic-proxy scenarios](./scenarios.md)
