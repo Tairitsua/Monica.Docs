@@ -87,6 +87,38 @@ public sealed class ModuleAnalyticsOption : ModuleOptions<ModuleAnalytics>
 
 Add public XML documentation to module entry points, options, Guide methods, public abstractions, models, and Facades. Explain defaults, prerequisites, lifecycle, side effects, and failure behavior.
 
+### Schedule only isolated CPU-bound composition work
+
+When a materialized module has synchronous CPU-bound work that can overlap later serial callbacks, prepare an immutable or exclusively module-owned input snapshot and call the protected `ScheduleCompositionWork(...)` method synchronously from that module's `ConfigureBuilder`, `ConfigureServices`, or `PostConfigureServices` callback. Choose the latest checkpoint at which the result is required:
+
+```csharp
+[ModuleKey("Acme.Monica.Analytics")]
+public sealed class ModuleAnalytics(ModuleAnalyticsOption option)
+    : ModuleBase<ModuleAnalytics, ModuleAnalyticsOption, ModuleAnalyticsGuide>(option)
+{
+    private readonly AnalyticsExpressionCatalog _catalog = new(option);
+
+    public override void ConfigureServices(IServiceCollection services)
+    {
+        services.AddSingleton(_catalog);
+    }
+
+    public override void PostConfigureServices(IServiceCollection _)
+    {
+        ScheduleCompositionWork(
+            "compile-analytics-expressions",
+            _catalog.Compile,
+            ModuleCompositionWorkDeadline.BeforeServiceRegistrationCompletion);
+    }
+}
+```
+
+`BeforeServiceRegistrationCompletion` is the default and may be omitted. Use `BeforeBusinessTypeIteration` or `BeforePostConfigureServices` when a later composition stage needs the result earlier. A deadline is the latest required composition checkpoint, not a timeout.
+
+The work action must be synchronous, deterministic, and isolated; Monica rejects `async`/`async void` delegates. It must not mutate the host builder, `IServiceCollection`, the module graph, a service provider, or shared static state, and it must not rely on another work item's completion order. Monica owns bounded scheduling, waits at the declared checkpoint, propagates failures before continuing, and drains every work item before `AddMonica(...)` returns. Do not add `Task.Run`, `Task.WhenAll`, or fire-and-forget work inside the module.
+
+Use `IHostedLifecycleService` or a hosted service for runtime activation, I/O, long-running work, and cleanup. `ScheduleCompositionWork(...)` does not make `ConfigureServices`, `PostConfigureServices`, or any other module callback concurrent.
+
 ## 4. Compose a real host
 
 Test the same boundary consumers use:

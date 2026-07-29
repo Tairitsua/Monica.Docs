@@ -87,6 +87,38 @@ public sealed class ModuleAnalyticsOption : ModuleOptions<ModuleAnalytics>
 
 为 Module 入口、Option、Guide 方法、公开 Abstraction、Model 与 Facade 编写 XML 文档，说明默认值、前置条件、生命周期、副作用和失败行为。
 
+### 只调度隔离的 CPU 密集型组合工作
+
+当完成物化的模块中有同步 CPU 密集型工作可以与后续串行回调重叠时，先准备不可变或由本模块独占的输入快照，再从该模块的 `ConfigureBuilder`、`ConfigureServices` 或 `PostConfigureServices` 回调线程同步调用受保护的 `ScheduleCompositionWork(...)` 方法。选择最晚需要结果的检查点：
+
+```csharp
+[ModuleKey("Acme.Monica.Analytics")]
+public sealed class ModuleAnalytics(ModuleAnalyticsOption option)
+    : ModuleBase<ModuleAnalytics, ModuleAnalyticsOption, ModuleAnalyticsGuide>(option)
+{
+    private readonly AnalyticsExpressionCatalog _catalog = new(option);
+
+    public override void ConfigureServices(IServiceCollection services)
+    {
+        services.AddSingleton(_catalog);
+    }
+
+    public override void PostConfigureServices(IServiceCollection _)
+    {
+        ScheduleCompositionWork(
+            "compile-analytics-expressions",
+            _catalog.Compile,
+            ModuleCompositionWorkDeadline.BeforeServiceRegistrationCompletion);
+    }
+}
+```
+
+`BeforeServiceRegistrationCompletion` 是默认值，可以省略。后续组合阶段更早需要结果时，使用 `BeforeBusinessTypeIteration` 或 `BeforePostConfigureServices`。Deadline 表示最晚需要完成的组合检查点，不是超时设置。
+
+工作 Action 必须同步、具有确定性并保持隔离；Monica 会拒绝 `async`/`async void` 委托。它不得修改宿主 Builder、`IServiceCollection`、模块图、Service Provider 或共享静态状态，也不得依赖其他工作项的完成顺序。Monica 负责限制并发调度，在声明的检查点等待，在继续组合前传播失败，并在 `AddMonica(...)` 返回前排空每个工作项。不要在模块内增加 `Task.Run`、`Task.WhenAll` 或 Fire-and-forget 工作。
+
+运行时激活、I/O、长时间任务与清理应使用 `IHostedLifecycleService` 或 Hosted Service。`ScheduleCompositionWork(...)` 不会让 `ConfigureServices`、`PostConfigureServices` 或其他模块回调并发执行。
+
 ## 4. 组合真实宿主
 
 测试消费者真正使用的边界：

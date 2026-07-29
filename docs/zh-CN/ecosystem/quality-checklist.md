@@ -31,6 +31,7 @@ Monica 兼容标识采用发布者自我声明。完成本清单是发布者对�
 - [ ] Facade 是返回 `Res` 或 `Res<T>` 的轻量宿主/UI 入口；内部 Service 使用普通 .NET 异常与返回类型。
 - [ ] 其他模块依赖公开 Abstraction 与 Model，而不是 Facade 或内部 Service。
 - [ ] 默认使用 `ModuleBase`；只有参与中间件或端点时才使用 `WebModuleBase`。
+- [ ] 调用 `ScheduleCompositionWork(...)` 的模块只提供基于不可变或由本模块独占输入的隔离、确定性 CPU 密集型工作，不修改宿主 Builder、Service Collection、Service Provider、模块图或共享静态状态。
 - [ ] UI 模块消费公开 Facade，不访问内部 Service 或 Provider。
 - [ ] 公开和面向开发者的 API 具有有用的 XML 文档。
 - [ ] Option 解释默认值和实际影响；Guide 方法解释前置条件与副作用。
@@ -39,6 +40,7 @@ Monica 兼容标识采用发布者自我声明。完成本清单是发布者对�
 
 - [ ] 完整解决方案以零警告完成 Restore、Build 与 Test。
 - [ ] 测试通过真实 `builder.AddMonica(...)` 宿主边界组合包。
+- [ ] 使用调度组合工作时，测试证明存在有效重叠、每个声明的 Deadline 都会等待、失败会在对应检查点与 `Build()` 前传播、诊断保持确定性，并发执行保持安全。
 - [ ] 设计为可独立使用的模块能够单独注册成功。
 - [ ] 声明的依赖能正确解析，缺少必需 Guide 配置时会清晰失败。
 - [ ] 重复注册具有幂等语义，或按明确契约拒绝。

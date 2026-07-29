@@ -14,6 +14,7 @@ sidebar_position: 3
 
 | 模块 | 成熟度 | 包 | 注册入口 | 相关 UI 模块 |
 |---|---|---|---|---|
+| [核心组合](./core-composition/index.md) | Stable | `Monica.Core` | `builder.AddMonica(...)` / `monica.ConfigureModuleSystem(...)` | 无 |
 | [AutoModel](./auto-model/index.md) | Stable | `Monica.AutoModel` | `monica.AddAutoModel()` | 无 |
 | [AutoControllers](./auto-controllers/index.md) | Stable | `Monica.WebApi` | `monica.AddAutoControllers(...)` | 无 |
 | [AI](./ai/index.md) | Labs | `Monica.AI` | `monica.AddAI()` | `monica.AddAIUI()` |

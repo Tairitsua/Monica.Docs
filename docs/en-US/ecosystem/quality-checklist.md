@@ -31,6 +31,7 @@ The Monica Compatibility Mark is self-attested. Completing this checklist is the
 - [ ] Facades are thin host/UI entry points returning `Res` or `Res<T>`; internal services use normal .NET exceptions and return types.
 - [ ] Other modules consume public abstractions and models rather than Facades or internal services.
 - [ ] `ModuleBase` is the default; `WebModuleBase` is used only for middleware or endpoint participation.
+- [ ] A module that calls `ScheduleCompositionWork(...)` supplies isolated deterministic CPU-bound work over immutable or exclusively module-owned inputs and does not mutate the host builder, service collection, service provider, module graph, or shared static state.
 - [ ] UI modules consume public Facades and do not access internal services or providers.
 - [ ] Public and developer-facing APIs have useful XML documentation.
 - [ ] Options document their defaults and practical effect; Guide methods document prerequisites and side effects.
@@ -39,6 +40,7 @@ The Monica Compatibility Mark is self-attested. Completing this checklist is the
 
 - [ ] The complete solution restores, builds, and tests with zero warnings.
 - [ ] Tests compose the package through a real `builder.AddMonica(...)` host boundary.
+- [ ] Scheduled-work tests, when applicable, prove useful overlap, waiting at each declared deadline, failure propagation before the relevant checkpoint and `Build()`, deterministic diagnostics, and safe concurrent execution.
 - [ ] Every module registration succeeds independently when it is intended to be independent.
 - [ ] Declared dependencies are resolved and missing required Guide configuration fails clearly.
 - [ ] Duplicate registrations are idempotent or rejected with a clear contract.
