@@ -22,6 +22,8 @@ using Monica.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddTransient<UserCreatedHandler>();
+
 builder.AddMonica(monica =>
 {
     monica.AddEventBus()
@@ -33,9 +35,11 @@ public sealed class UserCreatedEvent : DomainEvent
     public string UserId { get; init; } = string.Empty;
 }
 
-public sealed class UserCreatedHandler : ILocalEventHandler<UserCreatedEvent>
+public class UserCreatedHandler : ILocalEventHandler<UserCreatedEvent>
 {
-    public Task HandleEventAsync(UserCreatedEvent eventData)
+    public Task HandleEventAsync(
+        UserCreatedEvent eventData,
+        CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
     }

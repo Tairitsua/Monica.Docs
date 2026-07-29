@@ -99,6 +99,7 @@ The documentation source can be relocated with `DocumentationApi__DocsBasePath`.
 ## Quality checks
 
 ```bash
+python scripts/validate_ecosystem_docs.py
 dotnet build Monica.Docs.slnx -m
 
 cd frontend/monica-docs-web

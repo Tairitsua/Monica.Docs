@@ -14,7 +14,7 @@ sidebar_position: 2
 |---|---|
 | Entity, value-object, or pure domain behavior | Construct the object directly. |
 | One ProjectUnit collaborating with explicit substitutes | `ProjectUnitFixture<TUnit>` |
-| Module composition, type discovery, options, proxies, interceptors, persistence, or host lifecycle | `MonicaTestApplicationFactory<TDiscoveryAnchor>` |
+| Module composition, type discovery, execution-pipeline behaviors, options, proxies, persistence, or host lifecycle | `MonicaTestApplicationFactory<TDiscoveryAnchor>` |
 | Razor component rendering and interaction | bUnit plus `Monica.Testing.UI` when Monica UI doubles are useful |
 
 Do not use a raw fixture to claim that production composition works. Conversely, a complete host is unnecessary for a pure entity invariant.
@@ -161,7 +161,7 @@ var total = await fixture.Unit.CalculateAsync(
     TestContext.Current.CancellationToken);
 ```
 
-This fast path deliberately does **not** run Monica module composition, production type discovery, conventional registration, dynamic proxies, interceptors, options binding, or hosted lifecycle. Use a complete host as soon as the expected behavior depends on any of those features. There is no separate application-service fixture.
+This fast path deliberately does **not** run Monica module composition, production type discovery, the shared execution pipeline, conventional registration, DynamicProxy, options binding, or hosted lifecycle. Use a complete host as soon as the expected behavior depends on authorization, routing, Unit of Work, tracing, another execution behavior, a proxy, or any other omitted runtime feature. There is no separate application-service fixture.
 
 ## Parallel execution
 
@@ -170,5 +170,6 @@ Independent applications are designed to run in parallel because each owns its c
 ## Related pages
 
 - [Host-bound composition](../concepts/host-bound-composition.md)
+- [Execution boundaries](../concepts/execution-boundaries.md)
 - [ProjectUnits](../concepts/project-units.md)
 - [Package maturity](../packages/index.md)

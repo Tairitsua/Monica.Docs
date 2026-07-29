@@ -1,51 +1,33 @@
 ---
 title: Unit of Work
-description: Coordinate repository changes and publish work only after a successful commit.
+description: Coordinate repository changes through automatic execution boundaries or explicit business-sized scopes.
 sidebar_position: 1
 ---
 
 # Unit of Work
 
-The Unit of Work module lives in `Monica.Repository`. It coordinates transaction-scoped DbContexts, exposes `IUnitOfWorkManager`, installs the MVC action filter, and supports callbacks that run only after successful completion.
+The Unit of Work module lives in `Monica.Repository`. It coordinates transactional DbContexts, exposes `IUnitOfWorkManager`, and runs post-commit callbacks. It integrates with Monica's shared [Execution Pipeline](../execution-pipeline/index.md); it no longer installs an MVC action filter.
 
-```bash
-dotnet add package Monica.Repository --prerelease
-dotnet add package Microsoft.EntityFrameworkCore.Sqlite
-```
+## Automatic and explicit boundaries
 
-```csharp
-using Microsoft.EntityFrameworkCore;
-using Monica.Core.Modularity.Extensions;
-using Monica.Modules;
+`AddUnitOfWork()` contributes `UnitOfWorkExecutionBehavior<,>` for execution descriptors whose transaction mode is `Automatic`. Mediator requests, direct MVC actions, EventBus handlers, seeders, and finite hosted work items use that mode. Nested automatic boundaries join the ambient unit of work.
 
-var builder = WebApplication.CreateBuilder(args);
+Job attempts and hosted-service lifecycle callbacks deliberately use `ExecutionTransactionMode.None`. Long-running or batch work must create explicit, business-sized scopes with `IUnitOfWorkManager.RunAsync(...)` instead of holding one transaction for the whole job.
 
-builder.AddMonica(monica =>
-{
-    monica.AddRepository()
-        .AddRepositoryDbContext<OrderingDbContext>(
-            (_, db) => db.UseSqlite("Data Source=ordering.db"),
-            DbContextProviderType.UnitOfWork);
-});
+Selecting `DbContextProviderType.UnitOfWork` on a repository context adds the module and adaptive DbContext provider automatically. Register `monica.AddUnitOfWork()` directly only when no repository registration already claims it.
 
-var app = builder.Build();
-app.UseMonica();
-app.MapMonica();
-app.Run();
-```
+## Public surface
 
-Selecting `DbContextProviderType.UnitOfWork` adds `ModuleUnitOfWork` and the adaptive provider automatically. Register `monica.AddUnitOfWork()` directly only when you need its options without a Unit-of-Work-backed repository context.
+- `IUnitOfWorkManager.RunAsync(...)` opens, completes, rolls back, and disposes a scope around one operation.
+- `IUnitOfWorkManager.BeginScope(...)` exposes manual control when completion callbacks or multiple flushes are required.
+- `UnitOfWorkScopeOptions` controls transaction use, isolation, `RequiresNew`, and command timeout.
+- `IUnitOfWork.OnCompleted(...)` schedules work only after a successful commit.
 
-```csharp
-await using var unitOfWork = unitOfWorkManager.BeginScope();
+Repository `SaveChangesAsync()` inside an active unit of work flushes through the unit rather than committing independently. Operation exceptions retain their original type, identity, and stack. If rollback also fails, Monica attaches the rollback exception to `Exception.Data["Monica.Repository.UnitOfWork.RollbackException"]` without replacing the primary failure.
 
-await repository.InsertAsync(order, cancellationToken);
-unitOfWork.OnCompleted(() =>
-    localEventBus.PublishAsync(new OrderApproved(order.Id)));
+## Next steps
 
-await unitOfWork.CompleteAsync(cancellationToken);
-```
-
-Use `OnCompleted(...)` for event publication or external follow-up that must not occur if the transaction rolls back. `EnableEntityEvent` is `false` by default; enable it only when entity change events are part of the application's explicit domain contract.
-
-Repository `SaveChangesAsync()` inside an active unit of work flushes through the unit rather than committing the transaction independently.
+- [Quick start](./quick-start.md)
+- [Configuration](./configuration.md)
+- [Guide and providers](./guide-and-providers.md)
+- [Scenarios](./scenarios.md)

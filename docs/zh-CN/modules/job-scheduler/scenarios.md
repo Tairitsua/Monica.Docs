@@ -48,7 +48,24 @@ public sealed class InvoiceService(ITriggeredJobManager jobs)
 }
 ```
 
+## 场景 4 — 显式划分数据库事务
+
+不要用一个事务包裹长时间扫描。可以在事务外读取候选项，再按有界批次持久化：
+
+```csharp
+foreach (var batch in candidates.Chunk(100))
+{
+    await unitOfWorkManager.RunAsync(
+        () => PersistAsync(batch, cancellationToken),
+        cancellationToken: cancellationToken);
+}
+```
+
+如果作业还要发布事件或调用外部系统，应先提交数据库单元。可以使用提交后回调，或在 `RunAsync(...)` 成功返回后再发布。
+
 ## Common mistakes
 
 - 漏掉三项必需 Guide 之一，导致模块在启动时校验失败。
 - 不同环境共用同一个 `SchedulerScopeKey`，最终把作业定义和实例混在一起。
+- 因为作业是业务执行描述，就误以为整次尝试会自动获得 UnitOfWork。
+- 在网络调用或无界扫描期间一直持有数据库锁。

@@ -1,19 +1,35 @@
 ---
 title: Configuration
-description: UnitOfWork 的公开选项、默认值与必需设置。
+description: 配置实体事件与显式工作单元作用域语义。
 sidebar_position: 3
 ---
 
 # Configuration
 
-## Module options
+## Module option
 
-| Property | Type | Default | Required | When to change | Notes |
-|---|---|---|---|---|---|
-| `EnableEntityEvent` | `bool` | `false` | 否 | 你希望在 UoW 中启用实体变化事件时 | 打开后会注册异步本地事件发布/存储能力。 |
+| 属性 | 类型 | 默认值 | 何时修改 |
+|---|---|---:|---|
+| `EnableEntityEvent` | `bool` | `false` | 只有实体变化事件属于应用明确的领域契约时才启用。 |
 
-## Required setup
+## 作用域选项
 
-| Requirement | Satisfied by | Notes |
-|---|---|---|
-| 让某个 `DbContext` 进入 UoW 生命周期 | `AddDbContextProvider<TDbContext>()` 或 `AddRepositoryDbContext(..., DbContextProviderType.UnitOfWork)` | 否则仓储不会从当前工作单元解析到对应上下文。 |
+`UnitOfWorkScopeOptions` 属于每个显式作用域：
+
+| 参数 | 默认值 | 含义 |
+|---|---:|---|
+| `IsTransactional` | `true` | 为参与的 DbContext 启动事务。 |
+| `IsolationLevel` | `null` | 未设置时使用数据库 Provider 默认值。 |
+| `RequiresNew` | `false` | 默认加入 ambient scope；`true` 创建独立外层作用域。 |
+| `Timeout` | `null` | 可选的关系型数据库命令超时，单位为毫秒。 |
+
+```csharp
+await unitOfWorkManager.RunAsync(
+    ExecuteBatchAsync,
+    new UnitOfWorkScopeOptions(
+        RequiresNew: true,
+        Timeout: 30_000),
+    cancellationToken);
+```
+
+只有内部操作必须独立于 ambient transaction 提交或回滚时，才使用 `RequiresNew`。

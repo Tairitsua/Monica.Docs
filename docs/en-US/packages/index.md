@@ -21,3 +21,7 @@ Stable does not depend on Labs. Integration packages are optional and should app
 Start with the smallest Stable graph that expresses the application. Add an Integration when infrastructure requires it. Adopt Labs deliberately, with the expectation that its public surface can move faster than the 1.0 kernel.
 
 The framework repository keeps the canonical maturity manifest and validates every publishable project against it. The website mirrors that reviewed manifest for the launch catalog.
+
+## Official packages and third-party packages
+
+These maturity tiers describe official `Monica.*` packages only. Independent publishers use the `<Publisher>.Monica.<Package>` ecosystem convention and make self-attested compatibility claims; they are not assigned an official maturity tier. See the [third-party package and branding standard](../ecosystem/package-and-branding-standard.md).

@@ -99,6 +99,7 @@ src/Shared/Platform.*                      共享协议与基础设施层
 ## 质量检查
 
 ```bash
+python scripts/validate_ecosystem_docs.py
 dotnet build Monica.Docs.slnx -m
 
 cd frontend/monica-docs-web

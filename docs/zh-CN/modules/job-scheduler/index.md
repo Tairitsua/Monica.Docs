@@ -8,6 +8,8 @@ sidebar_position: 1
 
 扫描定时作业与触发式作业定义，提供控制面、执行面、元数据存储和监控查询 Facade。
 
+每次定时或触发式作业尝试都会进入统一 [Execution Pipeline](../execution-pipeline/index.md)，但描述符使用 `ExecutionTransactionMode.None`。JobScheduler Adapter 因此不会自动创建作业级外层 UnitOfWork；有数据库写入的作业必须通过 `IUnitOfWorkManager.RunAsync(...)` 划分业务粒度或有界批次。
+
 ## 何时使用这个模块
 
 - 你需要统一管理定时作业与触发式作业，而不是自己维护零散 `HostedService`。
@@ -29,6 +31,7 @@ sidebar_position: 1
 - `IJobMetadataRepository`：作业元数据持久化抽象。
 - `JobSchedulerFacade`、`JobSchedulerDashboardFacade`、`JobSchedulerMonitorFacade`、`JobSchedulerQueryFacade`、`JobSchedulerAnalyticsFacade`。
 - `JobConfigAttribute`：覆盖单个作业的并发、重试、超时、Cron 等配置。
+- `JobExecutionFeature`：执行管线中当前作业尝试的类型化上下文。
 
 ## 相关页面
 

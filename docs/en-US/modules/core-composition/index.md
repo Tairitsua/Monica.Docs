@@ -45,6 +45,8 @@ app.Run();
 
 `UseMonica()` installs module middleware around routing. `MapMonica()` maps module-owned endpoints. Non-web hosts call only `AddMonica(...)` and register modules that support non-web operation.
 
+`Monica.Core` also owns the [Execution Pipeline](../execution-pipeline/index.md), the shared typed kernel used by Mediator, MVC, EventBus, jobs, seeders, and hosted work-item adapters. Subsystems enter it through explicit adapters; application types are not intercepted merely because they are ProjectUnits. [Execution boundaries](../../concepts/execution-boundaries.md) explains the complete boundary and transaction matrix.
+
 ## Shared configuration
 
 | Entry point | Purpose | Important default |
@@ -55,4 +57,4 @@ app.Run();
 
 Call `AddMonica(...)` exactly once per host builder. Do not retain a module Guide and mutate it after the callback; the graph is sealed at callback completion.
 
-Continue with [Host-bound composition](../../concepts/host-bound-composition.md) for the lifecycle and [Getting started](../../getting-started/index.md) for a runnable host.
+Continue with [Host-bound composition](../../concepts/host-bound-composition.md) for the lifecycle, [Execution boundaries](../../concepts/execution-boundaries.md) for runtime behavior composition, and [Getting started](../../getting-started/index.md) for a runnable host.

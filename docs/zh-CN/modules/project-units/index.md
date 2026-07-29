@@ -1,57 +1,51 @@
 ---
 title: ProjectUnits
-description: 发现 Monica 项目单元，并为 ApplicationService、DomainService、事件、作业与配置建立统一约定。
+description: 发现宿主范围内的架构目录，并提供类型化状态、详情和需求追踪视图。
 sidebar_position: 1
 ---
 
 # ProjectUnits
 
-`ProjectUnits` 是 Monica 的运行时结构发现模块。它会扫描当前宿主里的请求、应用服务、领域服务、实体、仓储、领域事件、事件处理器、作业与配置，并把这些信息暴露给诊断接口和 UI。
+`Monica.ProjectUnits` 会发现受支持的应用角色，连接依赖关系，记录架构诊断，并向 Agent、API 和管理界面提供可序列化的类型化投影。
 
-对真实业务项目来说，它还有第二个价值：把“项目单元怎么写”固定成一套统一约定。像 `ApplicationService`、`DomainService`、`DomainEventHandler` 这些类型虽然定义在 `Monica.WebApi` 等模块里，但最终都会被 `ProjectUnits` 识别、连接和展示。
+## 公开入口
 
-## 何时使用这个模块
-
-- 你想在运行时查看当前项目有哪些请求、应用服务、领域服务、领域事件、作业和配置。
-- 你希望对项目结构做命名治理、依赖诊断和结构可视化。
-- 你希望团队围绕同一套 ProjectUnit 语言来编写业务代码。
-
-## 包与注册入口
-
-| 项目 | 值 |
+| 使用面 | 作用 |
 |---|---|
-| 包 | `Monica.ProjectUnits` |
-| 注册入口 | `monica.AddProjectUnits()` |
-| 相关 UI 模块 | `monica.AddProjectUnitsUI()` |
+| `monica.AddProjectUnits()` | 注册发现过程、目录服务、Facade 和 HTTP 接口。 |
+| `ModuleProjectUnitsOption` | 配置命名检查、XML 详情解析和请求过滤。 |
+| `UseRequirementLinkResolver<TResolver>()` | 把稳定需求 ID 映射为可选详情链接。 |
+| `ProjectUnitsFacade` | 返回类型化列表、状态、详情、事件和枚举结果。 |
+| `monica.AddProjectUnitsUI()` | 增加 `/project-units` 运维页面。 |
 
-## 它会识别哪些项目单元
+## 类型化 HTTP 查询
 
-| 单元 | 典型契约 | 用途 |
-|---|---|---|
-| `RequestDto` | `IResultRequest<TResponse>` / `IResultRequest` | 表达命令或查询输入 |
-| `ApplicationService` | `ApplicationService<TRequest, TResponse>` / `ApplicationService<TRequest>` | 编排用例边界并返回 `Res` |
-| `DomainService` | `DomainService` | 复用领域规则 |
-| `Entity` | `Entity<TKey>` / `IEntity` | 持有状态与行为 |
-| `Repository` | `IRepository<TEntity, TKey>` 等 | 持久化访问 |
-| `DomainEvent` | `DomainEvent` / `IDomainEvent` | 表达业务事实 |
-| `DomainEventHandler` | `DomainEventHandler<TEvent>` | 响应分布式事件 |
-| `LocalEventHandler` | `LocalEventHandler<TEvent>` | 响应进程内事件 |
-| `RecurringJob` | `RecurringJob` 或其派生类 | 定时后台任务 |
-| `TriggeredJob` | `TriggeredJob<TArgs>` 或其派生类 | 触发式后台任务 |
-| `Configuration` | `[Configuration]` + `*Options` | 宿主配置 |
+| 方法与路由 | 结果 |
+|---|---|
+| `GET /framework/units/dashboard` | 当前宿主身份、类型分布、独立覆盖率、拓扑、告警和待处理缺口。 |
+| `GET /framework/units` | 每个已发现单元的 `ProjectUnitSummary`。 |
+| `GET /framework/units/{key}` | `ProjectUnitDetail`，其中包括按需解析的需求引用。 |
 
-## 公开使用面与相关契约
+`key` 是单元的 CLR 完整类型名，客户端应进行 URL 编码。响应使用 Monica `Res` 封装。原始 `Type`、`MethodInfo`、特性实例和内部 `ProjectUnit` 对象不会越过该边界。
 
-- `ProjectUnitsFacade`：读取项目单元、领域事件与枚举元数据。
-- `ModuleProjectUnitsOption`：开启命名约定与请求过滤等能力。
-- `ProjectUnitNamingOptions`、`ProjectUnitNamingRule`、`ENameConventionMode`：描述命名治理规则。
-- `ProjectUnit`、`DtoProjectUnit`、`DtoDomainEventInfo`：表示发现到的项目结构单元。
-- `Monica.WebApi.Abstractions` 下的 `ApplicationService`、`DomainService`、`DomainEventHandler`、`LocalEventHandler` 与 `IResultRequest*`：是最常见的项目单元编写入口。
+## 状态面板
 
-## 相关页面
+`/project-units` 的第一个 Tab 会展示：
 
-- [Quick Start](./quick-start.md)
-- [Configuration](./configuration.md)
-- [Guide and Providers](./guide-and-providers.md)
-- [Scenarios](./scenarios.md)
+- 来自 `IMonicaApplicationOptions` 的服务身份和版本；
+- 单元总数、类型数量、元数据覆盖率、需求覆盖率和告警；
+- 响应式类型分布图和彼此独立的上下文覆盖率仪表；
+- 依赖边、孤立单元和诊断严重程度；
+- 可打开类型化详情的覆盖缺口列表；
+- 已解析和未解析的需求引用。
+
+目录在宿主启动后保持稳定，因此采用手动刷新。页面始终只表示当前宿主，不是跨服务控制平面。
+
+## 后续阅读
+
+- [快速开始](./quick-start.md)
+- [配置](./configuration.md)
+- [Guide 与需求解析器](./guide-and-providers.md)
+- [接入场景](./scenarios.md)
+- [源码级工作区分析](../project-units-code-analysis/index.md)
 - [项目单元编写](../../concepts/project-unit-authoring.md)

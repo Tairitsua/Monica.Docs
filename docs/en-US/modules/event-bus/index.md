@@ -34,9 +34,11 @@ app.Run();
 
 public sealed record OrderApproved(Guid OrderId);
 
-public sealed class OrderApprovedHandler : ILocalEventHandler<OrderApproved>
+public class OrderApprovedHandler : ILocalEventHandler<OrderApproved>
 {
-    public Task HandleEventAsync(OrderApproved eventData) => Task.CompletedTask;
+    public Task HandleEventAsync(
+        OrderApproved eventData,
+        CancellationToken cancellationToken) => Task.CompletedTask;
 }
 
 public sealed class ApprovalPublisher(ILocalEventBus eventBus)
@@ -48,6 +50,8 @@ public sealed class ApprovalPublisher(ILocalEventBus eventBus)
 
 Automatic discovery is enabled by default for concrete `ILocalEventHandler<T>` and `IDistributedEventHandler<T>` implementations. Dispatch uses the **exact published event type and topic**; a handler for a base type is not a catch-all for derived events.
 
+Local and distributed handlers enter the shared [Execution Pipeline](../execution-pipeline/index.md) through EventBus-owned adapters. This supplies cross-cutting behaviors without proxies and prevents the optional DynamicProxy bridge from wrapping the same handler a second time.
+
 | Guide method | Use |
 |---|---|
 | `UseDistributedEventBus<TProvider>()` | Registers the default distributed provider. |
@@ -56,3 +60,5 @@ Automatic discovery is enabled by default for concrete `ILocalEventHandler<T>` a
 | `AddKeyedLocalEventBus(key)` | Creates a keyed local bus instance. |
 
 Set `DisableAutoDiscovery = true` only when the host will manage subscriptions itself.
+
+Handlers may be sealed in the normal EventBus path. A separate class-proxy constraint exists only when a host deliberately applies a custom [DynamicProxy](../dynamic-proxy/index.md) interceptor to a concrete handler. See [handler and delivery scenarios](./scenarios.md).

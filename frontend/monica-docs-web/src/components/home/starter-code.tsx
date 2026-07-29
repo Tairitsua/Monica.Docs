@@ -3,7 +3,7 @@
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 
-const TEMPLATE_PACKAGE = "Monica.Templates@1.0.0-rc.2";
+const TEMPLATE_PACKAGE = "Monica.Templates@1.0.0-rc.6";
 
 const CLI_CODE = `dotnet new install ${TEMPLATE_PACKAGE}
 dotnet new monica-api -n Orders

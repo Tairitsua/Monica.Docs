@@ -29,9 +29,12 @@ sidebar_position: 1
 - `DomainEvent`：领域事件基类。
 - `IEventSubscriptionRegistry`：高级订阅管理入口。
 
+本地与分布式处理器会通过 EventBus 自己的适配器进入统一 [Execution Pipeline](../execution-pipeline/index.md)。跨领域行为无需代理，可选 DynamicProxy 管线桥接也会排除这些处理器，避免同一次消费被包装两次。
+
 ## 相关页面
 
 - [Quick Start](./quick-start.md)
 - [Configuration](./configuration.md)
 - [Guide and Providers](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
+- [DynamicProxy（仅在需要自定义方法拦截时）](../dynamic-proxy/index.md)

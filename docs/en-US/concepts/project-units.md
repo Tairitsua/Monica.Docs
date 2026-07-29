@@ -1,88 +1,95 @@
 ---
 title: ProjectUnits
-description: Use typed architectural roles to make application structure discoverable and enforceable.
+description: Build an agent-readable architecture catalog from typed roles, explicit context, and requirement traceability.
 sidebar_position: 2
 ---
 
 # ProjectUnits
 
-ProjectUnits are Monica's typed vocabulary for application architecture. They tell a developer, a coding agent, and the running host what role a type owns.
+ProjectUnits are Monica's typed vocabulary for application architecture. They let developers, coding agents, and the running host agree on what each discovered type does, who owns it, and which requirements justify it.
 
-## The vocabulary
+## Architectural roles
 
-- `ApplicationService` and `RequestDto` describe use cases and their public inputs.
-- `DomainService`, `Entity`, and `Repository` keep domain behavior and persistence boundaries explicit.
+- `ApplicationService` and `RequestDto` define use-case boundaries.
+- `DomainService`, `Entity`, and `Repository` own domain behavior and persistence boundaries.
 - `DomainEvent`, `DomainEventHandler`, and `LocalEventHandler` describe collaboration and side effects.
-- `Configuration` describes owned settings.
-- `RecurringJob` and `TriggeredJob` describe background work.
+- `Configuration` describes host-managed settings.
+- `RecurringJob` and `TriggeredJob` describe background entry points.
 
-## Register discovery
+ProjectUnits do not replace good domain modeling. Keep invariants on the state owner and use services for orchestration.
 
-```csharp
-builder.AddMonica(monica =>
-{
-    monica.ConfigureTypeDiscovery(options =>
-        options.Add("Domains.Ordering", "Platform.Protocol"));
+## Roles are not interception boundaries
 
-    monica.AddProjectUnits(options =>
-    {
-        options.ConventionOptions.EnableNameConvention = true;
-    });
-});
-```
+A ProjectUnit role describes architecture; it does not automatically wrap every method call. Runtime boundaries are established by subsystem adapters—for example Mediator requests, EventBus handlers, direct MVC actions, jobs, seeders, and hosted work items. A `DomainService` normally runs inside its caller's boundary.
 
-ProjectUnits now live in the focused `Monica.ProjectUnits` package. Their catalog is host-owned and available through `IProjectUnitCatalog`; it is not a static registry.
+Use the [Execution Pipeline](../modules/execution-pipeline/index.md) when a subsystem needs a shared behavior chain. Use the separate, optional [DynamicProxy module](../modules/dynamic-proxy/index.md) only for selected service methods that have no native adapter.
 
-## Host-bound service infrastructure
+## Declare agent context explicitly
 
-Monica activates its `ServiceBase`-derived ProjectUnits through dependency injection. This includes `ApplicationService`, `CustomApplicationService`, `DomainService`, `DomainEventHandler`, and `LocalEventHandler`. Their base classes provide protected `Logger` and `Mapper` properties from the host that created the service.
-
-Keep constructors focused on business collaborators:
+Every discovered class or record should declare its own metadata. The annotation is deliberately not inherited because a base class cannot accurately describe the responsibility of every derived unit.
 
 ```csharp
-/// <summary>
-/// Returns active orders visible to the caller.
-/// </summary>
-[ApiEndpoint(ApiHttpMethod.Get, "orders", Binding = ApiRequestBinding.Query)]
-public sealed record QueryGetOrders
-    : IResultRequest<IReadOnlyList<OrderDto>>;
+using Monica.ProjectUnits.Annotations;
 
-public sealed class QueryHandlerGetOrders(
-    IRepositoryOrder repository)
-    : ApplicationService<QueryGetOrders, IReadOnlyList<OrderDto>>
+[ProjectUnitMetadata(
+    "Approve Order",
+    Owner = "Ordering Team",
+    Description = "Approves an eligible order.",
+    Tags = ["ordering", "approval"])]
+[ProjectUnitRequirement("ORD-REQ-001")]
+public sealed class CommandHandlerApproveOrder(
+    DomainOrderApproval domainService)
+    : ApplicationService<CommandApproveOrder>
 {
-    public override async Task<Res<IReadOnlyList<OrderDto>>> Handle(
-        QueryGetOrders request,
+    public override async Task<Res> Handle(
+        CommandApproveOrder request,
         CancellationToken cancellationToken)
     {
-        Logger.LogInformation("Loading active orders");
-        var orders = await repository.GetListAsync(cancellationToken: cancellationToken);
-        return Res.Ok<IReadOnlyList<OrderDto>>(
-            orders.Select(order => Mapper.Map<OrderDto>(order)).ToList());
+        await domainService.ApproveAsync(request.OrderId, cancellationToken);
+        return Res.Ok();
     }
 }
 ```
 
-HTTP endpoint metadata and XML documentation belong to the request through `[ApiEndpoint]`; handlers contain no ASP.NET method attributes. Place cross-domain requests under `Platform.Protocol.PublishedLanguages.Domain{Domain}.Requests`. Keep HTTP-only requests beside their handlers so they do not publish RPC APIs accidentally.
+`ProjectUnitRequirementAttribute` is repeatable. Monica trims and deduplicates requirement IDs case-insensitively, but the consuming application owns their format. Store stable IDs rather than document paths or URLs.
 
-Published requests use the `WebApiGenerationConfig` declared by `Platform.Protocol`, including its RPC targets. A service-local request instead uses the configuration in its owning domain or service assembly, whose `DomainName` supplies the route domain.
+Malformed explicit annotations produce catalog warnings. Missing annotations remain visible as adoption debt and do not block startup.
 
-- Do not add `ILoggerFactory` or a mapper solely to forward infrastructure into a base constructor.
-- Do not construct these service types with `new`; resolve them through Monica DI.
-- Do not access `Logger` or `Mapper` from a derived constructor. Host infrastructure is available after activation, including request and event handler methods.
-- Classes outside these Monica service bases should continue to inject `ILogger<T>` normally.
+## Independent coverage semantics
 
-## What discovery enables
+The dashboard measures every discovered ProjectUnit against four independent dimensions:
 
-- Naming and dependency diagnostics.
-- Runtime architecture views and `/framework/units` metadata.
-- Agent skills that can reason about the application in Monica's own vocabulary.
-- Consistent placement and collaboration rules across bounded contexts.
+| Dimension | Covered when |
+|---|---|
+| Metadata | The unit declares `ProjectUnitMetadataAttribute` directly. |
+| Description | Metadata supplies a description, or XML documentation supplies a type summary. |
+| Ownership | Metadata supplies a non-empty owner. |
+| Requirements | The unit declares at least one valid requirement annotation. |
 
-ProjectUnits are not annotations for an anemic model. Keep behavior on the object that owns the state, and use services for orchestration and boundaries.
+Each denominator is the complete host catalog. Monica does not combine these values into a weighted readiness score. An empty catalog reports **no data**, never 100%.
 
-## Test ProjectUnits
+## Host-scoped typed catalog
 
-Use `ProjectUnitFixture<TUnit>` only for focused collaboration tests whose dependencies are explicit. Use a complete host-owned application scenario when behavior depends on discovery, conventional registration, proxies, interceptors, options, persistence, or host lifecycle.
+The internal discovery model may use reflection, but the facade and HTTP boundary expose serializable projections only:
+
+- `ProjectUnitSummary`
+- `ProjectUnitDetail`
+- `ProjectUnitDashboardSnapshot`
+- `ProjectUnitCoverageMetric`
+- `ProjectUnitTypeStatistics`
+- `ProjectUnitRequirementReference`
+- `ProjectUnitServiceIdentity`
+
+The catalog belongs to the current Monica host. Cross-service aggregation is a gateway or platform concern.
+
+## Requirement navigation
+
+An application may implement `IProjectUnitRequirementLinkResolver` and register it through `UseRequirementLinkResolver<TResolver>()`. Resolution occurs only when detail is loaded. Unknown IDs remain visible and non-clickable; one resolver failure does not make the catalog unavailable.
+
+Read the [ProjectUnits module guide](../modules/project-units/index.md) for registration, endpoints, dashboard use, and resolver examples.
+
+## Testing ProjectUnits
+
+Use `ProjectUnitFixture<TUnit>` only for focused collaboration tests with explicit dependencies. Use a complete host-owned scenario when behavior depends on discovery, conventional registration, execution-pipeline behaviors, proxies, options, persistence, or host lifecycle.
 
 [Choose the correct testing boundary](../guides/testing-monica-applications.md).

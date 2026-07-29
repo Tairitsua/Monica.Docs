@@ -14,7 +14,7 @@ sidebar_position: 2
 |---|---|
 | Entity、值对象或纯领域行为 | 直接构造对象 |
 | 一个 ProjectUnit 与显式替身之间的协作 | `ProjectUnitFixture<TUnit>` |
-| 模块组合、类型发现、Option、代理、拦截器、持久化或宿主生命周期 | `MonicaTestApplicationFactory<TDiscoveryAnchor>` |
+| 模块组合、类型发现、执行管线行为、Option、代理、持久化或宿主生命周期 | `MonicaTestApplicationFactory<TDiscoveryAnchor>` |
 | Razor 组件渲染与交互 | bUnit；需要 Monica UI 替身时再加入 `Monica.Testing.UI` |
 
 不要用原始 Fixture 声称生产组合已经通过验证；反过来，验证一个纯实体不变式也不需要启动完整宿主。
@@ -161,7 +161,7 @@ var total = await fixture.Unit.CalculateAsync(
     TestContext.Current.CancellationToken);
 ```
 
-这条快速路径明确**不会**运行 Monica 模块组合、生产类型发现、约定注册、动态代理、拦截器、Option 绑定或 Hosted lifecycle。只要预期行为依赖其中任何一项，就应使用完整宿主。框架不再提供另一套 ApplicationService 专用 Fixture。
+这条快速路径明确**不会**运行 Monica 模块组合、生产类型发现、统一执行管线、约定注册、DynamicProxy、Option 绑定或 Hosted lifecycle。只要预期行为依赖授权、路由、UnitOfWork、追踪、其他执行行为、代理或任何被跳过的运行时能力，就应使用完整宿主。框架不再提供另一套 ApplicationService 专用 Fixture。
 
 ## 并行执行
 
@@ -170,5 +170,6 @@ var total = await fixture.Unit.CalculateAsync(
 ## 相关页面
 
 - [Module 模式与主机边界](../concepts/module-pattern.md)
+- [执行边界](../concepts/execution-boundaries.md)
 - [项目单元编写](../concepts/project-unit-authoring.md)
 - [模块目录](../modules/index.md)

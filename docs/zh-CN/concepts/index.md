@@ -12,8 +12,9 @@ Monica 用一套同时面向开发者、编码 Agent 与运行时的明确契约
 
 1. [Module 模式与主机边界](./module-pattern.md)
 2. [Option 与 Guide](./configuration-and-guide.md)
-3. [项目单元编写](./project-unit-authoring.md)
-4. [Facade、Service、Provider 边界](./facades-services-providers.md)
-5. [统一结果模型 Res](./result-envelope.md)
+3. [Facade、Service、Provider 边界](./facades-services-providers.md)
+4. [统一结果模型 Res](./result-envelope.md)
+5. [项目单元编写](./project-unit-authoring.md)
+6. [执行边界](./execution-boundaries.md)
 
 `module-system-refactor/` 保存的是设计演进资料，不应作为当前公开 API 的使用指南。当前用法以本页、模块文档和源码为准。

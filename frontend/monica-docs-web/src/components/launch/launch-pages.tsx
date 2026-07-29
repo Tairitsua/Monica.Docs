@@ -8,7 +8,7 @@ import { MONICA_DEMO_URL, MONICA_GITHUB_URL } from "@/lib/external-links";
 import { localizedPath, oppositeLocale } from "@/lib/routes";
 
 const TEMPLATE_SOURCE_URL = `${MONICA_GITHUB_URL}/tree/dev/Monica.Templates`;
-const TEMPLATE_PACKAGE = "Monica.Templates@1.0.0-rc.2";
+const TEMPLATE_PACKAGE = "Monica.Templates@1.0.0-rc.6";
 const REFERENCE_SOURCE_URL = `${MONICA_GITHUB_URL}/tree/dev/examples/Monica.ReferenceApplication`;
 const tiers: readonly PackageTier[] = ["stable", "integration", "labs"];
 
@@ -159,7 +159,7 @@ export function RoadmapPage({ locale }: { locale: Locale }) {
           <h1 id="roadmap-page-title">{copy.title}</h1>
           <p className="launch-lede">{copy.description}</p>
         </div>
-        <div className="roadmap-version"><span>{copy.currentLabel}</span><strong>1.0.0</strong><i>RC.2</i></div>
+        <div className="roadmap-version"><span>{copy.currentLabel}</span><strong>1.0.0</strong><i>RC.6</i></div>
       </section>
 
       <section className="shell roadmap-current">

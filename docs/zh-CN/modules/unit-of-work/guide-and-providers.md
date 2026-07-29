@@ -1,25 +1,23 @@
 ---
 title: Guide and Providers
-description: UnitOfWork 的 Guide 方法、Provider 选择与依赖说明。
+description: 接入 Repository DbContext，并理解 Execution Pipeline 依赖。
 sidebar_position: 4
 ---
 
 # Guide and Providers
 
-## Guide methods
+## Guide 方法
 
-| Method | What it enables | Required | Typical use |
-|---|---|---|---|
-| `AddDbContextProvider<TDbContext>()` | 为指定 `DbContext` 注册 UnitOfWork Provider | 否，但真实使用通常需要 | 手工把某个 `DbContext` 接到当前 UoW。 |
-
-## Provider choices
-
-| Choice | How to enable it | When to use it |
+| 方法 | 启用能力 | 典型用途 |
 |---|---|---|
-| Repository 集成模式 | `AddRepositoryDbContext(..., DbContextProviderType.UnitOfWork)` | 最常见，也最容易与仓储一起使用。 |
-| 手工挂接模式 | `AddDbContextProvider<TDbContext>()` | 你已经有 Repository 或其他上下文注册方式，只想补上 UoW Provider 时。 |
+| `AddDbContextProvider<TDbContext>()` | 为一个 `RepositoryDbContext<TDbContext>` 注册自适应 UnitOfWork Provider。 | 手工接入已经注册的 Repository DbContext。 |
 
-## Module dependencies
+最常见的路径是 `AddRepositoryDbContext(..., DbContextProviderType.UnitOfWork)`，它会同时引入 UnitOfWork 模块并注册 Provider。
 
-- 最常与 Repository 模块一起出现。
-- 模块会自动把 MVC `UnitOfWorkActionFilter` 加入 `MvcOptions`。
+## Execution Pipeline 集成
+
+模块会引入 `ModuleExecutionPipeline`，并在 `ExecutionBehaviorOrder.UnitOfWork` 注册 `UnitOfWorkExecutionBehavior<,>`。该行为只匹配 `ExecutionDescriptor.TransactionMode == Automatic` 的边界。
+
+`Automatic` 表示“允许自动事务”，并不表示没有注册 UnitOfWork 时也会创建事务。作业与 Hosted Service 生命周期描述使用 `None`，因此其实现必须自己控制事务分块。
+
+本模块不使用 MVC Filter，也不依赖 DynamicProxy。执行边界由各子系统的原生适配器建立。
