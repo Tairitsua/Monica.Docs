@@ -53,6 +53,20 @@ public sealed record CommandApproveOrder(long OrderId) : IResultRequest;
 - 请求必须暴露唯一、明确的 `IRequest<TResult>` 结果契约。
 - 发布 RPC 的结果必须是实现 `IRemoteResultEnvelope<TSelf>` 的具体引用类型。内置的 `Res`、`Res<T>` 与 `ResPaged<T>` 已满足该契约；自定义 Envelope 需通过正常构造函数实现 `CreateRemoteFailure`，避免传输失败路径绕过自身不变量。
 
+## 日期与时间契约
+
+Monica 对 Query String、Route 占位符和 JSON Body 中的 `DateTime` 使用同一种无损、无时区的传输格式：
+
+```text
+yyyy-MM-dd'T'HH:mm:ss.FFFFFFF
+```
+
+大写 `F` 会移除末尾的零，因此整秒值输出为 `2026-07-28T14:30:00`，只有存在亚秒 tick 时才输出对应的小数位。它比固定宽度的 `"O"` 更短，同时不会像 `"s"` 那样丢失亚秒精度。
+
+`DateTime` 表示墙上时间（wall-clock time）。传输过程不携带 `Kind`，也不执行时区转换。在 Monica 默认 HTTP 管道中，ASP.NET Core Query 绑定与规范 JSON Converter 都会得到 `DateTimeKind.Unspecified`。如果宿主主动替换 `DateTime` JSON Converter，则由宿主负责定义 Body 的语义。表示时间线上的瞬间或明确 UTC Offset 时应使用 `DateTimeOffset`；它继续使用 round-trip `"O"` 格式。
+
+生成的 Body 绑定 HTTP RPC 客户端通过所属宿主的 `IJsonSerializerOptionsProvider` 创建 JSON Content。因此，默认 Monica Converter 会让 Body 与 Query 请求使用相同的 `DateTime` 格式，同时遵循宿主的属性命名和其他 JSON 选项。
+
 ## CRUD Controller 选项
 
 `ApiEndpoint` 配置显式 `ApplicationService` 请求；约定式 CRUD 服务继续使用 `AddAutoControllers` 的第二个回调：

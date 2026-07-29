@@ -142,6 +142,14 @@ public sealed class QueryHandlerGetLocalRpcSample(
 
 生成接口方法接收可选 `CancellationToken`，HTTP 与 Local 实现都会继续传递它。
 
+### HTTP 传输中的日期与时间
+
+生成的 HTTP 客户端对 Query、Route 与 JSON 属性中的 `DateTime` 统一使用墙上时间格式 `yyyy-MM-dd'T'HH:mm:ss.FFFFFFF`。整秒值不输出小数部分，存在亚秒 tick 时则完整保留有效小数位。这个格式既避免了 `"O"` 固定输出七位小数的冗长，也避免了 `"s"` 丢失亚秒精度。
+
+`DateTime` 不会跨边界携带时区。Local、UTC 与 Unspecified 输入都会保留相同的时钟 tick，并且不输出 `Z` 或 Offset。在 Monica 默认 HTTP 管道中，Query 绑定与规范 JSON 解析都会得到 `DateTimeKind.Unspecified`。如果宿主替换 `DateTime` JSON Converter，则由宿主负责定义自定义 Body 语义。不要用 `DateTime` 表示时间线上的瞬间；此时应使用 `DateTimeOffset`，它通过 `"O"` 格式保留 Offset 与瞬间。
+
+对于 Body 绑定操作，生成的客户端会让 `HttpRpcApi` 基类使用所属宿主的 `IJsonSerializerOptionsProvider` 创建 JSON Content。这样 Body 传输既遵循 Monica 默认的统一格式，也遵循宿主拥有的 JSON 命名和 Converter 选项。Local 传输直接派发请求对象，不参与序列化。
+
 ## 5. Host 选择运行时传输
 
 ### 模块化单体
@@ -209,6 +217,7 @@ Monica.Docs 的 `QueryGetDocAsset` 就与 Handler 放在同一文件中。
 - Provider Handler 与请求/响应结果类型一致。
 - Consumer 使用 `I{Domain}CommandApi` 或 `I{Domain}QueryApi`。
 - Host 显式选择与生成 Target 对应的传输。
+- HTTP `DateTime` 是墙上时间；表示时间线瞬间的契约使用 `DateTimeOffset`。
 - 仓库中没有 `RpcMetadata` snapshot 或相关 MSBuild 属性。
 - 连续两次构建都不会修改源码工作区。
 
