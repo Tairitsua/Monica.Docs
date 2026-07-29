@@ -1,6 +1,6 @@
 ---
 title: Scenarios
-description: Target execution points, short-circuit safely, and choose explicit transaction boundaries for jobs.
+description: Target execution points, inspect applied runtime behaviors, and choose explicit transaction boundaries.
 sidebar_position: 5
 ---
 
@@ -64,6 +64,23 @@ A custom adapter can create an `ExecutionFeatureCollection`, store a typed featu
 
 Feature keys use the exact generic type. Registering a concrete implementation does not make it available through one of its interfaces.
 
+## Scenario 5 — Explain the behavior chain used by an operation
+
+Register `monica.AddExecutionPipelineUI()` and open `/execution-pipeline` after exercising the operation. Select its observed plan to inspect:
+
+- the stable operation, component, contract, method, input/result, business-operation, and transaction metadata;
+- the exact applied chain from outermost to innermost;
+- each behavior's configured order, lifetime, source module, registered type, and resolved closed type;
+- a cached materialization error when the plan is faulted.
+
+If an application owns a reusable descriptor but the operation has not run yet, it can explicitly materialize that plan without resolving behavior instances:
+
+```csharp
+var plan = executionPipelineCatalog.InspectPlan(descriptor);
+```
+
+Use `InspectPlan(...)` only for a descriptor the application already owns. `GetSnapshot()` and the UI deliberately do not invent descriptors or execute filters merely to make the catalog look complete.
+
 ## Common mistakes
 
 - Registering the same behavior through both `AddBehavior(...)` and `IServiceCollection`.
@@ -72,3 +89,5 @@ Feature keys use the exact generic type. Registering a concrete implementation d
 - Calling `next` more than once.
 - Adding DynamicProxy around a contract that already has a native adapter.
 - Treating `ExecutionTransactionMode.None` as a prohibition on explicit unit-of-work scopes.
+- Expecting plans for operations that have never executed or been explicitly inspected.
+- Grouping by `OperationKey` alone when business-operation or transaction policies differ.

@@ -1,6 +1,6 @@
 ---
 title: Configuration
-description: ExecutionPipeline 的模块选项、描述符与 Behavior 选择规则。
+description: 配置 ExecutionPipeline 的 Behavior 选择、目录元数据与可选运行时目录页面。
 sidebar_position: 3
 ---
 
@@ -10,6 +10,12 @@ sidebar_position: 3
 
 `ModuleExecutionPipelineOption` 当前没有面向应用的标量配置项。Behavior 目录由 `ModuleExecutionPipelineGuide.AddBehavior(...)` 维护，不应直接修改模块选项。
 
+可选的 `ModuleExecutionPipelineUIOption` 只有一个设置：
+
+| Property | Type | Default | Required | When to change | Notes |
+|---|---|---|---|---|---|
+| `DisablePage` | `bool` | `false` | 否 | 组合式 UI 包需要排除内置页面时设为 `true`。 | 跳过页面状态、路由、导航入口和 UI 依赖；不会禁用独立注册的 Core 执行管线。 |
+
 ## Descriptor contract
 
 `ExecutionDescriptor` 是可复用且会被记忆化的边界定义。以下属性可用于 `descriptorFilter`：
@@ -17,7 +23,7 @@ sidebar_position: 3
 | Property | Type | 说明 |
 |---|---|---|
 | `Point` | `ExecutionPoint` | 子系统发布的稳定、区分大小写的执行点。 |
-| `OperationName` | `string` | 用于诊断的稳定操作名。 |
+| `DisplayName` | `string` | 用于诊断的稳定可读操作名。 |
 | `ComponentType` | `Type` | 被调用的具体类型或契约类型。 |
 | `EntryMethod` | `MethodInfo?` | Adapter 能识别时的具体入口方法。 |
 | `InputType` | `Type` | 管线输入类型。 |
@@ -56,3 +62,25 @@ Feature 按注册时的精确泛型类型查找，不会自动按其接口返回
 - 默认生命周期是 `Transient`；也可以显式选择 `Scoped` 或 `Singleton`。
 - `Scoped` Behavior 会从与 `IExecutionPipeline` 相同的作用域解析。
 - 相同 `order` 的 Behavior 必须语义独立；若相对嵌套顺序有意义，应使用不同数值。
+
+## Catalog state
+
+目录公开不可变快照，而不是实时 DI 对象：
+
+| Type | 含义 |
+|---|---|
+| `ExecutionBehaviorRegistrationSnapshot` | 一个已配置 Behavior 的类型、顺序、生命周期、来源模块、泛型与过滤器信息。 |
+| `ExecutionDescriptorSnapshot` | 用于选择执行计划的稳定操作元数据。 |
+| `ExecutionPipelineAppliedBehaviorSnapshot` | 一个已解析 Behavior，以及从外到内的一位起始位置。 |
+| `ExecutionPipelinePlanSnapshot` | 一个已观察或显式检查的计划，包含描述符、状态、时间、应用链和可选错误。 |
+| `ExecutionPipelineCatalogSnapshot` | 当前时间点的全部注册项和已观察计划。 |
+
+计划状态有三个值：
+
+| Status | 含义 |
+|---|---|
+| `Building` | 正在计算描述符过滤器和泛型契约。 |
+| `Ready` | 不可变应用链已经可用；链可以合法地为空。 |
+| `Faulted` | 计划物化失败，确定性错误会保留到宿主结束。 |
+
+诊断使用 `PlanKey` 标识一个计划。它不仅包含操作身份，还包含可能影响描述符过滤器的业务操作和事务策略。存在策略差异时，不要只按 `OperationKey` 聚合计划。

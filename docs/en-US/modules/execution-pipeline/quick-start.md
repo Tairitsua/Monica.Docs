@@ -1,6 +1,6 @@
 ---
 title: Quick Start
-description: Register a typed execution behavior for Monica-owned boundaries.
+description: Register a typed execution behavior and inspect its observed runtime plans.
 sidebar_position: 2
 ---
 
@@ -10,7 +10,10 @@ sidebar_position: 2
 
 ```bash
 dotnet add package Monica.Core --prerelease
+dotnet add package Monica.Framework.UI --prerelease
 ```
+
+`Monica.Framework.UI` is optional. Install it only when the host should expose the built-in catalog page.
 
 ## Create a behavior
 
@@ -39,7 +42,7 @@ public sealed class ExecutionTimingBehavior<TInput, TResult>(
         {
             logger.LogInformation(
                 "Execution {OperationName} completed in {Elapsed}.",
-                context.Descriptor.OperationName,
+                context.Descriptor.DisplayName,
                 Stopwatch.GetElapsedTime(started));
         }
     }
@@ -66,6 +69,7 @@ builder.AddMonica(monica =>
             descriptor => descriptor.IsBusinessOperation);
 
     monica.AddMediator();
+    monica.AddExecutionPipelineUI();
 });
 
 var app = builder.Build();
@@ -78,8 +82,18 @@ app.Run();
 
 The descriptor predicate runs when Monica first builds the immutable plan for a boundary. It must depend only on descriptor metadata, not request or user state.
 
+## Open the runtime catalog
+
+Start the application and open:
+
+```text
+/execution-pipeline
+```
+
+The page always shows the host's behavior registrations. Its plan list initially can be empty: an exact plan appears only after that descriptor executes or application code explicitly calls `IExecutionPipelineCatalog.InspectPlan(descriptor)`. Use **Refresh** to read the latest in-memory snapshot; the page does not poll or execute operations on your behalf.
+
 ## What to read next
 
 - [Configuration](./configuration.md) explains ordering, filtering, and lifetimes.
-- [Guide and Adapters](./guide-and-providers.md) lists the native boundaries.
+- [Guide and Adapters](./guide-and-providers.md) lists the native boundaries and catalog APIs.
 - [Scenarios](./scenarios.md) covers point-specific behavior and explicit job transactions.

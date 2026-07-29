@@ -1,12 +1,18 @@
 ---
 title: Configuration
-description: Configure execution behavior type, order, descriptor selection, and lifetime.
+description: Configure execution behavior selection, catalog metadata, and the optional runtime catalog page.
 sidebar_position: 3
 ---
 
 # Configuration
 
 `ModuleExecutionPipelineOption` has no public runtime settings. The host defines its behavior catalog through `ModuleExecutionPipelineGuide.AddBehavior(...)`.
+
+The optional `ModuleExecutionPipelineUIOption` has one setting:
+
+| Property | Type | Default | Required | When to change | Notes |
+|---|---|---|---|---|---|
+| `DisablePage` | `bool` | `false` | No | Set to `true` when a composed UI bundle must omit the built-in page. | Skips the page state, route, navigation entry, and UI dependencies. It does not disable a Core pipeline registered independently. |
 
 ## Behavior registration
 
@@ -63,3 +69,25 @@ Do not capture a scoped service, current user, request header, argument value, o
 - Use transient behavior lifetime unless the behavior genuinely owns scoped or process-wide state.
 - Preserve exceptions and cancellation unless the behavior intentionally translates them.
 - Call `next` no more than once, even when branches or concurrent work are involved.
+
+## Catalog state
+
+The catalog exposes immutable snapshot models rather than live dependency-injection objects:
+
+| Type | What it represents |
+|---|---|
+| `ExecutionBehaviorRegistrationSnapshot` | One configured behavior with type, order, lifetime, source module, generic status, and filter status. |
+| `ExecutionDescriptorSnapshot` | Stable operation metadata used to choose a plan. |
+| `ExecutionPipelineAppliedBehaviorSnapshot` | One resolved behavior and its one-based, outer-to-inner position. |
+| `ExecutionPipelinePlanSnapshot` | One observed or explicitly inspected plan, its descriptor, state, timestamps, applied chain, and optional error. |
+| `ExecutionPipelineCatalogSnapshot` | One point-in-time collection of all registrations and observed plans. |
+
+Plan status has three values:
+
+| Status | Meaning |
+|---|---|
+| `Building` | Descriptor filters and generic contracts are currently being evaluated. |
+| `Ready` | The immutable chain is available; the chain may legitimately be empty. |
+| `Faulted` | Plan materialization failed, and the deterministic error is retained for the host lifetime. |
+
+`PlanKey` is the plan identity exposed by diagnostics. It includes the operation identity plus the business-operation and transaction policies that can affect descriptor filters. Do not group plans by `OperationKey` alone when those policies may differ.

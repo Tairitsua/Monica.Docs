@@ -15,7 +15,7 @@ Independent packages may bundle several coherent modules in one NuGet package. E
 | Capability | Start here | Package |
 |---|---|---|
 | Host boundary and module graph | [Core composition](./core-composition/index.md) | `Monica.Core` |
-| Shared typed execution behaviors | [Execution Pipeline](./execution-pipeline/index.md) | `Monica.Core` |
+| Typed execution behaviors and runtime catalog | [Execution Pipeline](./execution-pipeline/index.md) | `Monica.Core` |
 | Schema-first application settings | [Configuration](./configuration/index.md) | `Monica.Configuration` |
 | Conventional service registration | [Dependency Injection](./dependency-injection/index.md) | `Monica.DependencyInjection` |
 | Optional service-method interception | [DynamicProxy](./dynamic-proxy/index.md) | `Monica.DependencyInjection` |
@@ -37,6 +37,7 @@ Independent packages may bundle several coherent modules in one NuGet package. E
 | In-memory and distributed state contracts | [StateStore](./state-store/index.md) | `Monica.StateStore` |
 | Markdown catalogs and search | [Markdown](./markdown/index.md) | `Monica.Markdown` |
 | Blazor operational shell | [UI](./ui/index.md) | `Monica.UI` |
+| Execution-plan catalog page | [Execution Pipeline](./execution-pipeline/index.md) | `Monica.Framework.UI` |
 | Instance registration and leader election | [Service Discovery](./service-discovery/index.md) | `Monica.ServiceDiscovery` |
 | Authentication and permission bits | [Authority](./authority/index.md) | `Monica.Authority` |
 | Model metadata and dynamic expressions | [AutoModel](./auto-model/index.md) | `Monica.AutoModel` |

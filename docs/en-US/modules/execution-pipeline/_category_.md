@@ -1,5 +1,5 @@
 ---
 title: Execution Pipeline
-description: One typed behavior model for Monica-owned execution boundaries.
+description: Typed execution behaviors with an observed runtime plan catalog and operational UI.
 sidebar_position: 18
 ---

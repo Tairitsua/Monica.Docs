@@ -1,6 +1,6 @@
 ---
 title: Guide and Providers
-description: ExecutionPipeline 的 Guide 方法、顺序带与内置 Adapter。
+description: ExecutionPipeline 的 Guide、运行时目录 API、准确顺序与内置 Adapter。
 sidebar_position: 4
 ---
 
@@ -22,6 +22,33 @@ sidebar_position: 4
 | `ExecutionBehaviorOrder.Routing` | `-1000` | 路由、远程执行或本地短路。 |
 | `ExecutionBehaviorOrder.UnitOfWork` | `0` | 事务与 UnitOfWork。 |
 | `ExecutionBehaviorOrder.Application` | `1000` | 应用自定义扩展。 |
+
+## Catalog APIs
+
+| API | 行为 | 副作用 |
+|---|---|---|
+| `IExecutionPipelineCatalog.GetSnapshot()` | 返回全部注册项，以及所有已观察或显式检查的计划。 | 无；不会解析 Behavior，也不会执行过滤器。 |
+| `IExecutionPipelineCatalog.InspectPlan(descriptor)` | 物化一个可复用描述符的准确计划，并返回 Ready 或 Faulted 快照。 | 首次计算注册过滤器和泛型兼容性，然后缓存结果。 |
+| `ExecutionPipelineCatalogFacade.GetSnapshotAsync()` | 为 UI 和其他宿主入口返回 `Res<ExecutionPipelineCatalogSnapshot>`。 | 除创建当前时间点的结果信封外无副作用。 |
+
+注册快照保留配置的 `Order` 与 `ServiceLifetime`、开放泛型和过滤器标记，以及可空的 `SourceModuleKey`。存在模块键表示 Behavior 由该模块贡献；`null` 表示宿主直接注册。计划中的应用项还同时展示原始注册类型与闭合后的解析类型，因此无需解析实例也能看清开放泛型如何应用。
+
+目录与真实执行使用同一个排序契约：较小顺序位于外层，相同顺序按实现类型身份确定性排序。应用链用一位起始位置展示这个准确顺序。
+
+## Runtime catalog UI
+
+从 `Monica.Framework.UI` 注册可选目录页面：
+
+```csharp
+builder.AddMonica(monica =>
+{
+    monica.AddExecutionPipelineUI();
+});
+```
+
+页面启用时，`AddExecutionPipelineUI()` 依赖 ExecutionPipeline、Localization 和 Shell UI。它在 Infrastructure 导航分类下注册 `/execution-pipeline`，展示注册项与已观察计划摘要、基于稳定描述符/目录元数据的筛选，以及按准确顺序排列的计划详情。页面通过 `ExecutionPipelineCatalogFacade` 读取数据，只在用户请求时刷新。
+
+组合式 UI 包需要排除此页面时，可将 `ModuleExecutionPipelineUIOption.DisablePage` 设为 `true`。禁用后的 UI 模块不会注册页面状态或 UI 依赖，也不会改变独立注册的 Core 执行管线。
 
 ## Native adapters
 

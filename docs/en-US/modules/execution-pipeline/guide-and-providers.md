@@ -1,6 +1,6 @@
 ---
 title: Guide and Adapters
-description: Register execution behaviors and understand the adapters supplied by Monica modules.
+description: Register execution behaviors, query observed plans, and add the runtime catalog page.
 sidebar_position: 4
 ---
 
@@ -16,6 +16,33 @@ The pipeline has one registration Guide and multiple subsystem-owned adapters. T
 | `AddBehavior<TBehavior>(int, Func<ExecutionDescriptor, bool>?, ServiceLifetime)` | Registers a closed behavior class. | No | One known input/result contract. |
 
 `AddExecutionPipeline()` without behaviors is valid. Native modules can still register their own behaviors and adapters through the same host-owned catalog.
+
+## Catalog APIs
+
+| API | Behavior | Side effects |
+|---|---|---|
+| `IExecutionPipelineCatalog.GetSnapshot()` | Returns all registrations and every observed or explicitly inspected plan. | None; it does not resolve behaviors or evaluate filters. |
+| `IExecutionPipelineCatalog.InspectPlan(descriptor)` | Materializes the exact plan for one reusable descriptor and returns its ready or faulted snapshot. | Evaluates registration filters and generic compatibility once, then caches the result. |
+| `ExecutionPipelineCatalogFacade.GetSnapshotAsync()` | Returns the current snapshot as `Res<ExecutionPipelineCatalogSnapshot>` for UI and other host entry points. | None beyond creating the point-in-time result envelope. |
+
+Registration snapshots retain the configured `Order` and `ServiceLifetime`, whether a registration is open generic or filtered, and its nullable `SourceModuleKey`. A module key identifies a module-contributed behavior; `null` identifies a direct host registration. Applied-plan entries also show the registered type and the closed resolved type, which makes open-generic application visible without resolving an instance.
+
+The catalog uses the same ordering contract as execution: lower orders are outermost, and implementation type identity is the deterministic tie-breaker for equal orders. The applied list reports that exact order with one-based positions.
+
+## Runtime catalog UI
+
+Register the optional page from `Monica.Framework.UI`:
+
+```csharp
+builder.AddMonica(monica =>
+{
+    monica.AddExecutionPipelineUI();
+});
+```
+
+When enabled, `AddExecutionPipelineUI()` depends on ExecutionPipeline, Localization, and Shell UI. It registers `/execution-pipeline` under the Infrastructure navigation category. The page provides registration and observed-plan summaries, filters by stable descriptor/catalog metadata, and an ordered plan detail view. It reads through `ExecutionPipelineCatalogFacade` and refreshes only when requested.
+
+Set `ModuleExecutionPipelineUIOption.DisablePage` to `true` when a composed UI bundle must omit this page. The disabled UI module registers no page state or UI dependencies and does not change a Core execution pipeline registered independently.
 
 ## Native adapters
 
