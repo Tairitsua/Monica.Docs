@@ -133,6 +133,14 @@ public sealed class QueryHandlerGetLocalRpcSample(
 
 Generated API methods accept an optional `CancellationToken`; HTTP and local transports propagate it.
 
+### Date and time values over HTTP
+
+Generated HTTP clients serialize `DateTime` query values, route values, and JSON properties with the canonical wall-clock format `yyyy-MM-dd'T'HH:mm:ss.FFFFFFF`. Whole seconds omit the fraction; significant fractional ticks are preserved. The format deliberately avoids both the seven fixed fractional digits of `"O"` and the precision loss of `"s"`.
+
+`DateTime` does not carry a time zone across this boundary. Local, UTC, and Unspecified inputs keep the same clock ticks and emit no `Z` or offset. With Monica's default HTTP pipeline, query binding and canonical JSON parsing both deliver `DateTimeKind.Unspecified`. A host that replaces the `DateTime` JSON converter owns its custom body semantics. Do not pass an instant as `DateTime`; use `DateTimeOffset`, whose `"O"` representation preserves its offset and instant.
+
+For body-bound operations, generated clients ask their `HttpRpcApi` base to create JSON content with the owning host's `IJsonSerializerOptionsProvider`. This keeps body serialization aligned with Monica's default canonical format and with host-owned JSON naming and converter choices. Local transport dispatches the request object directly and does not serialize it.
+
 ## 5. Select the runtime transport
 
 For a modular monolith:
@@ -177,6 +185,7 @@ This is the recommended boundary for binary `PhysicalFileResult` responses, mult
 - Provider handlers agree with the request and result type.
 - Consumers use `I{Domain}CommandApi` or `I{Domain}QueryApi`.
 - The host selects a transport enabled by `RpcClientTargets`.
+- HTTP `DateTime` values are wall-clock values; contracts that represent instants use `DateTimeOffset`.
 - No RPC metadata snapshots or related MSBuild properties remain.
 - Repeated builds leave the source worktree unchanged.
 
