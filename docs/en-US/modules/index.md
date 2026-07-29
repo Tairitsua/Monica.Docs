@@ -1,12 +1,12 @@
 ---
-title: Stable module catalog
-description: Choose the supported Monica 1.0 capabilities for your application.
+title: Module catalog
+description: Choose Stable Monica capabilities and explicitly identified Labs modules.
 sidebar_position: 1
 ---
 
-# Stable module catalog
+# Module catalog
 
-The pages in this section cover Monica's user-facing Stable path. Stable means the capability belongs to the supported Monica 1.0 application path; it does not mean every application should install every package.
+The pages in this section cover Monica's user-facing module surface. Stable means a capability belongs to the supported Monica 1.0 application path; selected Labs capabilities are listed separately and remain explicitly fast-moving. Neither maturity level means every application should install every package.
 
 Independent packages may bundle several coherent modules in one NuGet package. Each module still has its own registration contract and package-scoped key. See [Multi-module package architecture](../ecosystem/multi-module-package-architecture.md).
 
@@ -15,6 +15,7 @@ Independent packages may bundle several coherent modules in one NuGet package. E
 | Capability | Start here | Package |
 |---|---|---|
 | Host boundary and module graph | [Core composition](./core-composition/index.md) | `Monica.Core` |
+| Observable Generic Host services and readiness checkpoints | [Hosted Service](./hosted-service/index.md) | `Monica.Core` |
 | Typed execution behaviors and runtime catalog | [Execution Pipeline](./execution-pipeline/index.md) | `Monica.Core` |
 | Schema-first application settings | [Configuration](./configuration/index.md) | `Monica.Configuration` |
 | Conventional service registration | [Dependency Injection](./dependency-injection/index.md) | `Monica.DependencyInjection` |
@@ -40,6 +41,12 @@ Independent packages may bundle several coherent modules in one NuGet package. E
 | Instance registration and leader election | [Service Discovery](./service-discovery/index.md) | `Monica.ServiceDiscovery` |
 | Authentication and permission bits | [Authority](./authority/index.md) | `Monica.Authority` |
 | Model metadata and dynamic expressions | [AutoModel](./auto-model/index.md) | `Monica.AutoModel` |
+
+## Labs capabilities
+
+| Capability | Start here | Package |
+|---|---|---|
+| Host-local execution duration diagnostics | [Execution Timing](./execution-timing/index.md) | `Monica.Profiling` |
 
 ## Maturity rule
 

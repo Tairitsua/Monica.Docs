@@ -15,9 +15,12 @@ sidebar_position: 1
 3. Monica validates required guide choices and rejects dependency cycles.
 4. The graph is ordered deterministically.
 5. Options are finalized and services are registered by phase.
-6. Web middleware and endpoints are applied later through `UseMonica()` and `MapMonica()`.
+6. A Generic Host completes composition when service registration finishes.
+7. A Web Host remains incomplete until `UseMonica()` applies middleware and `MapMonica()` maps endpoints.
 
 The graph is sealed when the callback returns. A retained guide cannot mutate it afterward.
+
+For a Web Host, call `UseMonica()` and `MapMonica()` exactly once, in that order, on the same `WebApplication` instance. Starting the host before both calls complete fails validation before any hosted lifecycle participant runs. Generic Hosts do not call either method; their module graph must contain only modules that support non-Web operation or an explicit non-Web downgrade.
 
 ## Why the boundary matters
 

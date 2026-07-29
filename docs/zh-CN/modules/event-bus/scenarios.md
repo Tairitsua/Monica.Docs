@@ -8,10 +8,10 @@ sidebar_position: 5
 
 ## 场景 1 — 使用本地事件驱动模块内部协作
 
-如果事件只在当前进程内消费，那么注册 `monica.AddEventBus()` 就足够了。处理器会在启动时自动发现并订阅，本地发布方只需要注入 `IEventBus` 调用泛型 `PublishAsync<TEvent>()`。
+如果事件只在当前进程内消费，那么注册 `monica.AddEventBus()` 就足够了。处理器会在组合阶段被发现，并在 Generic Host 启动期间、Provider 的 `StartAsync` 之前完成订阅。本地发布方只需要注入 `ILocalEventBus` 调用泛型 `PublishAsync<TEvent>()`。
 
 ```csharp
-public sealed class UserService(IEventBus eventBus)
+public sealed class UserService(ILocalEventBus eventBus)
 {
     public Task PublishAsync(string userId)
     {
@@ -36,6 +36,12 @@ EventBus 可以发现具体的 `ILocalEventHandler<TEvent>` 和 `IDistributedEve
 Castle 会通过继承处理器来实现类代理。因此处理器类必须可继承，`HandleEventAsync` 也必须保持虚方法语义。继承 Monica 抽象处理器基类的实现已经 `override` 了抽象方法；应用类代理拦截器时，还应让具体处理器保持非 `sealed`。
 
 EventBus 自动发现会按具体处理器类型解析处理器，因此被选中的处理器会使用类代理，并且必须保持可继承。如果处理器不需要自定义拦截，应收窄拦截器谓词。`InterfaceProxy` 仍适用于通过接口暴露并解析的普通服务，但不能直接替代 EventBus 默认自动发现路径中的类代理。完整决策规则见 [DynamicProxy 场景](../dynamic-proxy/scenarios.md)。
+
+## 场景 4 — 组合自动订阅与手动订阅
+
+宿主启动后，可以通过 `IEventSubscriptionRegistry` 创建由应用拥有的手动订阅。EventBus 会单独记录自动发现生命周期创建的 ID，因此关闭宿主时只会按创建顺序的逆序移除这些生命周期订阅，不会移除手动订阅。
+
+一组订阅需要回滚保护时使用 `SubscribeBatchAsync(...)`。条目及观察者通知会逐项产生；后续项失败或启动被取消时，本次调用已经创建的订阅会在错误传播前被移除。清理多个订阅时使用 `UnsubscribeBatchAsync(...)`；它会尝试所有请求的 ID，再统一报告失败。
 
 ## 故障排查 — Dapr 在处理器执行前反复投递
 

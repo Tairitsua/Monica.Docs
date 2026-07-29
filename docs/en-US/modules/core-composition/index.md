@@ -45,6 +45,14 @@ app.Run();
 
 `UseMonica()` installs module middleware around routing. `MapMonica()` maps module-owned endpoints. Non-web hosts call only `AddMonica(...)` and register modules that support non-web operation.
 
+Composition completes at a host-specific boundary:
+
+- A Generic Host completes when `AddMonica(...)` finishes service registration. It must not call `UseMonica()` or `MapMonica()`.
+- A Web Host completes only after `UseMonica()` and then `MapMonica()` have each run once on the same `WebApplication` instance.
+- Starting an incompletely composed Web Host fails validation before hosted lifecycle services begin.
+
+These checks make middleware and endpoint registration part of the validated Web composition rather than optional work that can fail after runtime activation has started.
+
 `Monica.Core` also owns the [Execution Pipeline](../execution-pipeline/index.md), the shared typed kernel used by Mediator, MVC, EventBus, jobs, seeders, and hosted work-item adapters. Subsystems enter it through explicit adapters; application types are not intercepted merely because they are ProjectUnits. [Execution boundaries](../../concepts/execution-boundaries.md) explains the complete boundary and transaction matrix.
 
 ## Shared configuration

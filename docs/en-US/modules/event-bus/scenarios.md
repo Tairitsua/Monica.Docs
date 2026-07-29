@@ -8,7 +8,7 @@ sidebar_position: 5
 
 ## Scenario 1 — Use local events for in-process collaboration
 
-When an event is consumed only inside the current process, `monica.AddEventBus()` is sufficient. Handlers are discovered and subscribed during startup, and publishers can use `IEventBus.PublishAsync<TEvent>()` without depending on a distributed provider.
+When an event is consumed only inside the current process, `monica.AddEventBus()` is sufficient. Handlers are discovered during composition and subscribed during Generic Host startup, before provider `StartAsync` runs. Publishers can use `ILocalEventBus.PublishAsync<TEvent>()` without depending on a distributed provider.
 
 ## Scenario 2 — Provide a keyed event bus to another module
 
@@ -23,6 +23,12 @@ EventBus discovery accepts concrete `ILocalEventHandler<TEvent>` and `IDistribut
 Castle implements that class proxy by deriving from the handler. The handler class must therefore be inheritable, and `HandleEventAsync` must remain virtual. Handlers derived from Monica's abstract handler bases already override an abstract method; keep the concrete handler non-sealed when a class-proxy interceptor applies.
 
 Auto-discovered EventBus handlers are resolved by their concrete handler type. A selected handler therefore uses a class proxy and must remain inheritable. If custom interception is not required, narrow the interceptor predicate instead. `InterfaceProxy` remains an alternative for ordinary services that are exposed and resolved through an interface, but it is not a drop-in replacement for the default EventBus auto-discovery path. See [DynamicProxy scenarios](../dynamic-proxy/scenarios.md) for the complete decision rules.
+
+## Scenario 4 — Combine automatic and manual subscriptions
+
+Create application-owned subscriptions through `IEventSubscriptionRegistry` after the host starts. EventBus tracks the IDs created from its auto-discovery catalog separately, so shutdown removes only those lifecycle-owned subscriptions and preserves manually registered entries.
+
+Use `SubscribeBatchAsync(...)` when a group needs rollback protection. Entries and their observer notifications are created sequentially; if a later entry fails or startup is cancelled, subscriptions already created by that call are removed before the error is propagated. Use `UnsubscribeBatchAsync(...)` for best-effort cleanup: it attempts every requested ID and reports the collected failures afterward.
 
 ## Troubleshooting — Dapr repeatedly redelivers before the handler runs
 

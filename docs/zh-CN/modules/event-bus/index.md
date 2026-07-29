@@ -6,7 +6,7 @@ sidebar_position: 1
 
 # EventBus
 
-提供统一的本地/分布式事件总线抽象、自动发现事件处理器，以及 keyed event bus 组合能力。
+提供统一的本地/分布式事件总线抽象、自动发现事件处理器，以及 keyed event bus 组合能力。EventBus 是 Generic Host 模块，不要求 Web Host；Web 应用只是在相同注册基础上额外完成 `UseMonica()` 与 `MapMonica()`。
 
 ## 何时使用这个模块
 
@@ -28,6 +28,8 @@ sidebar_position: 1
 - `ILocalEventHandler<TEvent>`、`IDistributedEventHandler<TEvent>`：处理器契约。
 - `DomainEvent`：领域事件基类。
 - `IEventSubscriptionRegistry`：高级订阅管理入口。
+
+自动发现订阅会在 Generic Host 启动期间、Provider 的 `StartAsync` 之前以受回滚保护的批次创建。启动失败或取消时，EventBus 会先删除该批次已经创建的条目，再传播启动错误；关闭宿主时只会按逆序移除生命周期拥有的订阅 ID，不会删除应用手动创建的订阅。
 
 本地与分布式处理器会通过 EventBus 自己的适配器进入统一 [Execution Pipeline](../execution-pipeline/index.md)。跨领域行为无需代理，可选 DynamicProxy 管线桥接也会排除这些处理器，避免同一次消费被包装两次。
 

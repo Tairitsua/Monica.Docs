@@ -14,9 +14,12 @@ sidebar_position: 1
 2. 模块把自己的依赖加入同一张图。
 3. Monica 校验必需 Guide 配置并拒绝依赖环。
 4. 模块按确定顺序完成配置与服务注册阶段。
-5. Web 主机在构建后通过 `UseMonica()` 和 `MapMonica()` 应用中间件与端点。
+5. Generic Host 在服务注册结束时完成 Monica 组合。
+6. Web Host 在构建后通过 `UseMonica()` 应用中间件，再通过 `MapMonica()` 映射端点并完成组合。
 
 回调结束后模块图会被封闭。不要保留 `ModuleGuide` 并尝试在之后继续修改它。
+
+Web Host 必须在同一个 `WebApplication` 实例上依次调用一次 `UseMonica()` 和一次 `MapMonica()`。如果两者缺失、顺序错误、重复调用或使用了不同的应用实例，Monica 会拒绝该组合；尚未完成组合的 Web Host 会在任何 Hosted lifecycle 参与者运行前启动失败。Generic Host 不调用这两个方法，只能组合支持非 Web 运行或允许降级的模块。
 
 ## 公开部件
 

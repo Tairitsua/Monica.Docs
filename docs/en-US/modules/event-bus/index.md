@@ -6,59 +6,38 @@ sidebar_position: 1
 
 # EventBus
 
-`Monica.EventBus` supplies a host-local `ILocalEventBus`, handler discovery, subscriptions, and a provider boundary for distributed events. Start local; add an Integration such as `Monica.EventBus.Kafka` only when events must cross processes.
+`Monica.EventBus` provides local and distributed publishing contracts, automatic handler discovery, observable subscriptions, and keyed bus composition. EventBus is a Generic Host module; Web applications use the same registration and add the normal `UseMonica()` and `MapMonica()` composition boundary.
 
-```bash
-dotnet add package Monica.EventBus --prerelease
-```
+## When to use this module
 
-```csharp
-using Monica.Core.Modularity.Extensions;
-using Monica.EventBus.Abstractions;
-using Monica.EventBus.Abstractions.Handlers;
-using Monica.Modules;
+- Publish and handle events inside one Monica host.
+- Add a distributed provider only when events must cross process boundaries.
+- Give a module or subsystem a bus identified by a stable service key.
+- Manage manual subscriptions through a cancellable, observable registry.
 
-var builder = WebApplication.CreateBuilder(args);
+## Package and registration
 
-builder.Services.AddTransient<OrderApprovedHandler>();
-
-builder.AddMonica(monica =>
-{
-    monica.AddEventBus();
-});
-
-var app = builder.Build();
-app.UseMonica();
-app.MapMonica();
-app.Run();
-
-public sealed record OrderApproved(Guid OrderId);
-
-public class OrderApprovedHandler : ILocalEventHandler<OrderApproved>
-{
-    public Task HandleEventAsync(
-        OrderApproved eventData,
-        CancellationToken cancellationToken) => Task.CompletedTask;
-}
-
-public sealed class ApprovalPublisher(ILocalEventBus eventBus)
-{
-    public Task PublishAsync(Guid id) =>
-        eventBus.PublishAsync(new OrderApproved(id));
-}
-```
-
-Automatic discovery is enabled by default for concrete `ILocalEventHandler<T>` and `IDistributedEventHandler<T>` implementations. Dispatch uses the **exact published event type and topic**; a handler for a base type is not a catch-all for derived events.
-
-Local and distributed handlers enter the shared [Execution Pipeline](../execution-pipeline/index.md) through EventBus-owned adapters. This supplies cross-cutting behaviors without proxies and prevents the optional DynamicProxy bridge from wrapping the same handler a second time.
-
-| Guide method | Use |
+| Item | Value |
 |---|---|
-| `UseDistributedEventBus<TProvider>()` | Registers the default distributed provider. |
-| `UseNoOpDistributedEventBus()` | Makes an intentionally non-delivering distributed boundary explicit in tests or local hosts. |
-| `AddKeyedEventBus(key, useDistributed)` | Exposes a keyed `IEventBus` for a module or subsystem. |
-| `AddKeyedLocalEventBus(key)` | Creates a keyed local bus instance. |
+| Package | `Monica.EventBus` |
+| Registration | `monica.AddEventBus()` |
+| Related UI registration | `monica.AddEventBusUI()` |
 
-Set `DisableAutoDiscovery = true` only when the host will manage subscriptions itself.
+## Public surface
 
-Handlers may be sealed in the normal EventBus path. A separate class-proxy constraint exists only when a host deliberately applies a custom [DynamicProxy](../dynamic-proxy/index.md) interceptor to a concrete handler. See [handler and delivery scenarios](./scenarios.md).
+- `IEventBus`, `ILocalEventBus`, and `IDistributedEventBus` define publishing and subscription boundaries.
+- `ILocalEventHandler<TEvent>` and `IDistributedEventHandler<TEvent>` define handler contracts.
+- `IEventSubscriptionRegistry` provides observable queries and cancellable mutation APIs.
+- `ModuleEventBusGuide` selects a distributed provider and registers keyed buses.
+
+Automatic discovery is enabled by default. EventBus creates discovered subscriptions as a rollback-protected batch during Generic Host startup, before provider `StartAsync` runs. Failure or cancellation removes entries already created by that batch before propagating the startup error; shutdown removes only lifecycle-owned subscription IDs in reverse order and preserves manual subscriptions.
+
+Dispatch uses the exact published event type and topic. Local and distributed handlers enter the shared [Execution Pipeline](../execution-pipeline/index.md) through EventBus-owned adapters, avoiding duplicate DynamicProxy behavior.
+
+## Related pages
+
+- [Quick Start](./quick-start.md)
+- [Configuration](./configuration.md)
+- [Guide and Providers](./guide-and-providers.md)
+- [Scenarios](./scenarios.md)
+- [DynamicProxy](../dynamic-proxy/index.md), only when a handler deliberately needs custom method interception

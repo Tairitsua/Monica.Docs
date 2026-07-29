@@ -26,6 +26,8 @@ sidebar_position: 3
 | [DynamicProxy](./dynamic-proxy/index.md) | Stable | `Monica.DependencyInjection` | `monica.AddDynamicProxy()` | 无 |
 | [EventBus](./event-bus/index.md) | Stable | `Monica.EventBus` | `monica.AddEventBus()` | `monica.AddEventBusUI()` |
 | [Execution Pipeline](./execution-pipeline/index.md) | Stable | `Monica.Core` | `monica.AddExecutionPipeline()` | `monica.AddExecutionPipelineUI()`（`Monica.Framework.UI`） |
+| [Execution Timing](./execution-timing/index.md) | Labs | `Monica.Profiling` | `monica.AddExecutionTiming()` | `monica.AddExecutionTimingUI()` |
+| [Hosted Service](./hosted-service/index.md) | Stable | `Monica.Core` | `monica.AddHostedService()` | 无 |
 | [JobScheduler](./job-scheduler/index.md) | Stable | `Monica.JobScheduler` | `monica.AddJobScheduler()` | `monica.AddJobSchedulerUI()` |
 | [Logging](./logging/index.md) | Stable | `Monica.Logging` | `monica.AddLogging()` | `monica.AddLoggingUI()` |
 | [KnowledgeBase](./knowledge-base/index.md) | Labs | `Monica.AI` | `monica.AddKnowledgeBase()` | `monica.AddKnowledgeBaseUI()` |
