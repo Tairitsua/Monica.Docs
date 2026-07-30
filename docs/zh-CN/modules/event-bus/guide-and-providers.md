@@ -37,6 +37,6 @@ Registry 继续通过 `IObservable<EventSubscriptionChange>` 提供现有通知�
 
 ## Module dependencies
 
-- EventBus 依赖 [Execution Pipeline](../execution-pipeline/index.md)，处理器通过 EventBus 自己的 Adapter 进入管线，避免重复应用 DynamicProxy bridge。
+- EventBus 依赖 [Execution Pipeline](../execution-pipeline/index.md)，处理器通过 EventBus 自己的 Adapter 进入管线，并且只建立一次投递边界。
 - 模块拥有的自动发现 lifecycle 会在 Generic Host 启动期间以受回滚保护的批次创建订阅；失败或取消会清理本次调用已创建的条目。
 - 如果需要事件订阅可视化与测试能力，可接入 `monica.AddEventBusUI()`。

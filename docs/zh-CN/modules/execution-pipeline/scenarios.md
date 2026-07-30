@@ -77,8 +77,7 @@ var plan = executionPipelineCatalog.InspectPlan(descriptor);
 
 ## Common mistakes
 
-- 把 DynamicProxy 当成 ExecutionPipeline 的必需依赖。
-- 为已有原生 Adapter 的契约再开启代理桥，造成重复执行。
+- 为已有原生 Adapter 的契约再次增加包装，造成重复执行。
 - 让 `descriptorFilter` 依赖调用级状态。
 - 在两个相同顺序的 Behavior 之间建立先后依赖。
 - 在 `AddBehavior(...)` 之外再次注册同一个 Behavior 实现类型。

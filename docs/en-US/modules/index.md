@@ -19,7 +19,6 @@ Independent packages may bundle several coherent modules in one NuGet package. E
 | Typed execution behaviors and runtime catalog | [Execution Pipeline](./execution-pipeline/index.md) | `Monica.Core` |
 | Schema-first application settings | [Configuration](./configuration/index.md) | `Monica.Configuration` |
 | Conventional service registration | [Dependency Injection](./dependency-injection/index.md) | `Monica.DependencyInjection` |
-| Optional service-method interception | [DynamicProxy](./dynamic-proxy/index.md) | `Monica.DependencyInjection` |
 | Local and distributed events | [EventBus](./event-bus/index.md) | `Monica.EventBus` |
 | HTTP APIs and generated controllers | [WebApi and AutoControllers](./web-api/index.md) | `Monica.WebApi` |
 | Request-owned endpoints and RPC clients | [AutoControllers](./auto-controllers/index.md) | `Monica.WebApi` + `Monica.Generators.AutoController` |

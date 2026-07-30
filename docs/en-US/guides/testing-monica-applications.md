@@ -161,7 +161,7 @@ var total = await fixture.Unit.CalculateAsync(
     TestContext.Current.CancellationToken);
 ```
 
-This fast path deliberately does **not** run Monica module composition, production type discovery, the shared execution pipeline, conventional registration, DynamicProxy, options binding, or hosted lifecycle. Use a complete host as soon as the expected behavior depends on authorization, routing, Unit of Work, tracing, another execution behavior, a proxy, or any other omitted runtime feature. There is no separate application-service fixture.
+This fast path deliberately does **not** run Monica module composition, production type discovery, the shared execution pipeline, conventional registration, options binding, or hosted lifecycle. Use a complete host as soon as the expected behavior depends on authorization, routing, Unit of Work, tracing, another execution behavior, service activation, or any other omitted runtime feature. There is no separate application-service fixture.
 
 ## Parallel execution
 

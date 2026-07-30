@@ -29,7 +29,7 @@ sidebar_position: 1
 - `ICachedServiceProvider`：Monica 中常见的缓存服务提供者抽象。
 - `DependencyInjectionDiagnosticsFacade`：读取自动注册诊断快照。
 
-同一个 NuGet 包还包含另一个独立、可选的 [DynamicProxy 模块](../dynamic-proxy/index.md)。`AddDependencyInjection()` 不会启用 DynamicProxy，Monica 内置执行边界也不依赖它。
+方法级执行行为属于子系统原生 Adapter 与共享 [Execution Pipeline](../execution-pipeline/index.md) 的职责，不属于约定注册。`Monica.DependencyInjection` 不提供方法拦截能力，也不依赖第三方代理库。
 
 ## 相关页面
 

@@ -86,6 +86,6 @@ For a no-result `Func<Task>` terminal, create the descriptor as `ForMethod<TInpu
 
 Use `ExecutionFeatureCollection` for adapter-specific invocation metadata. Features are keyed by their exact generic type, belong to one invocation, and are not thread-safe; do not mutate one collection concurrently.
 
-## DynamicProxy bridge
+## Services without a native adapter
 
-DynamicProxy is not a pipeline provider and is not required by any native adapter. Its optional `UseExecutionPipeline(...)` bridge exists only for selected asynchronous service methods that have no subsystem-owned adapter. See [DynamicProxy](../dynamic-proxy/index.md).
+An ordinary service method runs inside its caller's existing execution boundary. If a subsystem genuinely owns a new independently observable entry point, implement a typed adapter that supplies its descriptor, input, target, cancellation token, and transaction policy explicitly. Do not introduce container-wide method interception as a substitute for an owned boundary.

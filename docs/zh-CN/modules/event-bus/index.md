@@ -31,7 +31,7 @@ sidebar_position: 1
 
 自动发现订阅会在 Generic Host 启动期间、Provider 的 `StartAsync` 之前以受回滚保护的批次创建。启动失败或取消时，EventBus 会先删除该批次已经创建的条目，再传播启动错误；关闭宿主时只会按逆序移除生命周期拥有的订阅 ID，不会删除应用手动创建的订阅。
 
-本地与分布式处理器会通过 EventBus 自己的适配器进入统一 [Execution Pipeline](../execution-pipeline/index.md)。跨领域行为无需代理，可选 DynamicProxy 管线桥接也会排除这些处理器，避免同一次消费被包装两次。
+本地与分布式处理器会通过 EventBus 自己的适配器进入统一 [Execution Pipeline](../execution-pipeline/index.md)，让每次投递只有一个明确的执行边界。
 
 ## 相关页面
 
@@ -39,4 +39,3 @@ sidebar_position: 1
 - [Configuration](./configuration.md)
 - [Guide and Providers](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
-- [DynamicProxy（仅在需要自定义方法拦截时）](../dynamic-proxy/index.md)

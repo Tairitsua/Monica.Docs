@@ -87,7 +87,7 @@ Use `InspectPlan(...)` only for a descriptor the application already owns. `GetS
 - Using request or user state in a descriptor filter.
 - Depending on relative order between equal-order behaviors.
 - Calling `next` more than once.
-- Adding DynamicProxy around a contract that already has a native adapter.
+- Wrapping a contract a second time when its subsystem already owns the execution boundary.
 - Treating `ExecutionTransactionMode.None` as a prohibition on explicit unit-of-work scopes.
 - Expecting plans for operations that have never executed or been explicitly inspected.
 - Grouping by `OperationKey` alone when business-operation or transaction policies differ.

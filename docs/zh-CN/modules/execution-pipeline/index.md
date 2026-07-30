@@ -26,7 +26,6 @@ ExecutionPipeline 是 Monica 的共享执行内核。各子系统通过自己的
 | 相关 UI 包 | `Monica.Framework.UI` |
 | 相关 UI 注册入口 | `monica.AddExecutionPipelineUI()` |
 | UI 路由 | `/execution-pipeline` |
-| 可选桥接模块 | `monica.AddDynamicProxy()`，位于 `Monica.DependencyInjection` |
 
 ## 公开使用面
 
@@ -61,4 +60,3 @@ ExecutionPipeline 不负责发现业务服务，不负责选择远程节点，�
 - [Guide and Providers](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
 - [统一执行边界](../../concepts/execution-boundaries.md)
-- [DynamicProxy](../dynamic-proxy/index.md)

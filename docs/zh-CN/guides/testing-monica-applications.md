@@ -161,7 +161,7 @@ var total = await fixture.Unit.CalculateAsync(
     TestContext.Current.CancellationToken);
 ```
 
-这条快速路径明确**不会**运行 Monica 模块组合、生产类型发现、统一执行管线、约定注册、DynamicProxy、Option 绑定或 Hosted lifecycle。只要预期行为依赖授权、路由、UnitOfWork、追踪、其他执行行为、代理或任何被跳过的运行时能力，就应使用完整宿主。框架不再提供另一套 ApplicationService 专用 Fixture。
+这条快速路径明确**不会**运行 Monica 模块组合、生产类型发现、统一执行管线、约定注册、Option 绑定或 Hosted lifecycle。只要预期行为依赖授权、路由、UnitOfWork、追踪、其他执行行为、服务激活或任何被跳过的运行时能力，就应使用完整宿主。框架不再提供另一套 ApplicationService 专用 Fixture。
 
 ## 并行执行
 

@@ -65,4 +65,3 @@ The catalog separates configured intent from observed runtime truth:
 - [Guide and Adapters](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
 - [Execution boundaries](../../concepts/execution-boundaries.md)
-- [DynamicProxy](../dynamic-proxy/index.md)

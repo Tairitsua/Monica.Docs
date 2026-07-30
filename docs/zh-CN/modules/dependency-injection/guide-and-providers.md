@@ -8,7 +8,7 @@ sidebar_position: 4
 
 ## Guide methods
 
-这个模块没有额外公开的 Guide 方法，通常直接通过 `monica.AddDependencyInjection()` 进入即可。`AddDynamicProxy()` 属于同一包中的独立模块，不是 DependencyInjection Guide 的一部分。
+这个模块没有额外公开的 Guide 方法，通常直接通过 `monica.AddDependencyInjection()` 进入即可。它只负责约定注册、暴露规则与诊断，不提供方法拦截能力。
 
 ## Provider choices
 
@@ -22,4 +22,4 @@ sidebar_position: 4
 
 - 这是很多 Monica 模块和应用服务的基础设施模块之一。
 - UI 诊断能力位于单独的 `monica.AddDependencyInjectionUI()`。
-- 需要选择性方法拦截时另行阅读 [DynamicProxy](../dynamic-proxy/index.md)；不应把它当作约定注册的默认步骤。
+- 跨领域执行行为由各子系统原生 Adapter 接入 [Execution Pipeline](../execution-pipeline/index.md)，不属于本模块职责。

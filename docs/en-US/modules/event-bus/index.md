@@ -32,7 +32,7 @@ sidebar_position: 1
 
 Automatic discovery is enabled by default. EventBus creates discovered subscriptions as a rollback-protected batch during Generic Host startup, before provider `StartAsync` runs. Failure or cancellation removes entries already created by that batch before propagating the startup error; shutdown removes only lifecycle-owned subscription IDs in reverse order and preserves manual subscriptions.
 
-Dispatch uses the exact published event type and topic. Local and distributed handlers enter the shared [Execution Pipeline](../execution-pipeline/index.md) through EventBus-owned adapters, avoiding duplicate DynamicProxy behavior.
+Dispatch uses the exact published event type and topic. Local and distributed handlers enter the shared [Execution Pipeline](../execution-pipeline/index.md) through EventBus-owned adapters, so each delivery has one explicit execution boundary.
 
 ## Related pages
 
@@ -40,4 +40,3 @@ Dispatch uses the exact published event type and topic. Local and distributed ha
 - [Configuration](./configuration.md)
 - [Guide and Providers](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
-- [DynamicProxy](../dynamic-proxy/index.md), only when a handler deliberately needs custom method interception

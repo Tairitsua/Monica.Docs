@@ -20,4 +20,4 @@ sidebar_position: 4
 
 `Automatic` 表示“允许自动事务”，并不表示没有注册 UnitOfWork 时也会创建事务。作业与 Hosted Service 生命周期描述使用 `None`，因此其实现必须自己控制事务分块。
 
-本模块不使用 MVC Filter，也不依赖 DynamicProxy。执行边界由各子系统的原生适配器建立。
+本模块不使用 MVC Filter 或容器级方法拦截。执行边界由各子系统的原生适配器建立。

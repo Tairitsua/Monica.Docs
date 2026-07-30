@@ -39,4 +39,4 @@ The registry remains observable through its existing `IObservable<EventSubscript
 
 ## Module dependencies
 
-EventBus composes the [Execution Pipeline](../execution-pipeline/index.md). Its handlers enter that pipeline through EventBus-owned adapters, which prevents the optional DynamicProxy bridge from applying the same cross-cutting behavior twice.
+EventBus composes the [Execution Pipeline](../execution-pipeline/index.md). Its handlers enter that pipeline through EventBus-owned adapters, which establish the delivery boundary exactly once.

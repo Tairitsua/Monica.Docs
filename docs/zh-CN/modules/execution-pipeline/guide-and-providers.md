@@ -52,7 +52,7 @@ builder.AddMonica(monica =>
 
 ## Native adapters
 
-原生 Adapter 由拥有执行入口的模块提供。应用无需为这些边界开启 DynamicProxy。
+原生 Adapter 由拥有执行入口的模块提供。每个 Adapter 只建立一次对应边界。
 
 | Adapter | Execution point | Transaction mode |
 |---|---|---|
@@ -66,8 +66,6 @@ builder.AddMonica(monica =>
 | Recurring / triggered job attempt | `JobSchedulerExecutionPoints.RecurringAttempt` / `TriggeredAttempt` | `None` |
 
 生成式 Mediator Controller 会带有 `[MediatedController]`，因此 MVC Adapter 会跳过它们。手写 Controller 如果调用 `IMediator`，必须显式添加 `[MediatedController]`；仅调用 Mediator 不会被自动识别，否则同一次请求会形成嵌套的 MVC 与 Mediator 边界。
-
-被模块原生 Adapter 拥有的契约实现 `IExecutionAdapterOwnedComponent`。可选 DynamicProxy 桥会排除这些契约，避免一次业务调用进入管线两次。
 
 ## Built-in behavior integrations
 
@@ -84,4 +82,4 @@ builder.AddMonica(monica =>
 
 ## Provider choices
 
-ExecutionPipeline 没有可替换 Provider；它是 `Monica.Core` 内的共享内核。对于没有原生 Adapter 的普通服务，可以选择独立的 [DynamicProxy](../dynamic-proxy/index.md) 兼容桥，但不要把它当作所有入口的默认接入方式。
+ExecutionPipeline 没有可替换 Provider；它是 `Monica.Core` 内的共享内核。普通服务方法运行在调用方已经建立的执行边界内。如果某个子系统确实拥有新的独立入口，应由该子系统提供明确描述输入、目标、取消、结果、特性与事务策略的类型化 Adapter，不应以容器级方法拦截替代边界所有权。

@@ -48,7 +48,7 @@ public enum OrderPermission
 
 Access tokens default to 60 minutes and refresh tokens to 120 minutes. The source defaults for secret, issuer, and audience are placeholders for development—not production credentials. Supply a stable secret through protected configuration and validate rotation and audience policy for the deployment.
 
-`AddPermissionBit<TEnum>(claimType)` adds another permission family. `ConfigAsAlwaysAllow()` deliberately bypasses checks and should be limited to isolated development or tests. Authorization contributes `ExecutionAuthorizationBehavior<,>` to the shared [Execution Pipeline](../execution-pipeline/index.md) for business-operation descriptors; it does not require DynamicProxy. Endpoint policies still use normal ASP.NET Core authorization.
+`AddPermissionBit<TEnum>(claimType)` adds another permission family. `ConfigAsAlwaysAllow()` deliberately bypasses checks and should be limited to isolated development or tests. Authorization contributes `ExecutionAuthorizationBehavior<,>` to the shared [Execution Pipeline](../execution-pipeline/index.md) for business-operation descriptors. Endpoint policies still use normal ASP.NET Core authorization.
 
 Bearer tokens are read from the `Authorization` header by default. Browser WebSocket transports that cannot set that header may opt in with `AllowQueryStringAccessTokens("/hubs/orders")`. Scope every prefix to one mapped hub route: query-string tokens can otherwise leak through browser history, proxy logs, and server access logs. Monica does not expose an HTTP token-decoding endpoint.
 

@@ -20,4 +20,4 @@ The module claims `ModuleExecutionPipeline` and registers `UnitOfWorkExecutionBe
 
 `Automatic` means eligible, not guaranteed: a custom execution boundary receives automatic transaction behavior only when the host has registered Unit of Work. Job and hosted-service lifecycle descriptors use `None`, so their implementations own transaction chunking.
 
-The module does not use MVC filters or DynamicProxy. Native subsystem adapters establish the boundaries.
+The module does not use MVC filters or container-wide method interception. Native subsystem adapters establish the boundaries.

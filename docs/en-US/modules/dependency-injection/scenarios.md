@@ -14,15 +14,17 @@ In most business modules, declare registration intent with `ITransientDependency
 
 When an implementation should be available only through selected interfaces or a keyed service, keep its lifetime marker and add `ExposeServicesAttribute` or `ExposeKeyedServiceAttribute`.
 
-## Scenario 3 — Add interception as a separate decision
+## Scenario 3 — Preserve container-owned activation
 
-Conventional registration and method interception solve different problems. Register the service here first. If a selected application service genuinely needs method-level interception and no subsystem adapter owns that boundary, compose the separate [DynamicProxy module](../dynamic-proxy/index.md). Do not enable it merely to obtain Monica's built-in authorization, Unit of Work, EventBus, Mediator, MVC, or job behaviors; those use the shared [Execution Pipeline](../execution-pipeline/index.md).
+Resolve conventionally registered implementations through Monica DI rather than constructing them directly. When a subsystem exposes the same implementation through an additional contract, that contract should resolve the canonical concrete registration instead of creating a second activation path. This preserves configured lifetime, replacement rules, keyed exposure, and `ICachedServiceProvider` initialization.
+
+Authorization, Unit of Work, EventBus, Mediator, MVC, and job behaviors run through subsystem-owned adapters and the shared [Execution Pipeline](../execution-pipeline/index.md). Conventional registration should not acquire method-interception responsibilities to apply those behaviors.
 
 ## Common mistakes
 
 - Constructing a conventionally registered service with `new`, which bypasses Monica registration and `ICachedServiceProvider` initialization.
 - Assuming every discovered type is registered without a lifetime marker or explicit registration rule.
-- Assuming `AddDependencyInjection()` also enables DynamicProxy.
+- Registering one implementation independently through multiple contracts and unintentionally creating multiple activation paths.
 - Testing registration-dependent behavior with a raw unit fixture that does not compose the production module graph.
 
 Use a complete Monica test host for composition behavior. See [Testing Monica applications](../../guides/testing-monica-applications.md).

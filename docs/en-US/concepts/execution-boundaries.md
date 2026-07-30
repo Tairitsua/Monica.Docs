@@ -1,6 +1,6 @@
 ---
 title: Execution Boundaries
-description: Understand how Monica applies one typed behavior pipeline across requests, events, jobs, hosted work, and optional proxies.
+description: Understand how Monica applies one typed behavior pipeline across requests, events, jobs, and hosted work.
 sidebar_position: 3
 ---
 
@@ -40,15 +40,13 @@ Jobs deliberately use `None`. A long-running scan should not hold one transactio
 
 ## One owner per boundary
 
-A subsystem with a native adapter owns the boundary exactly once. Monica marks those contracts with `IExecutionAdapterOwnedComponent` so optional proxy integration does not wrap the same call again.
+A subsystem with a native adapter owns the boundary exactly once. The adapter is the sole place that describes and enters that boundary; callers and dependency-injection registration do not add a second wrapper.
 
 Use the native adapter for Mediator handlers, EventBus handlers, jobs, seeders, MVC actions, and Monica hosted work. Native adapters know the correct input, result, cancellation, features, and transaction policy for their subsystem.
 
-## DynamicProxy is separate
+## Services without an owned boundary
 
-The Execution Pipeline is part of `Monica.Core`. DynamicProxy is a separate opt-in module in `Monica.DependencyInjection`.
-
-You do not need DynamicProxy to use native execution boundaries. Use `AddDynamicProxy()` only when an application intentionally needs method interception. Its `UseExecutionPipeline(...)` method is a narrow compatibility bridge for selected `Task` and `Task<T>` service methods that have no native module adapter.
+An ordinary application or domain service executes inside the boundary of its caller. If a new subsystem needs independently observable execution, that subsystem should provide a typed adapter with explicit input, cancellation, result, feature, and transaction semantics. Monica does not infer execution boundaries from arbitrary dependency-injection method calls.
 
 ## Behavior ordering
 
@@ -65,6 +63,5 @@ Equal-order behaviors must be semantically independent. Monica uses the implemen
 ## Related pages
 
 - [Execution Pipeline](../modules/execution-pipeline/index.md)
-- [DynamicProxy](../modules/dynamic-proxy/index.md)
 - [Unit of Work](../modules/unit-of-work/index.md)
 - [ProjectUnits](./project-units.md)

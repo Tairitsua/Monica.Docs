@@ -50,9 +50,9 @@ Use `ITransientDependency`, `IScopedDependency`, or `ISingletonDependency` to ma
 | `EnableAutoRegistrationDiagnostics` | `false` | Capture a host-local snapshot of conventional registrations. |
 | `EnableAutoRegistrationLogging` | `false` | Emit a startup entry for each auto-registered type while diagnosing registration. |
 
-The same package contains a separate, opt-in [DynamicProxy module](../dynamic-proxy/index.md). `AddDependencyInjection()` does not enable it, and Monica's built-in execution boundaries do not depend on it.
+Method-level execution behavior belongs to subsystem-owned adapters and the shared [Execution Pipeline](../execution-pipeline/index.md), not to conventional registration. `Monica.DependencyInjection` has no method-interception surface or third-party proxy dependency.
 
 ## Next steps
 
 - [Registration scenarios](./scenarios.md)
-- [DynamicProxy](../dynamic-proxy/index.md)
+- [Execution Pipeline](../execution-pipeline/index.md)

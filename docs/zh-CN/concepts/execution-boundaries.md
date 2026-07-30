@@ -47,14 +47,11 @@ Behavior 按数字顺序嵌套，数值越小越靠外。Monica 提供以下标�
 
 相同顺序只会按实现类型名获得可重复的排列，不能把这种排列当成业务语义。若两个 Behavior 有先后依赖，应分配不同顺序。
 
-## DynamicProxy 是独立的可选模块
+## 没有独立边界的普通服务
 
-统一执行管线不依赖 DynamicProxy，也不会自动代理任意 `DomainService`、Worker 或普通 DI 服务。拥有原生 Adapter 的模块会直接进入管线，这种方式边界最明确，也能避免同一调用重复进入管线。
-
-只有当某类异步服务方法没有模块原生 Adapter，并且确实需要统一 Behavior 时，才考虑单独注册 `monica.AddDynamicProxy()` 并调用 `UseExecutionPipeline(...)`。这个兼容桥只处理 `Task` 与 `Task<T>` 方法，不处理同步方法或 `ValueTask`，也不支持 Singleton 服务。
+普通 ApplicationService、DomainService、Worker 或其他 DI 服务会在调用方已经建立的执行边界内运行。如果某个新子系统确实需要独立观察入口，应由该子系统提供类型化 Adapter，明确输入、目标、取消、结果、特性与事务语义。Monica 不会根据任意 DI 方法调用推断新的执行边界。
 
 ## 下一步
 
 - [ExecutionPipeline 模块](../modules/execution-pipeline/index.md)
-- [DynamicProxy 模块](../modules/dynamic-proxy/index.md)
 - [UnitOfWork 模块](../modules/unit-of-work/index.md)

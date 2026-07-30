@@ -22,7 +22,7 @@ ProjectUnits do not replace good domain modeling. Keep invariants on the state o
 
 A ProjectUnit role describes architecture; it does not automatically wrap every method call. Runtime boundaries are established by subsystem adapters—for example Mediator requests, EventBus handlers, direct MVC actions, jobs, seeders, and hosted work items. A `DomainService` normally runs inside its caller's boundary.
 
-Use the [Execution Pipeline](../modules/execution-pipeline/index.md) when a subsystem needs a shared behavior chain. Use the separate, optional [DynamicProxy module](../modules/dynamic-proxy/index.md) only for selected service methods that have no native adapter.
+Use the [Execution Pipeline](../modules/execution-pipeline/index.md) when a subsystem needs a shared behavior chain. Ordinary application and domain services remain inside their caller's boundary; a subsystem that owns a new independent entry point should provide an explicit typed adapter.
 
 ## Declare agent context explicitly
 
