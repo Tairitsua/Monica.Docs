@@ -45,6 +45,29 @@ public sealed class OrderingOptions
 
 Consumers continue to inject `IOptions<T>`, `IOptionsSnapshot<T>`, or `IOptionsMonitor<T>`. The host's configuration providers still follow normal .NET ordering: the last provider that supplies a key wins.
 
+## Stable definition identity and lifecycle
+
+`ConfigurationAttribute.DefinitionKey` is optional. When it is omitted, Monica uses the CLR type's full name. That convention is convenient for local applications, but a namespace or type rename then creates a new configuration identity. For shared stores, long-lived history, import/export, or independently deployed services, prefer an explicit, globally unique key that remains stable across code refactors:
+
+```csharp
+[Configuration(
+    "Ordering",
+    DefinitionKey = "company.ordering.options",
+    DisplayName = "Ordering")]
+public sealed class OrderingOptions
+{
+}
+```
+
+Lifecycle is derived from current logical publishers rather than stored as a separate status:
+
+- **Active** — at least one logical service currently publishes the definition, or the current process registers the matching CLR definition.
+- **Retired** — the canonical definition remains available for diagnostics and audit, but no logical publisher currently reports it.
+
+Retired definitions are excluded from normal runtime resolution, mutation, import/export, and unified-version capture. They remain visible in the Configuration UI so an operator can inspect publication history and decide whether to purge them. Publishing the same key again reactivates the definition; Monica does not infer renames by comparing schemas or display names.
+
+Manual purge is limited to retired definitions and uses the reviewed definition revision for concurrency control. It removes the canonical definition, its publication history, and its current Monica effective-value document. Immutable value history, mutation groups, and unified-version snapshots are retained for audit. Review the preview counts before confirming the destructive action.
+
 ## Public choices
 
 | API | Purpose |

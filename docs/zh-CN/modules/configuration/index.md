@@ -82,6 +82,29 @@ builder.AddMonica(monica =>
 
 `AddManagedJsonFile(...)` 背后调用 Microsoft `AddJsonFile(...)`，并记录 Monica UI 需要的 display name、path、optional、reloadOnChange、writable 和 description。它默认追加在 Monica effective provider 之后，因此优先级高于 Monica store；如果宿主后续再追加其他 provider，后追加的 provider 仍可覆盖它。
 
+## 稳定定义身份与生命周期
+
+`ConfigurationAttribute.DefinitionKey` 不是必填项。未设置时，Monica 使用 CLR 类型的完整名称。这个约定适合本地应用，但 namespace 或类型改名会形成一个新的配置身份。对于共享 store、长期历史、导入导出或独立部署的服务，建议显式指定一个全局唯一、不会随代码重构变化的 key：
+
+```csharp
+[Configuration(
+    "Ordering",
+    DefinitionKey = "company.ordering.options",
+    DisplayName = "Ordering")]
+public sealed class OrderingOptions
+{
+}
+```
+
+定义生命周期由当前逻辑发布者推导，不额外持久化一列状态：
+
+- **Active（活动）**：至少一个逻辑服务当前正在发布该定义，或者当前进程注册了匹配的 CLR 定义。
+- **Retired（已停用）**：canonical definition 仍保留用于诊断和审计，但当前没有逻辑发布者报告它。
+
+已停用定义不会进入正常运行时解析、mutation、导入导出或统一版本快照，但仍会显示在 Configuration UI 中，供操作员查看发布历史并决定是否清理。以后再次发布相同 key 会自动恢复为活动状态；Monica 不会通过 schema 或显示名称相似度猜测“改名”。
+
+人工清理只允许针对已停用定义，并使用预览时读取的 definition revision 做并发校验。清理会删除 canonical definition、definition publication history 和当前 Monica effective-value document；不可变的 value history、mutation group 和 unified-version snapshot 会继续保留用于审计。执行破坏性操作前应先核对预览中的删除与保留数量。
+
 ## 整体架构
 
 ```mermaid
