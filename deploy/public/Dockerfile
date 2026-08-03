@@ -41,6 +41,7 @@ ENTRYPOINT ["/bin/sh", "-c", "rm -f /app/state/monica-configuration.sqlite* && c
 
 FROM node:22-alpine AS web-build
 WORKDIR /src/Monica.Docs/frontend/monica-docs-web
+COPY MoLibrary/Directory.Build.props /src/MoLibrary/Directory.Build.props
 COPY Monica.Docs/frontend/monica-docs-web/package.json ./
 COPY Monica.Docs/frontend/monica-docs-web/package-lock.json ./
 RUN npm ci
@@ -52,11 +53,13 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
+ENV MONICA_VERSION_PROPS_PATH=/app/Monica.Directory.Build.props
 COPY --from=web-build /src/Monica.Docs/frontend/monica-docs-web/package.json ./
 COPY --from=web-build /src/Monica.Docs/frontend/monica-docs-web/package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 COPY --from=web-build /src/Monica.Docs/frontend/monica-docs-web/.next ./.next
 COPY --from=web-build /src/Monica.Docs/frontend/monica-docs-web/next.config.ts ./next.config.ts
+COPY --from=web-build /src/MoLibrary/Directory.Build.props ./Monica.Directory.Build.props
 USER node
 EXPOSE 3000
 CMD ["npm", "run", "start"]

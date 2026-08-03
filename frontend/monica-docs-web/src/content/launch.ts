@@ -1,6 +1,9 @@
 import type { Locale } from "@/content/home";
+import { monicaRelease } from "@/lib/monica-release";
 
 export type PackageTier = "stable" | "integration" | "labs";
+
+const releaseIsPrerelease = monicaRelease.isPrerelease;
 
 export const packageCatalog: Record<PackageTier, readonly string[]> = {
   stable: [
@@ -190,15 +193,19 @@ export const launchCopy: Record<Locale, LaunchCopy> = {
     },
     roadmap: {
       eyebrow: "Release roadmap / evidence before dates",
-      title: "1.0 ships when the contract is credible.",
-      description: "Monica is currently 1.0.0-rc.6. The roadmap is organized around release evidence, not invented calendar promises.",
+      title: releaseIsPrerelease
+        ? "1.0 ships when the contract is credible."
+        : "1.0 shipped on a credible contract.",
+      description: `Monica is currently ${monicaRelease.version}. The roadmap is organized around release evidence, not invented calendar promises.`,
       currentLabel: "CURRENT",
-      currentTitle: "1.0.0-rc.6 / RC hardening",
-      currentBody: "The supported path is taking shape now. Contracts may still change before GA when simplification or correctness requires it.",
+      currentTitle: `${monicaRelease.version} / ${releaseIsPrerelease ? "RC hardening" : "Stable release"}`,
+      currentBody: releaseIsPrerelease
+        ? "The supported path is taking shape now. Contracts may still change before GA when simplification or correctness requires it."
+        : "The Stable 1.0 contract is published. Subsequent changes follow semantic versioning and the maturity promises documented here.",
       phases: [
-        { marker: "01", title: "RC hardening", body: "Simplify public contracts, close architecture gaps, and keep the whole solution warning-free.", state: "NOW" },
-        { marker: "02", title: "Release evidence", body: "Make templates, reference applications, package tiers, and bilingual launch documentation independently verifiable.", state: "IN PROGRESS" },
-        { marker: "03", title: "1.0 GA", body: "Publish the Stable 1.0 set only after build, package, documentation, and executable-reference gates all pass.", state: "GATED" },
+        { marker: "01", title: "RC hardening", body: "Simplify public contracts, close architecture gaps, and keep the whole solution warning-free.", state: releaseIsPrerelease ? "NOW" : "COMPLETE" },
+        { marker: "02", title: "Release evidence", body: "Make templates, reference applications, package tiers, and bilingual launch documentation independently verifiable.", state: releaseIsPrerelease ? "IN PROGRESS" : "COMPLETE" },
+        { marker: "03", title: "1.0 GA", body: "Publish the Stable 1.0 set only after build, package, documentation, and executable-reference gates all pass.", state: releaseIsPrerelease ? "GATED" : "CURRENT" },
         { marker: "04", title: "Post-1.0 ecosystem", body: "Promote integrations and Labs capabilities only when their contracts earn a stronger maturity promise.", state: "LATER" },
       ],
       gatesTitle: "Release gates",
@@ -213,9 +220,13 @@ export const launchCopy: Record<Locale, LaunchCopy> = {
       promises: [
         "Labs APIs are not stable merely because they are visible.",
         "Integration providers are not pulled into the core adoption path.",
-        "Pre-1.0 contracts will not be preserved at the cost of a clearer design.",
+        releaseIsPrerelease
+          ? "Pre-1.0 contracts will not be preserved at the cost of a clearer design."
+          : "Released contracts evolve through semantic-versioned releases, not silent drift.",
       ],
-      dateNote: "No GA date is announced. Evidence closes the gate.",
+      dateNote: releaseIsPrerelease
+        ? "No GA date is announced. Evidence closes the gate."
+        : "1.0 GA is published. Evidence continues to gate later releases.",
     },
   },
   "zh-CN": {
@@ -280,15 +291,19 @@ export const launchCopy: Record<Locale, LaunchCopy> = {
     },
     roadmap: {
       eyebrow: "发布路线图 / 证据先于日期",
-      title: "当契约足够可信，1.0 才会发布。",
-      description: "Monica 当前版本为 1.0.0-rc.6。路线图围绕发布证据组织，不编造日历承诺。",
+      title: releaseIsPrerelease
+        ? "当契约足够可信，1.0 才会发布。"
+        : "1.0 已经建立在可信契约之上。",
+      description: `Monica 当前版本为 ${monicaRelease.version}。路线图围绕发布证据组织，不编造日历承诺。`,
       currentLabel: "当前",
-      currentTitle: "1.0.0-rc.6 / RC 加固",
-      currentBody: "受支持路径正在成形。GA 之前，只要简化或正确性需要，契约仍可能调整。",
+      currentTitle: `${monicaRelease.version} / ${releaseIsPrerelease ? "RC 加固" : "稳定版发布"}`,
+      currentBody: releaseIsPrerelease
+        ? "受支持路径正在成形。GA 之前，只要简化或正确性需要，契约仍可能调整。"
+        : "Stable 1.0 契约已发布。后续变更遵循语义化版本与此处公开的成熟度承诺。",
       phases: [
-        { marker: "01", title: "RC 加固", body: "简化公开契约、补齐架构缺口，并保持整个解决方案零警告。", state: "进行中" },
-        { marker: "02", title: "发布实证", body: "让模板、参考应用、包层级与双语发布文档都可以独立验证。", state: "构建中" },
-        { marker: "03", title: "1.0 GA", body: "只有构建、包、文档与可执行参考的全部门禁通过后，才发布 Stable 1.0 能力集。", state: "待门禁" },
+        { marker: "01", title: "RC 加固", body: "简化公开契约、补齐架构缺口，并保持整个解决方案零警告。", state: releaseIsPrerelease ? "进行中" : "已完成" },
+        { marker: "02", title: "发布实证", body: "让模板、参考应用、包层级与双语发布文档都可以独立验证。", state: releaseIsPrerelease ? "构建中" : "已完成" },
+        { marker: "03", title: "1.0 GA", body: "只有构建、包、文档与可执行参考的全部门禁通过后，才发布 Stable 1.0 能力集。", state: releaseIsPrerelease ? "待门禁" : "当前" },
         { marker: "04", title: "1.0 后的生态", body: "只有契约足以承担更强成熟度承诺时，才晋升集成与 Labs 能力。", state: "后续" },
       ],
       gatesTitle: "发布门禁",
@@ -303,9 +318,13 @@ export const launchCopy: Record<Locale, LaunchCopy> = {
       promises: [
         "Labs API 不会仅因为公开可见就被视为稳定。",
         "集成 Provider 不会被强行纳入核心采用路径。",
-        "不会为了保留 1.0 前契约而牺牲更清晰的设计。",
+        releaseIsPrerelease
+          ? "不会为了保留 1.0 前契约而牺牲更清晰的设计。"
+          : "已发布契约通过语义化版本演进，不会静默漂移。",
       ],
-      dateNote: "目前没有宣布 GA 日期。证据负责关闭门禁。",
+      dateNote: releaseIsPrerelease
+        ? "目前没有宣布 GA 日期。证据负责关闭门禁。"
+        : "1.0 GA 已发布。后续版本仍由证据关闭门禁。",
     },
   },
 };

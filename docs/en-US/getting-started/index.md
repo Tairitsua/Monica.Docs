@@ -19,7 +19,7 @@ dotnet add package Monica.JobScheduler.UI --prerelease
 To start from the official template instead:
 
 ```bash
-dotnet new install Monica.Templates@1.0.0-rc.6
+dotnet new install Monica.Templates@{{monica.version}}
 dotnet new monica-api -n Orders
 ```
 

@@ -1,6 +1,7 @@
 using System.Threading.RateLimiting;
 using Domains.Documentation.Application.HandlersQuery;
 using Domains.Documentation.Configurations;
+using Domains.Documentation.Providers;
 using Domains.Documentation.Utilities;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
@@ -95,7 +96,8 @@ builder.AddMonica(monica =>
         .AddDocumentGroup(
             key: documentationOptions.DocumentGroupKey,
             title: "Monica Docs",
-            basePath: docsBasePath);
+            basePath: docsBasePath)
+        .UseDocumentProvider<DocumentationMarkdownDocumentProvider>();
 });
 
 var app = builder.Build();

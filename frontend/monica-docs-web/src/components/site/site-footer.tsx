@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Brand } from "@/components/home/brand";
 import { homeCopy, type Locale } from "@/content/home";
 import { MONICA_DEMO_URL, MONICA_GITHUB_URL } from "@/lib/external-links";
+import { monicaRelease } from "@/lib/monica-release";
 import { localizedPath } from "@/lib/routes";
 
 const footerLabels = {
@@ -53,7 +54,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
           <a href={`${MONICA_GITHUB_URL}/blob/dev/CONTRIBUTING.md`} target="_blank" rel="noreferrer">{labels.contributing}</a>
         </div>
         <div className="footer-meta">
-          <span>MONICA / 1.0.0-RC.6</span>
+          <span>MONICA / {monicaRelease.label}</span>
           <span>ENGLISH / 简体中文</span>
           <span>MIT / 2026</span>
         </div>

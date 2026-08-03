@@ -1,4 +1,5 @@
 import type { Locale } from "@/content/home";
+import { monicaRelease } from "@/lib/monica-release";
 import type {
   DocContent,
   DocHeading,
@@ -31,7 +32,7 @@ const fallbackDrafts: Record<Locale, FallbackDraft[]> = {
 ## Install the template
 
 \`\`\`bash
-dotnet new install Monica.Templates@1.0.0-rc.6
+dotnet new install ${monicaRelease.templatePackage}
 dotnet new monica-api --name Acme.Orders
 cd Acme.Orders
 dotnet run
@@ -119,7 +120,7 @@ Browse the [complete package catalog](/modules) for the release-tier inventory.`
 ## 安装项目模板
 
 \`\`\`bash
-dotnet new install Monica.Templates@1.0.0-rc.6
+dotnet new install ${monicaRelease.templatePackage}
 dotnet new monica-api --name Acme.Orders
 cd Acme.Orders
 dotnet run

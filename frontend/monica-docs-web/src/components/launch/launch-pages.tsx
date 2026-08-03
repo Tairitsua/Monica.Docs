@@ -5,10 +5,10 @@ import { LaunchShell } from "@/components/site/launch-shell";
 import type { Locale } from "@/content/home";
 import { launchCopy, packageCatalog, type PackageTier } from "@/content/launch";
 import { MONICA_DEMO_URL, MONICA_GITHUB_URL } from "@/lib/external-links";
+import { monicaRelease } from "@/lib/monica-release";
 import { localizedPath, oppositeLocale } from "@/lib/routes";
 
 const TEMPLATE_SOURCE_URL = `${MONICA_GITHUB_URL}/tree/dev/Monica.Templates`;
-const TEMPLATE_PACKAGE = "Monica.Templates@1.0.0-rc.6";
 const REFERENCE_SOURCE_URL = `${MONICA_GITHUB_URL}/tree/dev/examples/Monica.ReferenceApplication`;
 const tiers: readonly PackageTier[] = ["stable", "integration", "labs"];
 
@@ -102,7 +102,7 @@ export function ReferencePage({ locale }: { locale: Locale }) {
           <a className="text-link" href={TEMPLATE_SOURCE_URL} target="_blank" rel="noreferrer">{copy.source}<ArrowUpRight aria-hidden="true" /></a>
         </div>
         <div className="reference-proof-grid">
-          <CodeEvidence label={copy.runLabel} command={`dotnet new install ${TEMPLATE_PACKAGE}\ndotnet new monica-api --name Acme.Orders\ncd Acme.Orders\ndotnet run`} />
+          <CodeEvidence label={copy.runLabel} command={`dotnet new install ${monicaRelease.templatePackage}\ndotnet new monica-api --name Acme.Orders\ncd Acme.Orders\ndotnet run`} />
           <div className="endpoint-proof">
             <span>{copy.proofLabel}</span>
             <ul><li><code>/</code><small>application identity</small></li><li><code>/healthz</code><small>ASP.NET Core health checks</small></li><li><code>/metrics</code><small>OpenTelemetry metrics</small></li></ul>
@@ -150,6 +150,7 @@ export function ReferencePage({ locale }: { locale: Locale }) {
 
 export function RoadmapPage({ locale }: { locale: Locale }) {
   const copy = launchCopy[locale].roadmap;
+  const currentPhaseIndex = monicaRelease.isPrerelease ? 0 : 2;
 
   return (
     <LaunchShell locale={locale} languageHref={localizedPath(oppositeLocale(locale), "/roadmap")}>
@@ -159,7 +160,7 @@ export function RoadmapPage({ locale }: { locale: Locale }) {
           <h1 id="roadmap-page-title">{copy.title}</h1>
           <p className="launch-lede">{copy.description}</p>
         </div>
-        <div className="roadmap-version"><span>{copy.currentLabel}</span><strong>1.0.0</strong><i>RC.6</i></div>
+        <div className="roadmap-version"><span>{copy.currentLabel}</span><strong>{monicaRelease.baseVersion}</strong>{monicaRelease.prereleaseLabel && <i>{monicaRelease.prereleaseLabel}</i>}</div>
       </section>
 
       <section className="shell roadmap-current">
@@ -170,7 +171,7 @@ export function RoadmapPage({ locale }: { locale: Locale }) {
 
       <section className="launch-section shell roadmap-timeline" aria-label={locale === "en" ? "Release phases" : "发布阶段"}>
         {copy.phases.map((phase, index) => (
-          <article className={index === 0 ? "is-current" : undefined} key={phase.marker}>
+          <article className={index === currentPhaseIndex ? "is-current" : undefined} key={phase.marker}>
             <div><span>{phase.marker}</span><i /></div>
             <strong>{phase.state}</strong>
             <h2>{phase.title}</h2>

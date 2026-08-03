@@ -1,5 +1,6 @@
 using Domains.Showcase.Application.BackgroundWorkers;
 using Domains.Documentation.Configurations;
+using Domains.Documentation.Providers;
 using Domains.Documentation.Utilities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -83,7 +84,8 @@ builder.AddMonica(monica =>
         .AddDocumentGroup(
             key: documentationApiOptions.DocumentGroupKey,
             title: "Monica Docs",
-            basePath: docsBasePath);
+            basePath: docsBasePath)
+        .UseDocumentProvider<DocumentationMarkdownDocumentProvider>();
     monica.AddMarkdownUI();
     monica.AddSwaggerUI().AddNavigationButton("Home", UISystemInfoPage.PAGE_URL);
     monica.AddSystemInfoUI().AddSwaggerLink();

@@ -3,11 +3,7 @@
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 
-const TEMPLATE_PACKAGE = "Monica.Templates@1.0.0-rc.6";
-
-const CLI_CODE = `dotnet new install ${TEMPLATE_PACKAGE}
-dotnet new monica-api -n Orders
-cd Orders && dotnet run`;
+import { monicaRelease } from "@/lib/monica-release";
 
 const CSHARP_CODE = `var builder = WebApplication.CreateBuilder(args);
 
@@ -46,10 +42,13 @@ type StarterCodeProps = {
 export function StarterCode({ copyLabel, copiedLabel }: StarterCodeProps) {
   const [activeTab, setActiveTab] = useState<"cli" | "csharp">("cli");
   const [copied, setCopied] = useState(false);
+  const cliCode = `dotnet new install ${monicaRelease.templatePackage}
+dotnet new monica-api -n Orders
+cd Orders && dotnet run`;
 
   const copyCode = async () => {
     try {
-      await navigator.clipboard.writeText(activeTab === "cli" ? CLI_CODE : CSHARP_CODE);
+      await navigator.clipboard.writeText(activeTab === "cli" ? cliCode : CSHARP_CODE);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
@@ -101,7 +100,7 @@ export function StarterCode({ copyLabel, copiedLabel }: StarterCodeProps) {
       </div>
 
       <div className={`code-panel${activeTab === "cli" ? " is-active" : ""}`} id="code-panel-cli" role="tabpanel" aria-labelledby="code-tab-cli" hidden={activeTab !== "cli"}>
-        <pre><code><span className="code-comment"># Install the template</span>{"\n"}<span className="code-prompt">$</span> dotnet new install {TEMPLATE_PACKAGE}{"\n\n"}<span className="code-comment"># Create a modular API</span>{"\n"}<span className="code-prompt">$</span> dotnet new monica-api -n Orders{"\n"}<span className="code-prompt">$</span> cd Orders &amp;&amp; dotnet run{"\n\n"}<span className="code-output">✓ Monica is running</span>{"\n"}<span className="code-output">→ /healthz</span>{"\n"}<span className="code-output">→ /metrics</span></code></pre>
+        <pre><code><span className="code-comment"># Install the template</span>{"\n"}<span className="code-prompt">$</span> dotnet new install {monicaRelease.templatePackage}{"\n\n"}<span className="code-comment"># Create a modular API</span>{"\n"}<span className="code-prompt">$</span> dotnet new monica-api -n Orders{"\n"}<span className="code-prompt">$</span> cd Orders &amp;&amp; dotnet run{"\n\n"}<span className="code-output">✓ Monica is running</span>{"\n"}<span className="code-output">→ /healthz</span>{"\n"}<span className="code-output">→ /metrics</span></code></pre>
       </div>
 
       <div className={`code-panel${activeTab === "csharp" ? " is-active" : ""}`} id="code-panel-csharp" role="tabpanel" aria-labelledby="code-tab-csharp" hidden={activeTab !== "csharp"}>

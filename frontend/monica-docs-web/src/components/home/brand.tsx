@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { monicaRelease } from "@/lib/monica-release";
+
 type BrandProps = {
   homeHref: string;
   compact?: boolean;
@@ -14,7 +16,7 @@ export function Brand({ homeHref, compact = false }: BrandProps) {
         <span className="mark-cut" />
       </span>
       <span className="brand-name">monica</span>
-      {!compact && <span className="release-stamp">1.0 RC</span>}
+      {!compact && <span className="release-stamp">{monicaRelease.label}</span>}
     </Link>
   );
 }

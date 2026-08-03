@@ -100,12 +100,21 @@ The documentation source can be relocated with `DocumentationApi__DocsBasePath`.
 
 ```bash
 python scripts/validate_ecosystem_docs.py
+python scripts/validate_release_version.py
 dotnet build Monica.Docs.slnx -m
 
 cd frontend/monica-docs-web
 npm run check
 npm audit --omit=dev
 ```
+
+The website reads Monica's version from the sibling
+`MoLibrary/Directory.Build.props`, while the documentation API expands
+`{{monica.version}}` from the compiled `Monica.Core` informational version.
+This keeps release badges, roadmap copy, and template installation commands on
+the same version without duplicating it in Monica.Docs. Before deployment, run
+`python scripts/validate_release_version.py --verify-published` to confirm that
+the derived version is the latest listed `Monica.Templates` release on NuGet.org.
 
 The frontend uses local npm font and icon assets; production rendering does not depend on browser-loaded CDNs.
 
