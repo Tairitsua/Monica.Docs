@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import io
 import json
@@ -7,7 +8,7 @@ import os
 import tempfile
 import unittest
 import zipfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Callable
 
 
@@ -33,6 +34,55 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
 
     def test_accepts_self_consistent_release_assets(self) -> None:
         fixture = self._fixture()
+
+        self._verify(fixture)
+
+    def test_skill_tree_digest_uses_posix_utf8_order_for_prefix_colliding_skills(
+        self,
+    ) -> None:
+        fixture = self._fixture(
+            additional_skills={
+                "monica-application": {
+                    "SKILL.md": b"---\nname: monica-application\n---\n",
+                },
+                "monica-application-microservice": {
+                    "SKILL.md": b"---\nname: monica-application-microservice\n---\n",
+                },
+            }
+        )
+        skill_tree_files = {
+            path: content
+            for path, content in fixture["archive_files"].items()
+            if path.startswith("skills/")
+        }
+        canonical_paths = sorted(skill_tree_files, key=lambda path: path.encode("utf-8"))
+        collision_paths = [
+            path
+            for path in canonical_paths
+            if path.startswith("skills/monica-application")
+        ]
+        self.assertEqual(
+            [
+                "skills/monica-application-microservice/SKILL.md",
+                "skills/monica-application/SKILL.md",
+            ],
+            collision_paths,
+        )
+
+        def digest(paths: list[str]) -> str:
+            manifest = "".join(
+                f"{hashlib.sha256(skill_tree_files[path]).hexdigest()}  {path}\n"
+                for path in paths
+            )
+            return VALIDATOR.sha256_digest(manifest.encode("utf-8"))
+
+        canonical_digest = digest(canonical_paths)
+        component_order_digest = digest(
+            sorted(skill_tree_files, key=lambda path: PurePosixPath(path).parts)
+        )
+        manifest = self._json(fixture, "manifest")
+        self.assertEqual(canonical_digest, manifest["skillTreeDigest"])
+        self.assertNotEqual(component_order_digest, canonical_digest)
 
         self._verify(fixture)
 
@@ -425,7 +475,12 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
             fetch_bytes=fixture["payloads"].__getitem__,
         )
 
-    def _fixture(self, tag: str | None = None) -> dict[str, object]:
+    def _fixture(
+        self,
+        tag: str | None = None,
+        *,
+        additional_skills: dict[str, dict[str, bytes]] | None = None,
+    ) -> dict[str, object]:
         release_tag = tag or self.TAG
         version = release_tag.removeprefix("v")
         version_without_build_metadata = version.split("+", 1)[0]
@@ -438,6 +493,14 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
             "manifest": f"https://downloads.example/{release_tag}/agent-skill-manifest.json",
             "archive": f"https://downloads.example/{release_tag}/monica-agent-skills-{release_tag}.zip",
         }
+        guide_files = {
+            "SKILL.md": b"---\nname: monica-guide\n---\n",
+            "assets/bootstrap-prompts.json": self.PROMPT_BYTES,
+        }
+        extra_skills = additional_skills or {}
+        if "monica-guide" in extra_skills:
+            raise ValueError("additional skills must not replace monica-guide")
+        managed_skill_files = {"monica-guide": guide_files, **extra_skills}
         catalog = {
             "schemaVersion": 1,
             "distribution": {
@@ -451,33 +514,35 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
                 "bootstrapAsset": "skills/monica-guide/assets/bootstrap-prompts.json"
             },
             "skills": {
-                "monica-guide": {
-                    "path": "skills/monica-guide",
+                name: {
+                    "path": f"skills/{name}",
                     "ownership": "monica",
                     "managed": True,
                 }
+                for name in managed_skill_files
             },
         }
         catalog_bytes = self._json_bytes(catalog)
-        guide_files = {
-            "SKILL.md": b"---\nname: monica-guide\n---\n",
-            "assets/bootstrap-prompts.json": self.PROMPT_BYTES,
+        skill_tree_files = {
+            f"skills/{name}/{path}": content
+            for name, skill_files in managed_skill_files.items()
+            for path, content in skill_files.items()
         }
         archive_files = {
             ".monica/agent-skill-catalog.json": catalog_bytes,
-            **{f"skills/monica-guide/{path}": content for path, content in guide_files.items()},
+            **skill_tree_files,
         }
         files = {
             path: VALIDATOR.sha256_digest(content)
             for path, content in archive_files.items()
         }
-        guide_digest = VALIDATOR.file_manifest_digest(guide_files)
-        tree_digest = VALIDATOR.file_manifest_digest(
-            {
-                f"skills/monica-guide/{path}": content
-                for path, content in guide_files.items()
-            }
-        )
+        skill_digests = {
+            name: VALIDATOR.file_manifest_digest(skill_files)
+            for name, skill_files in managed_skill_files.items()
+        }
+        skill_revisions = {name: 1 for name in managed_skill_files}
+        skill_last_changed_in = {name: release_tag for name in managed_skill_files}
+        tree_digest = VALIDATOR.file_manifest_digest(skill_tree_files)
         published_at = "2026-08-04T12:00:00Z"
         manifest = {
             "schemaVersion": 2,
@@ -487,9 +552,9 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
             "catalogDigest": VALIDATOR.sha256_digest(catalog_bytes),
             "skillTreeDigest": tree_digest,
             "skillDigestAlgorithm": VALIDATOR.SKILL_DIGEST_ALGORITHM,
-            "skillDigests": {"monica-guide": guide_digest},
-            "skillRevisions": {"monica-guide": 1},
-            "skillLastChangedIn": {"monica-guide": release_tag},
+            "skillDigests": skill_digests,
+            "skillRevisions": skill_revisions,
+            "skillLastChangedIn": skill_last_changed_in,
             "publishedAt": published_at,
             "indexUrl": f"{asset_base}/agent-skill-index.json",
             "catalogUrl": f"{asset_base}/agent-skill-catalog.json",
@@ -505,9 +570,9 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
             "catalogDigest": manifest["catalogDigest"],
             "skillTreeDigest": tree_digest,
             "skillDigestAlgorithm": VALIDATOR.SKILL_DIGEST_ALGORITHM,
-            "skillDigests": {"monica-guide": guide_digest},
-            "skillRevisions": {"monica-guide": 1},
-            "skillLastChangedIn": {"monica-guide": release_tag},
+            "skillDigests": skill_digests,
+            "skillRevisions": skill_revisions,
+            "skillLastChangedIn": skill_last_changed_in,
             "manifestDigest": VALIDATOR.sha256_digest(manifest_bytes),
             "publishedAt": published_at,
             "assetBaseUrl": asset_base,
