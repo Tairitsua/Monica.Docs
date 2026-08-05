@@ -1,7 +1,7 @@
 ---
 title: 安装与主机接入
 description: 安装 Monica 包并接入统一的主机启动流程。
-sidebar_position: 2
+sidebar_position: 3
 ---
 
 # 安装与主机接入

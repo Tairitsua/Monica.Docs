@@ -7,6 +7,10 @@
 .idea/
 .vscode/
 
+# Python tooling
+**/__pycache__/
+*.pyc
+
 # Local runtime stores
 src/AppHost/Monica.Docs.Demo/App_Data/
 

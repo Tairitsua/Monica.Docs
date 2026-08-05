@@ -1,44 +1,61 @@
 ---
 title: Creation workflow
-description: Design, scaffold, implement, and validate a third-party Monica module package.
+description: Design, scaffold, implement, and validate a third-party Monica package repository and optional provider images.
 sidebar_position: 4
 ---
 
 # Creation workflow
 
-Use `$monica-third-party-module-development` to turn a package decision into a publish-ready repository. The workflow treats package identity, module boundaries, licensing, and release ownership as design inputs rather than cleanup after implementation.
+Use `$monica-third-party-module-development` to turn repository, package, module, and runtime decisions into a publish-ready release unit. The workflow treats identity, dependency graphs, licensing, artifact ownership, and operational validation as design inputs rather than cleanup after implementation.
 
 ## 1. Define the publishing boundary
 
 Decide before scaffolding:
 
-- Publisher and NuGet.org owner
-- Package ID and purpose
-- Modules included in the package and each module key
+- Durable repository ID, aligned release version, publisher, and NuGet.org owner
+- Every NuGet package ID, purpose, project path, and package-to-package dependency
+- Every module key, kind, module-to-module dependency, and provider target
 - Non-web, web, provider/integration, mixed UI, or standalone UI shape
+- Whether a provider runs in-process or through a companion OCI service
+- For OCI services: registry repository, connector package, CPU/NVIDIA targets, platform, runtime stage, immutable tag suffix, provider-specific smoke commands, and managed NVIDIA runner labels
 - Minimum supported Monica version and target frameworks
 - Open-source, source-available, proprietary, or other license
 - Public NuGet.org or private-feed distribution
 - Repository, support, security, and release channels
 
-A package may contain multiple modules. Group them because they are coherent and released together, not because they happen to exist in the same repository.
+A package may contain multiple modules, and one repository may contain multiple packages. Keep modules in one package when they share an install/version boundary. Keep packages in one repository when ownership, version, license, support, and release policy remain aligned.
 
-## 2. Scaffold with the skill
+## 2. Write the schema-v2 repository contract
+
+`monica.manifest.json` is authoritative for the complete release unit:
+
+- `packages[].packageDependencies` is the internal NuGet graph and uses full package IDs.
+- `packages[].modules[].dependsOn` is the Monica runtime graph and uses full module keys.
+- Every cross-package module edge must be backed by a package edge.
+- A `kind: provider` module sets `providerFor` and also lists that target in `dependsOn`.
+- `ociImages[]` maps one image repository to its connector through `companionPackageId`; the named package owns a provider module, and CPU/NVIDIA variants are targets of that same repository.
+- Optional `releaseGates` declares the repository commands that prove meaningful CPU and NVIDIA provider inference. NVIDIA gates include shared `managedNvidiaRunnerLabels` containing `self-hosted` and `nvidia`.
+- `version` applies to every declared NuGet package and every `<version>-<tagSuffix>` image tag.
+
+Both dependency graphs must be complete and acyclic. Do not infer runtime dependencies from project references or shorten identities to repository-local names.
+
+## 3. Scaffold with the skill
 
 Give the skill concrete requirements:
 
 ```text
-$monica-third-party-module-development Create Acme.Monica.Analytics as one
-publish-ready mixed Razor package. Include Analytics, Alerts, and Analytics UI
-modules with keys Acme.Monica.Analytics, Acme.Monica.Analytics.Alerts, and
-Acme.Monica.Analytics.UI. Use MIT and GitHub Actions Trusted Publishing.
+$monica-third-party-module-development Design Tairitsua.Monica.AI.OCR as one
+repository with separate OCR contract, PaddleOCR connector, and OCR UI NuGet
+packages. Use Monica 1.0.0-rc.6 from NuGet only. Pair the connector with one
+layered OCI repository containing CPU amd64 and NVIDIA CUDA 12.6 amd64 targets.
+Scaffold and validate locally, but do not publish.
 ```
 
-Review the generated identity manifest, module table, project references, package metadata, and license before accepting the scaffold.
+This is a design example, not a statement that those packages or images are published. Review the generated identity manifest, package/module graphs, project references, OCI declarations, metadata, and license before accepting the scaffold. Declaring an OCI target creates the Bake contract and directory; it does not create a real provider service implementation. If any declared image lacks complete release gates, the scaffold omits the entire publish workflow rather than allowing a partial NuGet/OCI release.
 
 For each UI module, the scaffold derives a stable navigation category ID from that module's key without the final `.UI`, registers its label with `RegisterLocalizedCategory<TResource>()`, and registers its page with `RegisterLocalizedPage<TPage, TResource>()`. Keep this explicit owner-resource pattern when adding more pages; do not replace it with a central resource or translated-string grouping.
 
-## 3. Implement public module contracts
+## 4. Implement public module contracts
 
 Each module uses the current Monica registration pattern:
 
@@ -119,7 +136,7 @@ The work action must be synchronous, deterministic, and isolated; Monica rejects
 
 Use `IHostedLifecycleService` or a hosted service for runtime activation, I/O, long-running work, and cleanup. `ScheduleCompositionWork(...)` does not make `ConfigureServices`, `PostConfigureServices`, or any other module callback concurrent.
 
-## 4. Compose a real host
+## 5. Compose a real host
 
 Test the same boundary consumers use:
 
@@ -150,16 +167,19 @@ Without that property, server prerendering may appear to work while
 `/_framework/blazor.web.js` returns 404 and the page never becomes
 interactive.
 
-## 5. Validate the distributable package
+For a separated provider service, the provider NuGet package remains a small connector that implements the capability package's public abstraction. The connector-facing HTTP or gRPC contract must be identical for CPU and NVIDIA image tags, so consumers switch acceleration modes through deployment configuration rather than recompilation.
+
+## 6. Validate the complete release unit
 
 Before publication:
 
-1. Restore, build, and test with zero warnings.
-2. Pack the Release configuration.
-3. Inspect the `.nupkg` metadata, README, icon, license, assemblies, and static web assets.
-4. Push the artifact to a temporary local feed.
-5. Restore it into a clean consumer project with no project references to the package source.
-6. Start a representative host and verify every public registration path.
-7. Run the [quality checklist](./quality-checklist.md).
+1. Run `python scripts/validate_repository.py --root .` and the applicable localization and OCI validators.
+2. Restore the exact declared Monica version from NuGet. The repository validator requires every resolved `Monica.*` `PackageReference`, including centrally managed versions using ordinary property indirection, to equal manifest `monicaVersion`. Do not add `MonicaSourceRoot`, sibling Monica `ProjectReference` entries, or a local source-feed override.
+3. Build and test with zero warnings, then pack every declared project in Release.
+4. Run `python scripts/inspect_packages.py --root . --artifacts artifacts` to reject missing/extra packages, incorrect internal NuGet dependencies, or embedded sibling assemblies.
+5. Push all `.nupkg` files to a temporary local feed. Restore every public package entry point in clean consumers with no project references to the package source.
+6. For OCI releases, validate the normalized Bake graph, build every declared target, and run `python scripts/inspect_images.py --root .` to verify tags, labels, non-root execution, and health checks.
+7. Run the declared provider-specific CPU smoke command. For every NVIDIA target, use the declared managed self-hosted GPU runner and NVIDIA smoke command to complete actual provider inference on the GPU. The release workflow loads and inspects images and runs these commands before registry login or any artifact push. An image build, `docker inspect`, CUDA import, or `nvidia-smi` alone is insufficient.
+8. Start representative hosts and the UI bridge, verify every public registration path, and run the [quality checklist](./quality-checklist.md).
 
-Do not publish placeholders, TODO implementations, disabled tests, or a package that was tested only through source-project references.
+Do not publish placeholders, TODO implementations, disabled tests, fake provider responses, or artifacts tested only through source-project references. All declared packages and images must pass together before the first external push.

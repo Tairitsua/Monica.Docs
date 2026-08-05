@@ -87,9 +87,9 @@ export function HomePage({ locale }: { locale: Locale }) {
             <h2 id="start-title">{copy.starter.title}</h2>
             <p>{copy.starter.description}</p>
             <ol className="starter-steps">{copy.starter.steps.map((step, index) => <li className={index === 0 ? "is-current" : undefined} key={step.title}><span>0{index + 1}</span><div><strong>{step.title}</strong><small>{step.body}</small></div></li>)}</ol>
-            <Link className="text-link" href={localizedPath(locale, "/docs")}><span>{copy.starter.quickStart}</span><ArrowUpRight aria-hidden="true" size={15} /></Link>
+            <Link className="text-link" href={localizedPath(locale, "/docs/getting-started/agent-setup")}><span>{copy.starter.quickStart}</span><ArrowUpRight aria-hidden="true" size={15} /></Link>
           </div>
-          <StarterCode copyLabel={copy.starter.copy} copiedLabel={copy.starter.copied} />
+          <StarterCode locale={locale} copy={copy.starter} />
         </section>
 
         <section className="section fit-section reveal-section" id="fit" aria-labelledby="fit-title">

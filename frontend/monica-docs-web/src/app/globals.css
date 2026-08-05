@@ -1422,7 +1422,7 @@ svg {
     top: -36px;
     right: 18px;
     color: var(--ink-muted);
-    content: "BUILDER-SCOPED / NO AMBIENT STATE";
+    content: attr(data-kicker);
     font-family: var(--font-mono);
     font-size: 8px;
     letter-spacing: 0.1em;
@@ -1432,12 +1432,26 @@ svg {
     display: flex;
     align-items: stretch;
     justify-content: space-between;
-    min-height: 52px;
+    min-height: 58px;
     border-bottom: 1px solid var(--dark-rule);
 }
 
 .code-tabs {
     display: flex;
+    min-width: 0;
+    overflow-x: auto;
+}
+
+.code-mode-tabs {
+    width: 100%;
+}
+
+.code-subtoolbar {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    min-height: 52px;
+    border-bottom: 1px solid var(--dark-rule);
 }
 
 .code-tab,
@@ -1456,6 +1470,14 @@ svg {
     border-right: 1px solid var(--dark-rule);
 }
 
+.code-mode-tab {
+    flex: 1 1 50%;
+    min-width: 150px;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
 .code-tab.is-active {
     color: var(--runtime);
     background: rgba(184, 243, 107, 0.05);
@@ -1463,6 +1485,7 @@ svg {
 
 .copy-button {
     display: flex;
+    flex: 0 0 auto;
     align-items: center;
     gap: 8px;
     padding-inline: 18px;
@@ -1475,11 +1498,15 @@ svg {
 }
 
 .code-panel {
-    min-height: 440px;
+    min-width: 0;
+    min-height: 400px;
+    max-height: 540px;
     padding: 30px 32px 38px;
+    overflow: auto;
 }
 
 .code-panel pre {
+    max-width: 100%;
     margin: 0;
     overflow: auto;
 }
@@ -1489,6 +1516,64 @@ svg {
     font-size: clamp(10px, 0.9vw, 13px);
     line-height: 1.78;
     white-space: pre;
+}
+
+.guide-prompt-panel code,
+.generic-fallback code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.local-prompt-note {
+    margin: 0 0 22px;
+    padding: 10px 12px;
+    color: #e9c877;
+    border: 1px solid rgba(233, 200, 119, 0.34);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    line-height: 1.55;
+}
+
+.generic-fallback {
+    border-top: 1px solid var(--dark-rule);
+}
+
+.generic-fallback summary {
+    padding: 17px 22px;
+    color: rgba(255, 255, 255, 0.62);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    cursor: pointer;
+}
+
+.generic-fallback[open] summary {
+    color: var(--runtime);
+    border-bottom: 1px solid var(--dark-rule);
+}
+
+.generic-fallback-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 20px;
+    align-items: start;
+    padding: 24px;
+}
+
+.generic-fallback pre {
+    min-width: 0;
+    margin: 0;
+    overflow: auto;
+}
+
+.generic-fallback code {
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 0.9vw, 13px);
+    line-height: 1.72;
+}
+
+.generic-fallback .copy-button {
+    min-height: 40px;
+    border: 1px solid var(--dark-rule);
 }
 
 .code-comment { color: #7f8178; }
@@ -2637,7 +2722,7 @@ html:lang(zh-CN) .trust-intro h2 {
     }
 
     .starter-section {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .code-window {
@@ -2985,6 +3070,11 @@ html:lang(zh-CN) .trust-intro h2 {
         min-width: auto;
     }
 
+    .code-mode-tab {
+        min-width: 128px;
+        padding-inline: 12px;
+    }
+
     .copy-button span {
         display: none;
     }
@@ -2996,6 +3086,15 @@ html:lang(zh-CN) .trust-intro h2 {
 
     .code-panel code {
         font-size: 9px;
+    }
+
+    .generic-fallback-body {
+        grid-template-columns: 1fr;
+        padding: 18px;
+    }
+
+    .generic-fallback .copy-button {
+        justify-self: end;
     }
 
     .fit-spectrum {
@@ -3197,9 +3296,8 @@ html:lang(zh-CN) .trust-intro h2 {
 
     *, *::before, *::after {
         scroll-behavior: auto !important;
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+        animation: none !important;
+        transition: none !important;
     }
 
     .hero-reveal,

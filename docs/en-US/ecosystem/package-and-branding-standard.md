@@ -6,7 +6,19 @@ sidebar_position: 2
 
 # Package and branding standard
 
-The ecosystem uses publisher-first IDs so NuGet ownership is visible and the official `Monica.*` namespace remains unambiguous.
+The ecosystem uses publisher-first IDs so NuGet ownership is visible and the official `Monica.*` namespace remains unambiguous. The public package and compatibility rules remain ecosystem v1; schema v2 is the repository manifest format that can describe several packages and optional images.
+
+## Repository manifest and release identity
+
+Every generated repository uses a root `monica.manifest.json` with `schemaVersion: 2`:
+
+- `repositoryId` is a durable publisher-owned identity and names the `.slnx` solution.
+- `packages` contains every packable project. Each package has exactly one project at `src/<PackageId>/<PackageId>.csproj`, and no packable project exists outside the manifest.
+- `version` is shared by all declared NuGet packages and companion OCI tags in one repository release.
+- Publisher, NuGet owner, target framework, Monica version, source visibility, distribution, publishing target, license, branding, contacts, and security policy are repository-wide decisions.
+- Split repositories when those shared policies or release versions need to differ.
+
+Keep the NuGet package tag `monica-ecosystem-v1`; `schemaVersion: 2` does not change package compatibility status.
 
 ## Package ID
 
@@ -23,6 +35,10 @@ Examples:
 | One package with core and UI modules | `Tairitsua.Monica.GachaPool` |
 | RabbitMQ provider package | `Acme.Monica.EventBus.RabbitMQ` |
 | Separately shipped UI package | `Acme.Monica.Analytics.UI` |
+| Provider-neutral OCR contract | `Tairitsua.Monica.AI.OCR` |
+| Separately shipped OCR provider | `Tairitsua.Monica.AI.OCR.PaddleOCR` |
+
+These rows illustrate valid identities; they do not assert that the named packages are published.
 
 Apply these rules:
 
@@ -34,6 +50,8 @@ Apply these rules:
 - Check NuGet.org before choosing an ID. Publishers with a durable package family should consider reserving their own publisher prefix.
 
 The optional `<Variant>` identifies a separately versioned or distributed package. It is not needed merely because one package contains several modules.
+
+All package IDs in one schema-v2 repository use the same publisher segment. `packages[].packageDependencies` lists internal dependencies by full package ID. Project references must match those edges during development, and packed nuspec dependencies must match them after packaging. Never embed a sibling package assembly to avoid declaring the dependency.
 
 ## Module keys
 
@@ -62,6 +80,8 @@ public sealed class ModuleGachaPoolUI(ModuleGachaPoolUIOption option)
 ```
 
 `Contoso.Monica.OtherFeature` is not valid inside that package because it is outside the package's identity boundary.
+
+`modules[].dependsOn` lists runtime dependencies by full module key. A cross-package module edge requires the owning package to declare the corresponding package dependency. Provider modules set `kind: provider`, implement `IModuleProvider`, and name the provided capability with `providerFor`; the same target key must appear in `dependsOn`. Both the package and module graphs must be acyclic.
 
 ## Registration names
 
@@ -128,6 +148,17 @@ Every release declares at least:
 
 Use Source Link and `.snupkg` symbols when source is available to consumers. See NuGet's [package authoring best practices](https://learn.microsoft.com/nuget/create-packages/package-authoring-best-practices).
 
+## Companion OCI identity
+
+A provider connector package that owns a provider module may name one separately runnable image repository through `ociImages[].companionPackageId`. CPU and NVIDIA variants are targets beneath that one registry repository, not separate product identities. Derive immutable tags as `<manifest-version>-<tag-suffix>`, for example:
+
+```text
+ghcr.io/tairitsua/monica-ai-ocr-paddleocr:0.1.0-alpha.1-cpu-amd64
+ghcr.io/tairitsua/monica-ai-ocr-paddleocr:0.1.0-alpha.1-nvidia-cu126-amd64
+```
+
+These are illustrative names, not a statement that the images are published. Runtime images carry OCI version, source, and revision labels plus Monica companion-package and accelerator labels. The connector README must identify all supported image tags, ports/protocol, health endpoint, required volumes, model/dependency provenance, CPU/GPU prerequisites, data-handling behavior, and whether GPU failure can fall back to CPU. Automated publishing remains disabled until every image has provider-specific CPU and applicable NVIDIA release gates, including a managed self-hosted GPU runner declaration.
+
 ## Official and compatibility marks
 
 The purple `#512BD4` Monica package mark and `Monica.*` package prefix identify official packages. Third parties must not use the purple asset, create their own recolors or geometry variants, or present it as their package icon. The canonical emerald compatibility asset below is the only approved shared-silhouette colorway for independent packages.
@@ -165,3 +196,5 @@ The package README must identify:
 - Whether modules add endpoints, middleware, hosted services, static web assets, persistence, or external network access
 - License and distribution terms
 - The self-attested compatibility notice
+- Every companion OCI repository and immutable target-tag pattern, when applicable
+- Which checks prove CPU service behavior and real NVIDIA inference

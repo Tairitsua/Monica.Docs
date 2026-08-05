@@ -28,6 +28,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: web
+      args:
+        MONICA_AGENT_SKILL_REF: ${MONICA_AGENT_SKILL_REF:-}
     container_name: monica-docs-web
     restart: unless-stopped
     depends_on:

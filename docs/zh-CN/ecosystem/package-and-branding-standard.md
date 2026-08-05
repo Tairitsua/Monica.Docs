@@ -6,7 +6,19 @@ sidebar_position: 2
 
 # 包与品牌规范
 
-第三方生态使用“发布者在前”的 ID，让 NuGet 所有权一目了然，并确保官方 `Monica.*` 命名空间保持清晰。
+第三方生态使用“发布者在前”的 ID，让 NuGet 所有权一目了然，并确保官方 `Monica.*` 命名空间保持清晰。公开包与兼容性规则仍是生态 v1；schema v2 是可以描述多个包与可选镜像的仓库清单格式。
+
+## 仓库清单与发布身份
+
+每个生成仓库都在根目录使用 `schemaVersion: 2` 的 `monica.manifest.json`：
+
+- `repositoryId` 是发布者拥有的持久身份，并用于命名 `.slnx` 解决方案。
+- `packages` 包含每个可打包项目。每个包在 `src/<PackageId>/<PackageId>.csproj` 只有一个项目，清单之外不存在可打包项目。
+- `version` 由一次仓库发布内的所有 NuGet 包与配套 OCI Tag 共享。
+- Publisher、NuGet 所有者、目标框架、Monica 版本、源码可见性、分发、发布目标、许可证、品牌、联系方式与安全策略都是仓库级决策。
+- 当这些共享策略或发布版本需要不同时，拆分仓库。
+
+NuGet 包仍使用 `monica-ecosystem-v1` 标签；`schemaVersion: 2` 不会改变包的兼容性身份。
 
 ## 包 ID
 
@@ -23,6 +35,10 @@ sidebar_position: 2
 | 同一个包内提供核心与 UI 模块 | `Tairitsua.Monica.GachaPool` |
 | RabbitMQ Provider 包 | `Acme.Monica.EventBus.RabbitMQ` |
 | 单独发布的 UI 包 | `Acme.Monica.Analytics.UI` |
+| Provider-neutral OCR Contract | `Tairitsua.Monica.AI.OCR` |
+| 独立发布的 OCR Provider | `Tairitsua.Monica.AI.OCR.PaddleOCR` |
+
+上表只用于说明有效身份，不表示这些包已经发布。
 
 具体规则：
 
@@ -34,6 +50,8 @@ sidebar_position: 2
 - 确定 ID 前先检查 NuGet.org。计划长期发布系列包的作者应考虑申请自己的发布者前缀保留。
 
 可选的 `<Variant>` 表示需要独立版本或独立分发的另一个包。一个包内部包含多个模块，并不要求添加 Variant。
+
+同一 schema-v2 仓库中的所有包 ID 使用相同的 Publisher 片段。`packages[].packageDependencies` 通过完整包 ID 列出仓库内依赖。开发阶段的项目引用必须与这些边一致，打包后的 Nuspec 依赖也必须一致。不得通过嵌入兄弟包程序集来逃避依赖声明。
 
 ## 模块键
 
@@ -62,6 +80,8 @@ public sealed class ModuleGachaPoolUI(ModuleGachaPoolUIOption option)
 ```
 
 `Contoso.Monica.OtherFeature` 不属于这个包的身份边界，因此不能在该包中使用。
+
+`modules[].dependsOn` 通过完整模块键列出运行时依赖。每个跨包模块依赖都要求归属包声明对应包依赖。Provider 模块要设置 `kind: provider`、实现 `IModuleProvider`，并通过 `providerFor` 命名所提供的能力；同一目标键必须出现在 `dependsOn` 中。包图与模块图都必须无环。
 
 ## 注册命名
 
@@ -128,6 +148,17 @@ DependsOnModule<ModuleShellUIGuide>().Register()
 
 当源码对消费者可用时，应提供 Source Link 与 `.snupkg` 符号包。更多规则见 NuGet 官方的[包创作最佳实践](https://learn.microsoft.com/nuget/create-packages/package-authoring-best-practices)。
 
+## 配套 OCI 身份
+
+拥有 Provider 模块的 Provider Connector 包可以通过 `ociImages[].companionPackageId` 命名一个独立运行的镜像仓库。CPU 与 NVIDIA 变体是该单一 Registry 仓库下的目标，不是两个独立产品身份。不可变 Tag 使用 `<manifest-version>-<tag-suffix>`，例如：
+
+```text
+ghcr.io/tairitsua/monica-ai-ocr-paddleocr:0.1.0-alpha.1-cpu-amd64
+ghcr.io/tairitsua/monica-ai-ocr-paddleocr:0.1.0-alpha.1-nvidia-cu126-amd64
+```
+
+这些名称只用于说明，不代表镜像已发布。运行时镜像必须携带 OCI 版本、源与修订 Label，以及 Monica Companion Package 和 Accelerator Label。Connector README 必须说明所有支持的镜像 Tag、端口/协议、Health Endpoint、必需 Volume、模型/依赖来源、CPU/GPU 前置条件、数据处理行为，以及 GPU 失败时是否允许回退到 CPU。只有每个镜像都声明 Provider 专用 CPU 与适用的 NVIDIA 发布门禁（包括受管 Self-hosted GPU Runner）后，自动发布才会启用。
+
 ## 官方标识与兼容标识
 
 紫色 `#512BD4` Monica 包标识与 `Monica.*` 前缀用于识别官方包。第三方不得使用紫色资源、自行制作其他改色或几何变体，也不得把它作为自己的包图标。下方标准绿色兼容标识是唯一允许独立包使用的 Monica 同轮廓配色版本。
@@ -165,3 +196,5 @@ v1 的兼容性由发布者自行声明。该标识不代表 Monica 已完成安
 - 模块是否增加端点、中间件、Hosted Service、静态 Web 资产、持久化或外部网络访问
 - 许可证与分发条款
 - 兼容性自我声明
+- 适用时列出每个配套 OCI 仓库与不可变目标 Tag 规则
+- 哪些检查用于证明 CPU Service 行为与真实 NVIDIA 推理

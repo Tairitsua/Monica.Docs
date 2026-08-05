@@ -8,7 +8,12 @@
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
-    "check": "npm run lint && npm run typecheck && npm run build"
+    "test:e2e": "playwright test",
+    "test:guide-prompts": "node scripts/test-guide-prompts.mjs",
+    "validate:guide-prompts": "node scripts/validate-guide-prompts.mjs",
+    "validate:guide-prompts:production": "node scripts/validate-guide-prompts.mjs --production",
+    "verify:guide-release:production": "node scripts/verify-published-guide-release.mjs",
+    "check": "npm run validate:guide-prompts && npm run test:guide-prompts && npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "5.2.10",
@@ -23,6 +28,7 @@
     "remark-gfm": "4.0.1"
   },
   "devDependencies": {
+    "@playwright/test": "1.62.1",
     "@tailwindcss/postcss": "4.3.2",
     "@types/node": "20.19.43",
     "@types/react": "19.2.17",

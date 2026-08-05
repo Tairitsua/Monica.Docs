@@ -44,6 +44,15 @@ type HomeCopy = {
     description: string;
     steps: readonly { title: string; body: string }[];
     quickStart: string;
+    modeLabel: string;
+    modes: readonly [string, string];
+    agentLabel: string;
+    agents: readonly [string, string];
+    manualLabel: string;
+    manualTabs: readonly [string, string];
+    genericFallback: string;
+    localDevelopment: string;
+    windowKicker: string;
     copy: string;
     copied: string;
   };
@@ -94,6 +103,8 @@ type HomeCopy = {
     closing: readonly [string, string];
   };
 };
+
+export type StarterCopy = HomeCopy["starter"];
 
 export const homeCopy: Record<Locale, HomeCopy> = {
   en: {
@@ -159,16 +170,25 @@ export const homeCopy: Record<Locale, HomeCopy> = {
       ],
     },
     starter: {
-      folio: "First run",
-      title: "From empty folder to inspectable system.",
+      folio: "Agent-first quick start",
+      title: "Give the agent the map before the work.",
       description:
-        "Start with the reference shape, then remove what you do not need. Monica modules remain explicit at every step.",
+        "Install Monica Guide, let it identify the repository profile, and review the exact setup plan before changing files.",
       steps: [
-        { title: "Scaffold", body: "Create the reference host" },
-        { title: "Compose", body: "Choose the module graph" },
-        { title: "Inspect", body: "Open runtime evidence" },
+        { title: "Install Guide", body: "Use the immutable Monica release" },
+        { title: "Preview", body: "Confirm the profile and complete plan" },
+        { title: "Apply", body: "Use the verified plan digest" },
       ],
       quickStart: "Open the full quick start",
+      modeLabel: "Quick start mode",
+      modes: ["Agent setup", "Manual .NET"],
+      agentLabel: "Coding agent",
+      agents: ["Codex", "Claude Code"],
+      manualLabel: "Manual .NET setup",
+      manualTabs: ["CLI", "Program.cs"],
+      genericFallback: "Generic npx skills fallback",
+      localDevelopment: "Local-development prompt preview — public builds require a verified immutable Monica ref.",
+      windowKicker: "MONICA / PREVIEW BEFORE APPLY",
       copy: "Copy",
       copied: "Copied to clipboard",
     },
@@ -326,16 +346,25 @@ export const homeCopy: Record<Locale, HomeCopy> = {
       ],
     },
     starter: {
-      folio: "首次运行",
-      title: "从空文件夹到可检查的系统。",
+      folio: "Agent-first 快速开始",
+      title: "先让 Agent 看懂地图，再开始工作。",
       description:
-        "先采用参考架构，再删去不需要的部分。每一步中，Monica 模块都保持明确可见。",
+        "安装 Monica Guide，让它识别仓库 Profile，并在修改文件前检查完整设置计划。",
       steps: [
-        { title: "创建", body: "生成参考主机" },
-        { title: "组合", body: "选择模块图" },
-        { title: "检查", body: "打开运行时证据" },
+        { title: "安装 Guide", body: "使用不可变 Monica 发布版本" },
+        { title: "预览", body: "确认 Profile 与完整计划" },
+        { title: "应用", body: "使用已验证的 Plan Digest" },
       ],
       quickStart: "打开完整快速开始",
+      modeLabel: "快速开始模式",
+      modes: ["Agent 设置", "手动 .NET"],
+      agentLabel: "编码 Agent",
+      agents: ["Codex", "Claude Code"],
+      manualLabel: "手动 .NET 设置",
+      manualTabs: ["CLI", "Program.cs"],
+      genericFallback: "通用 npx skills 备用方案",
+      localDevelopment: "本地开发 Prompt 预览——公开构建必须使用已验证的不可变 Monica ref。",
+      windowKicker: "MONICA / 应用前先预览",
       copy: "复制",
       copied: "已复制到剪贴板",
     },

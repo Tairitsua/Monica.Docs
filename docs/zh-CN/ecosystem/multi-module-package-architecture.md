@@ -1,14 +1,61 @@
 ---
-title: 多模块包架构
-description: 在一个 NuGet 包内组织任意数量、彼此内聚的基础设施、Provider、Web 与 UI 模块。
+title: 仓库、包与模块架构
+description: 在一个仓库内组织内聚 NuGet 包、Monica 模块与可选 Provider Service 镜像。
 sidebar_position: 3
 ---
 
-# 多模块包架构
+# 仓库、包与模块架构
 
-一个 NuGet 包可以包含任意数量、彼此内聚的 Monica 模块。包边界表达版本与分发方式，模块边界表达可以独立注册的能力。不要为了强制“一包一模块”而拆散本来应该共同发布的库。
+一个 schema-v2 仓库可以发布多个版本对齐的 NuGet 包，每个包又可以包含任意数量、彼此内聚的 Monica 模块。仓库边界表达共同所有权与发布策略；包边界表达安装与依赖选择；模块边界表达可独立注册的运行时能力。不要混淆这三种身份，也不要为强制“一包一模块”而拆散内聚能力。
 
-## 示例包
+## 显式维护两张依赖图
+
+仓库清单描述两张完整的有向无环图：
+
+- NuGet 图使用 `packages[].packageDependencies` 和完整包 ID。开发期的每条边都必须对应项目引用，打包后则对应 NuGet 依赖。
+- Monica 图使用 `modules[].dependsOn` 和完整模块键，用于控制运行时组合与注册顺序。
+
+每个跨包模块依赖都必须有对应包依赖，但反向不强制：一个包可以仅使用另一个包的公开类型，而不依赖其中每个模块。Provider 模块还要设置 `providerFor`，依赖对应目标模块键，并实现 `IModuleProvider`。
+
+## 多包 OCR 示例
+
+下方只是设计示例，不代表任何包或镜像已经发布：
+
+```text
+Tairitsua.Monica.AI.OCR/
+├── monica.manifest.json
+├── Tairitsua.Monica.AI.OCR.slnx
+├── src/
+│   ├── Tairitsua.Monica.AI.OCR/
+│   ├── Tairitsua.Monica.AI.OCR.PaddleOCR/
+│   └── Tairitsua.Monica.AI.OCR.UI/
+├── tests/
+│   ├── Test.Tairitsua.Monica.AI.OCR/
+│   ├── Test.Tairitsua.Monica.AI.OCR.PaddleOCR/
+│   └── Test.Tairitsua.Monica.AI.OCR.UI/
+├── containers/paddleocr/
+└── docker-bake.hcl
+```
+
+完整 NuGet 图：
+
+| 包 | `packageDependencies` | 职责 |
+|---|---|---|
+| `Tairitsua.Monica.AI.OCR` | 无 | Provider-neutral OCR 抽象、结果、置信度与 Facade |
+| `Tairitsua.Monica.AI.OCR.PaddleOCR` | `Tairitsua.Monica.AI.OCR` | HTTP Connector 与 PaddleOCR Provider 模块 |
+| `Tairitsua.Monica.AI.OCR.UI` | `Tairitsua.Monica.AI.OCR` | 可选的本地化 OCR Workbench |
+
+完整 Monica 运行时图：
+
+| 模块键 | 类型 | `dependsOn` | `providerFor` |
+|---|---|---|---|
+| `Tairitsua.Monica.AI.OCR` | infrastructure | 无 | — |
+| `Tairitsua.Monica.AI.OCR.PaddleOCR` | provider | `Tairitsua.Monica.AI.OCR` | `Tairitsua.Monica.AI.OCR` |
+| `Tairitsua.Monica.AI.OCR.UI` | UI | `Tairitsua.Monica.AI.OCR` | — |
+
+Provider 包与 UI 包不嵌入 Contract 程序集，它们的 Nuspec 在打包后依赖 Contract 包。所有项目都只能通过 `PackageReference` 和配置的 NuGet 源引用选定 Monica 版本，而且每个解析后的 `Monica.*` 引用都必须等于 Manifest `monicaVersion`。例如，面向 Monica `1.0.0-rc.6` 的仓库不得增加 `MonicaSourceRoot`、指向同级 Monica 源码的项目引用、不同的中央 Monica 版本，也不得使用伪装成该版本的本地重建包。
+
+## 同一包内的多模块
 
 下面的包把 Analytics、Alerts 与轻量 UI 一起发布：
 
@@ -95,6 +142,25 @@ src/Acme.Monica.Analytics/
 
 当 UI 需要独立版本、会给非 UI 消费者引入大量依赖，或需要单独分发时，再拆为 `<Publisher>.Monica.<Package>.UI` 包。
 
+## Provider Connector 与单一 OCI 仓库
+
+当大型 Native Runtime、模型、CUDA 库与 Python 环境更适合进程隔离时，不要把它们塞进 NuGet。发布轻量 Provider Connector 包，并配套一个 OCI 镜像仓库：
+
+```text
+Tairitsua.Monica.AI.OCR.PaddleOCR       .NET Connector 包
+ghcr.io/tairitsua/monica-ai-ocr-paddleocr
+  :0.1.0-alpha.1-cpu-amd64
+  :0.1.0-alpha.1-nvidia-cu126-amd64
+```
+
+上述引用只用于说明，不构成已发布声明。在 `monica.manifest.json` 中，镜像条目通过 `companionPackageId` 指向拥有 Provider 模块的 Connector 包；两种加速模式都是同一镜像仓库下的 Target。使用一个多阶段 Dockerfile DAG，让它们共享已锁定的 Base、Dependency、Application 与 Model Layer，再分叉为 CPU 和 NVIDIA Runtime Stage。两个变体对 Connector 暴露相同的版本化 API 与 Health Contract。
+
+每个运行时镜像都必须以非 Root 用户运行，声明 Health Check，锁定 Base/Dependency/Model 输入，并包含 OCI 版本/源/修订以及 Monica Companion Package/Accelerator Label。除非 CPU Fallback 是显式产品行为，否则 NVIDIA 镜像在请求的 GPU Runtime 不可用时必须立即失败。
+
+镜像构建成功不能证明 Provider 可用。必须验证规范化 Bake 图、检查已构建镜像配置、完成真实 CPU 推理，然后通过 `docker run --gpus ...` 运行 NVIDIA 目标并在 GPU 上完成真实 OCR 推理。仅运行 `nvidia-smi`、导入 CUDA 或请求 Health 接口都不能通过 GPU 门禁。
+
+只有当仓库脚本能够证明上述行为时，才声明 `releaseGates.cpuSmokeCommand` 和适用的 `nvidiaSmokeCommand`。NVIDIA 门禁还声明一组共享的受管 Self-hosted Runner Label。只要任何镜像缺少完整门禁，Scaffold 就不会为这个对齐发布单元生成发布工作流；门禁完整时，所有本地镜像 Load/Inspect 与 Provider Smoke Command 都必须在 Registry 认证及任何 NuGet/OCI Push 前完成。
+
 ## 什么时候拆包
 
 只有边界真实存在时才拆包，例如：
@@ -105,4 +171,4 @@ src/Acme.Monica.Analytics/
 - 某个 Provider 集成应保持可选。
 - 所有权与支持责任不同。
 
-不要仅仅因为模块数量大于一个就拆包。
+不要仅仅因为模块数量大于一个就拆包。当包与镜像之间的版本、许可证、源码可见性、分发、发布目标、支持或安全策略不再对齐时，应拆分仓库本身。

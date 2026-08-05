@@ -53,6 +53,36 @@ Open the root endpoint, then verify \`/healthz\` and \`/metrics\`. These surface
 Continue with [Architecture](architecture.md?from=starter#host-owned-composition) to understand the dependency model.`,
     },
     {
+      slug: "getting-started/agent-setup",
+      title: "Agent setup",
+      tags: ["agent", "Codex", "Claude Code", "monica-guide"],
+      headings: [
+        { id: "choose-a-profile", title: "Choose a profile", level: 2 },
+        { id: "preview-then-apply", title: "Preview, then apply", level: 2 },
+        { id: "release-and-source-safety", title: "Release and source safety", level: 2 },
+      ],
+      markdown: `Install **monica-guide** from the immutable Monica ref shown on the website home page. The Codex and Claude Code prompts pass their matching explicit \`--agent\` target; the generic fallback selects both. Guide configures agent development skills for the repository while keeping every mutating action behind a preview and verified plan digest.
+
+## Choose a profile
+
+- **application** for Monica-consuming applications.
+- **extension-author** for independent modules and providers.
+- **framework-contributor** for the Monica framework checkout.
+- **docs-contributor** for Monica.Docs and its source-backed examples.
+
+Guide can suggest a profile, but ambiguous repositories remain a user decision.
+
+## Preview, then apply
+
+The mutating intents \`init\`, \`update\`, \`configure\`, \`source\`, \`contribute\`, and \`forget\` default to dry-run. Applying requires \`--apply\` plus the exact \`planDigest\`, and aborts after workspace drift. Global-skill plans protect selected skills and planned files in one compensating boundary; retained recovery evidence is reported by \`doctor\` and blocks later mutation until reconciled. Use \`doctor --json\` for automation.
+
+## Release and source safety
+
+One Monica skill release is active globally per user. Repository expectations live in \`.monica/guide.json\`; \`doctor\` reports conflicts instead of claiming global multi-version isolation. Stable, preview, and source bindings always resolve to immutable artifacts, and offline mode never substitutes another release.
+
+Guide manages only its marked root \`AGENTS.md\` block and can keep a minimal \`CLAUDE.md\` import. Remote contribution actions always need current-session approval, while suspected vulnerabilities are routed privately.`,
+    },
+    {
       slug: "architecture",
       title: "Architecture",
       tags: ["architecture", "module graph", "ProjectUnit"],
@@ -139,6 +169,36 @@ dotnet run
 - 运行时证据属于默认入门路径。
 
 继续阅读[架构设计](architecture.md?from=starter#主机拥有组合权)，了解依赖模型。`,
+    },
+    {
+      slug: "getting-started/agent-setup",
+      title: "Agent 设置",
+      tags: ["Agent", "Codex", "Claude Code", "monica-guide"],
+      headings: [
+        { id: "选择-profile", title: "选择 Profile", level: 2 },
+        { id: "先预览再应用", title: "先预览，再应用", level: 2 },
+        { id: "发布与源码安全", title: "发布与源码安全", level: 2 },
+      ],
+      markdown: `从官网首页展示的不可变 Monica ref 安装 **monica-guide**。Codex 与 Claude Code Prompt 会显式传入各自的 \`--agent\` 目标，通用 fallback 则选择两者。Guide 会为当前仓库配置 Agent 开发 Skill，并把所有修改操作放在完整预览与已验证 Plan Digest 之后。
+
+## 选择 Profile
+
+- **application**：消费 Monica 的应用。
+- **extension-author**：独立模块与 Provider。
+- **framework-contributor**：Monica 框架 checkout。
+- **docs-contributor**：Monica.Docs 及其源码支撑示例。
+
+Guide 可以建议 Profile，但模糊仓库仍由用户决定。
+
+## 先预览，再应用
+
+\`init\`、\`update\`、\`configure\`、\`source\`、\`contribute\` 与 \`forget\` 默认 Dry run。应用时必须提供 \`--apply\` 与精确的 \`planDigest\`；工作区漂移后会中止。全局 Skill 计划会在同一补偿边界中保护选中 Skill 与计划文件；保留的恢复证据会由 \`doctor\` 报告，并在核对前阻止后续修改。自动化诊断可以使用 \`doctor --json\`。
+
+## 发布与源码安全
+
+每个用户同时只有一个全局 Monica Skill 发布版本。仓库期望值写入 \`.monica/guide.json\`；\`doctor\` 会报告冲突，不会声称支持全局多版本隔离。Stable、Preview 与 Source 绑定始终解析到不可变产物，离线模式也不会替换成其他发布版本。
+
+Guide 只管理根 \`AGENTS.md\` 中自己的标记区块，并可维护最小 \`CLAUDE.md\` import。远程贡献操作始终需要当前会话授权；疑似漏洞只走私密渠道。`,
     },
     {
       slug: "architecture",
@@ -246,19 +306,34 @@ export function getFallbackDocument(locale: Locale, slug: string): DocContent | 
 
 export function getFallbackTree(locale: Locale): DocTreeItem[] {
   const documents = getFallbackDocuments(locale);
-  const [gettingStarted, architecture, moduleSystem] = documents;
+  const [gettingStarted, agentSetup, architecture, moduleSystem] = documents;
 
-  if (!gettingStarted || !architecture || !moduleSystem) {
+  if (!gettingStarted || !agentSetup || !architecture || !moduleSystem) {
     return [];
   }
 
   return [
     {
       title: locale === "en" ? "Start" : "开始",
-      path: "getting-started.md",
-      slug: gettingStarted.slug,
-      isDocument: true,
-      children: [],
+      path: "getting-started",
+      slug: null,
+      isDocument: false,
+      children: [
+        {
+          title: gettingStarted.title,
+          path: "getting-started.md",
+          slug: gettingStarted.slug,
+          isDocument: true,
+          children: [],
+        },
+        {
+          title: agentSetup.title,
+          path: "getting-started/agent-setup.md",
+          slug: agentSetup.slug,
+          isDocument: true,
+          children: [],
+        },
+      ],
     },
     {
       title: locale === "en" ? "Concepts" : "核心概念",

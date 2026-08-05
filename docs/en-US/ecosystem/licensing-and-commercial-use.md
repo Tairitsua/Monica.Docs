@@ -32,6 +32,20 @@ Your package license does not override:
 - Third-party assets, fonts, icons, data, or generated content
 - Monica branding and compatibility-mark rules
 
+## Companion images and model assets
+
+In a schema-v2 repository, the publisher's declared license and distribution policy apply consistently to the publisher-authored packages and companion image service. If publisher-authored image code needs different terms, split it into another repository and make the boundary explicit.
+
+That repository-level choice does not relicense third-party image contents. A container may redistribute base-image layers, system libraries, Python/native runtimes, provider code, model weights, dictionaries, fonts, or other data under their own licenses and acceptable-use terms. Before distributing an image:
+
+- Record each component, version, source URL, checksum, license, and required notice.
+- Confirm that redistribution of every model and data asset is permitted, including commercial use when applicable.
+- Preserve required notices in the image and accompanying source/release materials.
+- Publish an SBOM or equivalent dependency inventory when practical.
+- Describe whether uploaded documents leave the host, are persisted, or are used for telemetry or model improvement.
+
+An open-source connector package does not automatically make every image layer or model open source. Conversely, charging for access does not remove third-party notice or redistribution obligations.
+
 ## Charging for a package
 
 You may charge for binaries, source access, updates, hosted services, support, consulting, or a commercial license. Choose distribution that enforces the intended access model:

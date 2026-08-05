@@ -17,6 +17,7 @@ sidebar_position: 1
 
 ## 页面
 
+- [Agent 设置](./agent-setup.md)
 - [安装与主机接入](./installation.md)
 - [注册第一个模块](./first-module.md)
 

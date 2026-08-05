@@ -8,6 +8,8 @@ sidebar_position: 1
 
 This guide creates a small ASP.NET Core host with ProjectUnits and the JobScheduler dashboard. The composition is explicit, validated before the host is built, and isolated from other hosts in the same process.
 
+For agent-assisted setup, start with [Agent setup](./agent-setup.md). It installs the repository-appropriate Monica development skills and previews managed instructions before changing the workspace.
+
 ## Install
 
 ```bash

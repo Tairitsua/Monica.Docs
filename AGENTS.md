@@ -8,7 +8,7 @@ Monica.Docs is both:
 
 - the documentation project for Monica
 - a live demo host for Monica modules, including UI-backed demos
-- a teaching/demo repository for the `monica-business-modular-monolith` and `monica-project-unit-development` skills
+- a teaching/demo repository for the `monica-application-modular-monolith` and `monica-application-project-unit-development` skills
 
 The public documentation backend is `Monica.Docs.Api`. The broad resettable framework showcase is `Monica.Docs.Demo`; do not treat the demo host as the public deployment target.
 
@@ -28,10 +28,11 @@ Key facts for navigation:
 
 ## Skill Usage
 
-- Use `monica-business-modular-monolith` whenever the task involves solution structure, `Domains/` boundaries, `Platform.*` placement, the strict project reference chain, AppHost composition, or published-language collaboration.
-- Use `monica-project-unit-development` whenever the task involves creating or changing `ApplicationService`, request DTOs, domain services, entities, repositories, domain events, handlers, configurations, or jobs.
+- Initialize this repository with the global `docs-contributor` profile through `monica-guide`; Monica.Docs does not keep repository-owned copies of Monica development skills.
+- Use `monica-application-modular-monolith` whenever the task involves solution structure, `Domains/` boundaries, `Platform.*` placement, the strict project reference chain, AppHost composition, or published-language collaboration.
+- Use `monica-application-project-unit-development` whenever the task involves creating or changing `ApplicationService`, request DTOs, domain services, entities, repositories, domain events, handlers, configurations, or jobs.
 - This repository should actively demonstrate those two skills in practice. Do not introduce local conventions that conflict with them.
-- For business development in this repository, apply the two skills together by default: use `monica-business-modular-monolith` first to choose the bounded-context boundary, target project, dependency direction, and folder placement, then use `monica-project-unit-development` to implement the concrete ProjectUnits.
+- For business development in this repository, apply the two skills together by default: use `monica-application-modular-monolith` first to choose the bounded-context boundary, target project, dependency direction, and folder placement, then use `monica-application-project-unit-development` to implement the concrete ProjectUnits.
 - Keep the directory and naming rules aligned with those skills: bounded contexts live under `src/Domains/{Subdomain}` with a single `Domains.{Subdomain}.csproj`; domain-owned application units stay under `Application/HandlersCommand`, `Application/HandlersQuery`, `Application/HandlersEvent`, and `Application/BackgroundWorkers`; repositories stay under `Repository/`; pure helper code stays under `Utilities/` and utility type names should use the `Utils*` prefix.
 - Keep AppHost composition-only. Do not place business ProjectUnits, domain logic, or ad-hoc infrastructure helpers in `src/AppHost/*`.
 - When a task changes business structure or ProjectUnits, the implementation should be reviewed against both skill rule sets before introducing new folders, references, or conventions.

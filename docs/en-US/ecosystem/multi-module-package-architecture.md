@@ -1,14 +1,61 @@
 ---
-title: Multi-module package architecture
-description: Organize one NuGet package around any coherent number of infrastructure, provider, web, and UI modules.
+title: Repository, package, and module architecture
+description: Organize one repository into coherent NuGet packages, Monica modules, and optional provider-service images.
 sidebar_position: 3
 ---
 
-# Multi-module package architecture
+# Repository, package, and module architecture
 
-One NuGet package may contain any coherent number of Monica modules. Package boundaries express versioning and distribution; module boundaries express independently registered capabilities. Do not split a cohesive library only to force one module per package.
+One schema-v2 repository may release several aligned NuGet packages, and each package may contain any coherent number of Monica modules. Repository boundaries express common ownership and release policy; package boundaries express installation and dependency choices; module boundaries express independently registered runtime capabilities. Do not confuse these three identities or split a cohesive library only to force one module per package.
 
-## Example package
+## Keep the two dependency graphs explicit
+
+The repository manifest describes two complete directed acyclic graphs:
+
+- The NuGet graph uses `packages[].packageDependencies` with full package IDs. Every edge must match a project reference during development and a NuGet dependency after packing.
+- The Monica graph uses `modules[].dependsOn` with full module keys. It governs runtime composition and registration order.
+
+Every cross-package module edge requires a corresponding package edge. The reverse is not required: a package may use another package's public types without its module depending on every module in that package. Provider modules additionally set `providerFor`, depend on that target module key, and implement `IModuleProvider`.
+
+## Multi-package OCR example
+
+The following is a design example and does not imply that any package or image has been published:
+
+```text
+Tairitsua.Monica.AI.OCR/
+├── monica.manifest.json
+├── Tairitsua.Monica.AI.OCR.slnx
+├── src/
+│   ├── Tairitsua.Monica.AI.OCR/
+│   ├── Tairitsua.Monica.AI.OCR.PaddleOCR/
+│   └── Tairitsua.Monica.AI.OCR.UI/
+├── tests/
+│   ├── Test.Tairitsua.Monica.AI.OCR/
+│   ├── Test.Tairitsua.Monica.AI.OCR.PaddleOCR/
+│   └── Test.Tairitsua.Monica.AI.OCR.UI/
+├── containers/paddleocr/
+└── docker-bake.hcl
+```
+
+Complete NuGet graph:
+
+| Package | `packageDependencies` | Responsibility |
+|---|---|---|
+| `Tairitsua.Monica.AI.OCR` | none | Provider-neutral OCR abstractions, results, confidence, and Facade |
+| `Tairitsua.Monica.AI.OCR.PaddleOCR` | `Tairitsua.Monica.AI.OCR` | HTTP connector and PaddleOCR provider module |
+| `Tairitsua.Monica.AI.OCR.UI` | `Tairitsua.Monica.AI.OCR` | Optional localized OCR workbench |
+
+Complete Monica runtime graph:
+
+| Module key | Kind | `dependsOn` | `providerFor` |
+|---|---|---|---|
+| `Tairitsua.Monica.AI.OCR` | infrastructure | none | — |
+| `Tairitsua.Monica.AI.OCR.PaddleOCR` | provider | `Tairitsua.Monica.AI.OCR` | `Tairitsua.Monica.AI.OCR` |
+| `Tairitsua.Monica.AI.OCR.UI` | UI | `Tairitsua.Monica.AI.OCR` | — |
+
+The provider and UI packages do not embed the contract assembly. Their packed nuspecs depend on the contract package. Every project references the selected Monica release through `PackageReference` and the configured NuGet feed only, and every resolved `Monica.*` reference equals manifest `monicaVersion`. For example, a repository targeting Monica `1.0.0-rc.6` must not introduce `MonicaSourceRoot`, sibling Monica source-project references, a different centrally managed Monica version, or a locally rebuilt package masquerading as that version.
+
+## Multiple modules in one package
 
 This package ships analytics, alerts, and a lightweight UI together:
 
@@ -95,6 +142,25 @@ A mixed package may contain infrastructure and UI modules in the same Razor SDK 
 
 Use a separate `<Publisher>.Monica.<Package>.UI` package when the UI needs independent versioning, introduces substantial dependencies for non-UI consumers, or should be distributed separately.
 
+## Provider connector plus one OCI repository
+
+Keep large native runtimes, models, CUDA libraries, and Python environments out of NuGet when they are operationally better isolated. Publish a small provider connector package and pair it with one OCI repository:
+
+```text
+Tairitsua.Monica.AI.OCR.PaddleOCR       .NET connector package
+ghcr.io/tairitsua/monica-ai-ocr-paddleocr
+  :0.1.0-alpha.1-cpu-amd64
+  :0.1.0-alpha.1-nvidia-cu126-amd64
+```
+
+These references are illustrative and are not publication claims. In `monica.manifest.json`, the image entry names the connector package that owns the provider module through `companionPackageId`; both acceleration modes are targets under that one image repository. Use one multi-stage Dockerfile DAG so the variants share pinned base, dependency, application, and model layers before diverging into CPU and NVIDIA runtime stages. Both variants expose the same versioned connector-facing API and health contract.
+
+Each runtime image must run as non-root, declare a health check, pin base/dependency/model inputs, and carry OCI version/source/revision plus Monica companion-package and accelerator labels. An NVIDIA image must fail fast when the requested GPU runtime is unavailable unless CPU fallback is explicit product behavior.
+
+Image construction is not proof of provider behavior. Validate the normalized Bake graph, inspect the built image configuration, run a real CPU inference, then run the NVIDIA target with `docker run --gpus ...` and complete a real OCR inference on the GPU. `nvidia-smi`, a CUDA import, or a health response alone does not satisfy the GPU gate.
+
+Declare `releaseGates.cpuSmokeCommand` and the applicable `nvidiaSmokeCommand` only after repository scripts prove this behavior. NVIDIA gates also declare one shared managed self-hosted runner label set. If any image lacks complete gates, the scaffold emits no publish workflow for the aligned release. With complete gates, local image load/inspection and all provider smoke commands finish before registry authentication or any NuGet/OCI push.
+
 ## When to split packages
 
 Split a package when at least one boundary is real:
@@ -105,4 +171,4 @@ Split a package when at least one boundary is real:
 - A provider integration should remain optional.
 - Ownership and support responsibilities differ.
 
-Do not split solely because the package contains more than one module.
+Do not split solely because the package contains more than one module. Split the repository itself when version, license, source visibility, distribution, publishing target, support, or security policy no longer align across its packages and images.

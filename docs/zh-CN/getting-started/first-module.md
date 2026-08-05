@@ -1,7 +1,7 @@
 ---
 title: 注册第一个模块
 description: 理解 `builder.AddMonica(...)`、`app.UseMonica()` 和 `app.MapMonica()` 的最小闭环。
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 # 注册第一个模块

@@ -1,0 +1,1 @@
+"""Monica.Docs validation tests."""
