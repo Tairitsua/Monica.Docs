@@ -71,7 +71,7 @@ ENV MONICA_PUBLIC_RELEASE_BUILD=1
 COPY --from=web-build /src/Monica.Docs/frontend/monica-docs-web/package.json ./
 COPY --from=web-build /src/Monica.Docs/frontend/monica-docs-web/package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
-COPY --from=web-build /src/Monica.Docs/frontend/monica-docs-web/.next ./.next
+COPY --chown=node:node --from=web-build /src/Monica.Docs/frontend/monica-docs-web/.next ./.next
 COPY --from=web-build /src/Monica.Docs/frontend/monica-docs-web/next.config.ts ./next.config.ts
 COPY --from=web-build /src/Monica.Docs/frontend/monica-docs-web/scripts ./scripts
 COPY --from=web-build /src/MoLibrary/Directory.Build.props ./Monica.Directory.Build.props
