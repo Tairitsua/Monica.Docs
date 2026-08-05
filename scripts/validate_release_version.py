@@ -11,6 +11,7 @@ import os
 import re
 import sys
 import zipfile
+from datetime import datetime
 from pathlib import Path
 from typing import Callable
 from urllib.parse import quote, urlencode
@@ -49,6 +50,8 @@ NUGET_SEARCH_URL = "https://azuresearch-usnc.nuget.org/query"
 GITHUB_RELEASE_API = "https://api.github.com/repos/Tairitsua/Monica/releases/tags"
 SKILL_DIGEST_ALGORITHM = "sha256-file-manifest-v1"
 FILE_MANIFEST_SCOPE = "release-payload-except-index-v1"
+RELEASE_INDEX_SCHEMA_VERSION = 2
+RELEASE_MANIFEST_SCHEMA_VERSION = 2
 DIGEST = re.compile(r"sha256:[0-9a-f]{64}")
 IMMUTABLE_AGENT_SKILL_REF = re.compile(
     r"^(?:[0-9a-f]{40}|v(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)"
@@ -109,6 +112,137 @@ def file_manifest_digest(files: dict[str, bytes]) -> str:
         for relative_path, content in sorted(files.items())
     )
     return sha256_digest(manifest.encode("utf-8"))
+
+
+def read_per_skill_release_metadata(
+    payload: dict[str, object],
+    label: str,
+    release_tags: set[str],
+) -> tuple[dict[str, str], dict[str, int], dict[str, str]]:
+    skill_digests = payload.get("skillDigests")
+    if (
+        not isinstance(skill_digests, dict)
+        or not skill_digests
+        or any(
+            not isinstance(name, str)
+            or not isinstance(digest, str)
+            or DIGEST.fullmatch(digest) is None
+            for name, digest in skill_digests.items()
+        )
+    ):
+        raise ValueError(f"{label} has invalid per-skill digest metadata")
+
+    skill_names = set(skill_digests)
+    skill_revisions = payload.get("skillRevisions")
+    if (
+        not isinstance(skill_revisions, dict)
+        or set(skill_revisions) != skill_names
+        or any(
+            type(revision) is not int or revision < 1
+            for revision in skill_revisions.values()
+        )
+    ):
+        raise ValueError(f"{label} has invalid per-skill revision metadata")
+
+    skill_last_changed_in = payload.get("skillLastChangedIn")
+    if (
+        not isinstance(skill_last_changed_in, dict)
+        or set(skill_last_changed_in) != skill_names
+        or any(
+            not isinstance(changed_tag, str)
+            or MONICA_RELEASE_TAG.fullmatch(changed_tag) is None
+            or changed_tag not in release_tags
+            for changed_tag in skill_last_changed_in.values()
+        )
+    ):
+        raise ValueError(f"{label} has invalid per-skill last-changed metadata")
+
+    return skill_digests, skill_revisions, skill_last_changed_in
+
+
+def read_published_at(value: object, label: str) -> datetime:
+    if not isinstance(value, str):
+        raise ValueError(f"{label} has no valid publishedAt timestamp")
+    normalized = f"{value[:-1]}+00:00" if value.endswith("Z") else value
+    try:
+        published_at = datetime.fromisoformat(normalized)
+    except ValueError as exception:
+        raise ValueError(f"{label} has no valid publishedAt timestamp") from exception
+    if published_at.tzinfo is None or published_at.utcoffset() is None:
+        raise ValueError(f"{label} publishedAt timestamp must include a UTC offset")
+    return published_at
+
+
+def validate_skill_revision_history(releases: dict[str, object]) -> None:
+    release_tags = set(releases)
+    chronology: list[
+        tuple[datetime, str, dict[str, str], dict[str, int], dict[str, str]]
+    ] = []
+    for release_tag, release in releases.items():
+        label = f"agent-skill-index release {release_tag}"
+        if (
+            MONICA_RELEASE_TAG.fullmatch(release_tag) is None
+            or not isinstance(release, dict)
+            or release.get("tag") != release_tag
+        ):
+            raise ValueError(f"{label} has invalid release identity metadata")
+        skill_digests, skill_revisions, skill_last_changed_in = (
+            read_per_skill_release_metadata(release, label, release_tags)
+        )
+        chronology.append(
+            (
+                read_published_at(release.get("publishedAt"), label),
+                release_tag,
+                skill_digests,
+                skill_revisions,
+                skill_last_changed_in,
+            )
+        )
+
+    chronology.sort(key=lambda entry: entry[0])
+    if any(
+        previous[0] >= current[0]
+        for previous, current in zip(chronology, chronology[1:])
+    ):
+        raise ValueError(
+            "agent-skill-index releases must have a strict publishedAt chronology"
+        )
+
+    previous_skills: dict[str, tuple[str, int, str]] = {}
+    seen_skill_names: set[str] = set()
+    for _, release_tag, digests, revisions, last_changed_in in chronology:
+        reintroduced_skills = set(digests) & (seen_skill_names - set(previous_skills))
+        if reintroduced_skills:
+            raise ValueError(
+                f"agent-skill-index {release_tag} must not reintroduce retired skill "
+                f"{sorted(reintroduced_skills)[0]}"
+            )
+
+        current_skills: dict[str, tuple[str, int, str]] = {}
+        for skill_name, digest in digests.items():
+            revision = revisions[skill_name]
+            changed_in = last_changed_in[skill_name]
+            previous = previous_skills.get(skill_name)
+            if previous is None:
+                if revision != 1 or changed_in != release_tag:
+                    raise ValueError(
+                        f"agent-skill-index {release_tag} must introduce {skill_name} "
+                        "at revision 1 with itself as the change origin"
+                    )
+            elif digest == previous[0]:
+                if revision != previous[1] or changed_in != previous[2]:
+                    raise ValueError(
+                        f"agent-skill-index {release_tag} must preserve the revision and "
+                        f"change origin for unchanged skill {skill_name}"
+                    )
+            elif revision != previous[1] + 1 or changed_in != release_tag:
+                raise ValueError(
+                    f"agent-skill-index {release_tag} must advance changed skill "
+                    f"{skill_name} by one revision with itself as the change origin"
+                )
+            current_skills[skill_name] = (digest, revision, changed_in)
+        seen_skill_names.update(current_skills)
+        previous_skills = current_skills
 
 
 def parse_args() -> argparse.Namespace:
@@ -360,7 +494,8 @@ def verify_agent_skill_release(
     versions = index.get("versions")
     channels = index.get("channels")
     if (
-        not isinstance(indexed_release, dict)
+        index.get("schemaVersion") != RELEASE_INDEX_SCHEMA_VERSION
+        or not isinstance(indexed_release, dict)
         or indexed_release.get("tag") != tag
         or indexed_release.get("monicaVersion") != version
         or not isinstance(indexed_release.get("commit"), str)
@@ -382,7 +517,7 @@ def verify_agent_skill_release(
         "archiveUrl": f"{asset_base_url}/{archive_name}",
     }
     if (
-        manifest.get("schemaVersion") != 1
+        manifest.get("schemaVersion") != RELEASE_MANIFEST_SCHEMA_VERSION
         or manifest.get("tag") != tag
         or manifest.get("monicaVersion") != version
         or not isinstance(resolved_commit, str)
@@ -398,27 +533,26 @@ def verify_agent_skill_release(
         "skillTreeDigest",
         "skillDigestAlgorithm",
         "skillDigests",
+        "skillRevisions",
+        "skillLastChangedIn",
         "publishedAt",
     )
     if any(manifest.get(field) != indexed_release.get(field) for field in shared_fields):
         raise ValueError(
-            f"GitHub release {tag} manifest and index disagree on skill digest metadata"
+            f"GitHub release {tag} manifest and index disagree on per-skill release metadata"
         )
     if manifest.get("skillDigestAlgorithm") != SKILL_DIGEST_ALGORITHM:
         raise ValueError(f"GitHub release {tag} uses an unsupported skill digest algorithm")
 
-    skill_digests = manifest.get("skillDigests")
-    if (
-        not isinstance(skill_digests, dict)
-        or not skill_digests
-        or any(
-            not isinstance(name, str)
-            or not isinstance(digest, str)
-            or DIGEST.fullmatch(digest) is None
-            for name, digest in skill_digests.items()
-        )
-    ):
-        raise ValueError(f"GitHub release {tag} has invalid per-skill digest metadata")
+    release_tags = set(releases) if isinstance(releases, dict) else set()
+    skill_digests, _, _ = read_per_skill_release_metadata(
+        manifest,
+        f"GitHub release {tag} manifest",
+        release_tags,
+    )
+    if not isinstance(releases, dict):
+        raise ValueError(f"GitHub release {tag} index has no release history")
+    validate_skill_revision_history(releases)
 
     catalog_digest = sha256_digest(catalog_bytes)
     manifest_digest = sha256_digest(manifest_bytes)

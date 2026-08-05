@@ -45,6 +45,28 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "must equal v1.2.3"):
             VALIDATOR.validate_advertised_tag("1.2.3", "v1.2.4")
 
+    def test_requires_release_index_schema_version_two(self) -> None:
+        fixture = self._fixture()
+        index = self._json(fixture, "index")
+        index["schemaVersion"] = 1
+        index_bytes = self._json_bytes(index)
+        fixture["payloads"][fixture["urls"]["index"]] = index_bytes
+        fixture["archive_files"][".monica/agent-skill-index.json"] = index_bytes
+        self._refresh_archive(fixture)
+
+        with self.assertRaisesRegex(ValueError, "inconsistent agent-skill-index metadata"):
+            self._verify(fixture)
+
+    def test_requires_release_manifest_schema_version_two(self) -> None:
+        fixture = self._fixture()
+        self._update_manifest(
+            fixture,
+            lambda manifest: manifest.__setitem__("schemaVersion", 1),
+        )
+
+        with self.assertRaisesRegex(ValueError, "inconsistent agent-skill-manifest metadata"):
+            self._verify(fixture)
+
     def test_requires_release_payload_except_index_scope(self) -> None:
         fixture = self._fixture()
         self._update_manifest(
@@ -102,7 +124,182 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
         manifest["skillDigests"]["monica-guide"] = VALIDATOR.sha256_digest(b"different")
         fixture["payloads"][fixture["urls"]["manifest"]] = self._json_bytes(manifest)
 
-        with self.assertRaisesRegex(ValueError, "disagree on skill digest metadata"):
+        with self.assertRaisesRegex(ValueError, "disagree on per-skill release metadata"):
+            self._verify(fixture)
+
+    def test_rejects_manifest_and_index_per_skill_revision_mismatch(self) -> None:
+        fixture = self._fixture()
+        manifest = self._json(fixture, "manifest")
+        manifest["skillRevisions"]["monica-guide"] = 2
+        fixture["payloads"][fixture["urls"]["manifest"]] = self._json_bytes(manifest)
+
+        with self.assertRaisesRegex(ValueError, "disagree on per-skill release metadata"):
+            self._verify(fixture)
+
+    def test_rejects_invalid_per_skill_revision_metadata(self) -> None:
+        fixture = self._fixture()
+
+        def invalidate_revision(manifest: dict[str, object]) -> None:
+            manifest["skillRevisions"]["monica-guide"] = 0
+
+        self._update_manifest(
+            fixture,
+            invalidate_revision,
+            update_index_skill_metadata=True,
+        )
+        with self.assertRaisesRegex(ValueError, "invalid per-skill revision metadata"):
+            self._verify(fixture)
+
+    def test_requires_exact_per_skill_metadata_key_parity(self) -> None:
+        fixture = self._fixture()
+
+        def remove_revision(manifest: dict[str, object]) -> None:
+            manifest["skillRevisions"].pop("monica-guide")
+
+        self._update_manifest(
+            fixture,
+            remove_revision,
+            update_index_skill_metadata=True,
+        )
+        with self.assertRaisesRegex(ValueError, "invalid per-skill revision metadata"):
+            self._verify(fixture)
+
+    def test_accepts_unchanged_skill_revision_history(self) -> None:
+        fixture = self._fixture()
+        self._add_prior_release(fixture)
+
+        self._verify(fixture)
+
+    def test_rejects_duplicate_release_publication_times(self) -> None:
+        fixture = self._fixture()
+        prior_tag = self._add_prior_release(fixture)
+        index = self._json(fixture, "index")
+        index["releases"][prior_tag]["publishedAt"] = index["releases"][fixture["tag"]][
+            "publishedAt"
+        ]
+        self._write_index(fixture, index)
+
+        with self.assertRaisesRegex(ValueError, "strict publishedAt chronology"):
+            self._verify(fixture)
+
+    def test_rejects_revision_drift_for_unchanged_skill(self) -> None:
+        fixture = self._fixture()
+        self._add_prior_release(fixture)
+
+        def drift_unchanged_skill(manifest: dict[str, object]) -> None:
+            manifest["skillRevisions"]["monica-guide"] = 2
+            manifest["skillLastChangedIn"]["monica-guide"] = fixture["tag"]
+
+        self._update_manifest(
+            fixture,
+            drift_unchanged_skill,
+            update_index_skill_metadata=True,
+        )
+        with self.assertRaisesRegex(ValueError, "preserve the revision and change origin"):
+            self._verify(fixture)
+
+    def test_rejects_changed_skill_revision_jump_or_stale_origin(self) -> None:
+        cases = (
+            (3, self.TAG, "revision jump"),
+            (2, "v1.2.2", "stale origin"),
+        )
+        for revision, changed_in, label in cases:
+            with self.subTest(label=label):
+                fixture = self._fixture()
+                self._add_prior_release(fixture)
+
+                def invalidate_changed_skill(manifest: dict[str, object]) -> None:
+                    manifest["skillDigests"]["monica-guide"] = VALIDATOR.sha256_digest(
+                        b"new guide content"
+                    )
+                    manifest["skillRevisions"]["monica-guide"] = revision
+                    manifest["skillLastChangedIn"]["monica-guide"] = changed_in
+
+                self._update_manifest(
+                    fixture,
+                    invalidate_changed_skill,
+                    update_index_skill_metadata=True,
+                )
+                with self.assertRaisesRegex(ValueError, "advance changed skill"):
+                    self._verify(fixture)
+
+    def test_rejects_new_skill_with_noninitial_revision(self) -> None:
+        fixture = self._fixture()
+        self._add_prior_release(fixture)
+
+        def add_invalid_skill(manifest: dict[str, object]) -> None:
+            manifest["skillDigests"]["monica-new"] = VALIDATOR.sha256_digest(
+                b"new skill content"
+            )
+            manifest["skillRevisions"]["monica-new"] = 2
+            manifest["skillLastChangedIn"]["monica-new"] = fixture["tag"]
+
+        self._update_manifest(
+            fixture,
+            add_invalid_skill,
+            update_index_skill_metadata=True,
+        )
+        with self.assertRaisesRegex(ValueError, "introduce monica-new at revision 1"):
+            self._verify(fixture)
+
+    def test_rejects_retired_skill_name_reintroduction(self) -> None:
+        fixture = self._fixture()
+        index = self._json(fixture, "index")
+        current_tag = fixture["tag"]
+        current_release = index["releases"][current_tag]
+        guide_digest = current_release["skillDigests"]["monica-guide"]
+        other_digest = VALIDATOR.sha256_digest(b"other skill")
+        oldest_tag = "v1.2.1"
+        retired_tag = "v1.2.2"
+        oldest_release = {
+            **current_release,
+            "tag": oldest_tag,
+            "monicaVersion": "1.2.1",
+            "publishedAt": "2026-08-02T12:00:00Z",
+            "skillDigests": {"monica-guide": guide_digest},
+            "skillRevisions": {"monica-guide": 1},
+            "skillLastChangedIn": {"monica-guide": oldest_tag},
+        }
+        retired_release = {
+            **current_release,
+            "tag": retired_tag,
+            "monicaVersion": "1.2.2",
+            "publishedAt": "2026-08-03T12:00:00Z",
+            "skillDigests": {"monica-other": other_digest},
+            "skillRevisions": {"monica-other": 1},
+            "skillLastChangedIn": {"monica-other": retired_tag},
+        }
+        index["releases"] = {
+            oldest_tag: oldest_release,
+            retired_tag: retired_release,
+            current_tag: current_release,
+        }
+        self._write_index(fixture, index)
+
+        def reintroduce_retired_guide(manifest: dict[str, object]) -> None:
+            manifest["skillRevisions"]["monica-guide"] = 1
+            manifest["skillLastChangedIn"]["monica-guide"] = oldest_tag
+
+        self._update_manifest(
+            fixture,
+            reintroduce_retired_guide,
+            update_index_skill_metadata=True,
+        )
+        with self.assertRaisesRegex(ValueError, "must not reintroduce retired skill"):
+            self._verify(fixture)
+
+    def test_rejects_unindexed_per_skill_last_changed_tag(self) -> None:
+        fixture = self._fixture()
+
+        def invalidate_last_changed(manifest: dict[str, object]) -> None:
+            manifest["skillLastChangedIn"]["monica-guide"] = "v1.2.2"
+
+        self._update_manifest(
+            fixture,
+            invalidate_last_changed,
+            update_index_skill_metadata=True,
+        )
+        with self.assertRaisesRegex(ValueError, "invalid per-skill last-changed metadata"):
             self._verify(fixture)
 
     def test_recomputes_monica_guide_digest_from_released_files(self) -> None:
@@ -112,7 +309,7 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
         def replace_digest(manifest: dict[str, object]) -> None:
             manifest["skillDigests"]["monica-guide"] = wrong_digest
 
-        self._update_manifest(fixture, replace_digest, update_index_skill_digests=True)
+        self._update_manifest(fixture, replace_digest, update_index_skill_metadata=True)
         with self.assertRaisesRegex(ValueError, "monica-guide digest does not match its files"):
             self._verify(fixture)
 
@@ -283,7 +480,7 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
         )
         published_at = "2026-08-04T12:00:00Z"
         manifest = {
-            "schemaVersion": 1,
+            "schemaVersion": 2,
             "tag": release_tag,
             "monicaVersion": version,
             "resolvedCommit": self.COMMIT,
@@ -291,6 +488,8 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
             "skillTreeDigest": tree_digest,
             "skillDigestAlgorithm": VALIDATOR.SKILL_DIGEST_ALGORITHM,
             "skillDigests": {"monica-guide": guide_digest},
+            "skillRevisions": {"monica-guide": 1},
+            "skillLastChangedIn": {"monica-guide": release_tag},
             "publishedAt": published_at,
             "indexUrl": f"{asset_base}/agent-skill-index.json",
             "catalogUrl": f"{asset_base}/agent-skill-catalog.json",
@@ -307,6 +506,8 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
             "skillTreeDigest": tree_digest,
             "skillDigestAlgorithm": VALIDATOR.SKILL_DIGEST_ALGORITHM,
             "skillDigests": {"monica-guide": guide_digest},
+            "skillRevisions": {"monica-guide": 1},
+            "skillLastChangedIn": {"monica-guide": release_tag},
             "manifestDigest": VALIDATOR.sha256_digest(manifest_bytes),
             "publishedAt": published_at,
             "assetBaseUrl": asset_base,
@@ -314,6 +515,7 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
             "manifestUrl": f"{asset_base}/agent-skill-manifest.json",
         }
         index = {
+            "schemaVersion": 2,
             "channels": {
                 "stable": release_tag if channel == "stable" else None,
                 "preview": release_tag if channel == "preview" else None,
@@ -358,7 +560,7 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
         fixture: dict[str, object],
         update: Callable[[dict[str, object]], None],
         *,
-        update_index_skill_digests: bool = False,
+        update_index_skill_metadata: bool = False,
     ) -> None:
         manifest = self._json(fixture, "manifest")
         update(manifest)
@@ -367,8 +569,50 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
         index = self._json(fixture, "index")
         release = index["releases"][fixture["tag"]]
         release["manifestDigest"] = VALIDATOR.sha256_digest(manifest_bytes)
-        if update_index_skill_digests:
-            release["skillDigests"] = manifest["skillDigests"]
+        if update_index_skill_metadata:
+            for field in ("skillDigests", "skillRevisions", "skillLastChangedIn"):
+                release[field] = manifest[field]
+        index_bytes = self._json_bytes(index)
+        fixture["payloads"][fixture["urls"]["index"]] = index_bytes
+        fixture["archive_files"][".monica/agent-skill-index.json"] = index_bytes
+        self._refresh_archive(fixture)
+
+    def _add_prior_release(self, fixture: dict[str, object]) -> str:
+        prior_tag = "v1.2.2"
+        index = self._json(fixture, "index")
+        current_release = index["releases"][fixture["tag"]]
+        guide_digest = current_release["skillDigests"]["monica-guide"]
+        prior_release = {
+            **current_release,
+            "tag": prior_tag,
+            "monicaVersion": "1.2.2",
+            "publishedAt": "2026-08-03T12:00:00Z",
+            "skillDigests": {"monica-guide": guide_digest},
+            "skillRevisions": {"monica-guide": 1},
+            "skillLastChangedIn": {"monica-guide": prior_tag},
+        }
+        index["releases"] = {
+            prior_tag: prior_release,
+            fixture["tag"]: current_release,
+        }
+        self._write_index(fixture, index)
+
+        def preserve_prior_revision(manifest: dict[str, object]) -> None:
+            manifest["skillRevisions"]["monica-guide"] = 1
+            manifest["skillLastChangedIn"]["monica-guide"] = prior_tag
+
+        self._update_manifest(
+            fixture,
+            preserve_prior_revision,
+            update_index_skill_metadata=True,
+        )
+        return prior_tag
+
+    def _write_index(
+        self,
+        fixture: dict[str, object],
+        index: dict[str, object],
+    ) -> None:
         index_bytes = self._json_bytes(index)
         fixture["payloads"][fixture["urls"]["index"]] = index_bytes
         fixture["archive_files"][".monica/agent-skill-index.json"] = index_bytes

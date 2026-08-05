@@ -78,7 +78,9 @@ The mutating intents \`init\`, \`update\`, \`configure\`, \`source\`, \`contribu
 
 ## Release and source safety
 
-One Monica skill release is active globally per user. Repository expectations live in \`.monica/guide.json\`; \`doctor\` reports conflicts instead of claiming global multi-version isolation. Stable, preview, and source bindings always resolve to immutable artifacts, and offline mode never substitutes another release.
+One Monica skill release is active globally per user. Repository expectations live in \`.monica/guide.json\`; \`doctor\` reports conflicts instead of claiming global multi-version isolation. Stable and preview catalogs give each skill a generated revision, an authoritative SHA-256 digest, and the immutable tag where it last changed. Revisions stay in the release catalog rather than \`SKILL.md\` frontmatter, preserving portable skills while Guide owns update semantics. \`status\` and \`update\` compare installed and target revisions, while Guide verifies digests and installs only changed skills.
+
+\`update --skill <name>\` includes required dependencies and expands to a coherent closure or refuses a mixed global release. Source bindings use an exact commit plus verified digests rather than inventing release revisions. Offline mode never substitutes another release.
 
 Guide manages only its marked root \`AGENTS.md\` block and can keep a minimal \`CLAUDE.md\` import. Remote contribution actions always need current-session approval, while suspected vulnerabilities are routed privately.`,
     },
@@ -196,7 +198,9 @@ Guide 可以建议 Profile，但模糊仓库仍由用户决定。
 
 ## 发布与源码安全
 
-每个用户同时只有一个全局 Monica Skill 发布版本。仓库期望值写入 \`.monica/guide.json\`；\`doctor\` 会报告冲突，不会声称支持全局多版本隔离。Stable、Preview 与 Source 绑定始终解析到不可变产物，离线模式也不会替换成其他发布版本。
+每个用户同时只有一个全局 Monica Skill 发布版本。仓库期望值写入 \`.monica/guide.json\`；\`doctor\` 会报告冲突，不会声称支持全局多版本隔离。Stable 与 Preview catalog 会为每个 Skill 生成 Revision、权威 SHA-256 Digest，以及最近变化时对应的不可变 tag。Revision 保存在发布 catalog 中，而不是 \`SKILL.md\` frontmatter；这样 Skill 保持可移植，更新语义由 Guide 统一负责。\`status\` 与 \`update\` 会比较已安装和目标 Revision；Guide 验证 Digest，并只安装有变化的 Skill。
+
+\`update --skill <name>\` 会纳入必需依赖，并扩展成一致的依赖闭包；若会形成混合全局发布版本则拒绝执行。Source 绑定使用精确 commit 与已验证 Digest，不会虚构发布 Revision。离线模式不会替换成其他发布版本。
 
 Guide 只管理根 \`AGENTS.md\` 中自己的标记区块，并可维护最小 \`CLAUDE.md\` import。远程贡献操作始终需要当前会话授权；疑似漏洞只走私密渠道。`,
     },

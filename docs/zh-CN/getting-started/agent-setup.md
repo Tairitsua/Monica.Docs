@@ -58,6 +58,20 @@ $monica-guide 运行 doctor --json，并在修改任何文件前解释所有阻�
 
 Monica Skill 采用全局安装，因此每个用户同时只有一个激活的 Monica Skill 发布版本。仓库在 `.monica/guide.json` 中记录期望版本。如果它与当前全局版本不同，`doctor` 会报告冲突，并要求显式切换全局版本或升级仓库；系统不会声称支持全局多版本并存隔离。
 
+### 识别单个 Skill 的更新
+
+对于每个带 tag 的 `stable` 或 `preview` 发布，catalog 都会为每个 Monica Skill 生成三个值：
+
+- 类似 `r7` 的 Revision；只有该 Skill 内容变化时才递增。
+- SHA-256 Digest；它是精确 Skill 字节内容的权威身份。
+- 该 Revision 最近一次发生变化时对应的不可变 Monica tag。
+
+Revision 保存在发布 catalog 中，而不是写入 `SKILL.md` frontmatter；这样 Skill 保持可移植，更新语义则由 Guide 统一负责。
+
+`status` 与 `update` 会并列显示已安装和目标 Revision，让你在应用计划前看清哪些 Skill 发生了变化。Guide 会验证 Digest，只重新安装有变化的 Skill；未变化的 Monica Skill 和无关的用户 Skill 都保持不动。
+
+`update --skill <name>` 可以缩小请求范围，但 Guide 仍会纳入必需依赖。若操作会形成混合的全局 Monica 发布版本，它会把完整且一致的依赖闭包加入预览，或者拒绝执行。`source` 通道不会虚构发布 Revision；它始终以选定 commit 与已验证 Skill Digest 作为身份。
+
 ## 源码绑定
 
 Guide 依次从 `ProjectReference`、lock/assets 数据、中央包管理和项目声明解析框架版本。混合版本、无法解析的范围、缺失的不可变发布版本，以及无法确认 commit 的脏源码 checkout 都会 Fail closed。

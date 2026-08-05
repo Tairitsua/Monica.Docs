@@ -58,6 +58,20 @@ $monica-guide Run doctor --json and explain any blocking findings before changin
 
 Monica skills are installed globally, so one Monica skill release is active per user. A repository records its expected release in `.monica/guide.json`. If that differs from the active global release, `doctor` reports the conflict and requires an explicit global switch or repository upgrade; simultaneous global multi-version isolation is not claimed.
 
+### Understand individual skill updates
+
+For each tagged `stable` or `preview` release, the catalog generates three values for every Monica skill:
+
+- A revision such as `r7`, which advances only when that skill's content changes.
+- A SHA-256 digest, which is the authoritative identity of the exact skill bytes.
+- The immutable Monica tag where that revision last changed.
+
+Revisions live in the release catalog, not `SKILL.md` frontmatter, so each skill stays portable while Guide owns the update semantics.
+
+`status` and `update` show the installed and target revisions so you can see which skills changed before applying a plan. Guide verifies the digests and reinstalls only changed skills; unchanged Monica skills and unrelated user skills are left alone.
+
+`update --skill <name>` narrows the requested update, but Guide still includes required dependencies. It expands the preview to a coherent dependency closure or refuses the operation when it would create a mixed global Monica release. The `source` channel does not invent release revisions: its identity remains the selected commit plus verified skill digests.
+
 ## Source binding
 
 Guide resolves a project version from `ProjectReference`, lock/assets data, central package management, and then project declarations. Mixed versions, unresolved ranges, missing immutable releases, and unidentified dirty source checkouts fail closed.
