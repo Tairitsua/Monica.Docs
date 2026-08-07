@@ -4,8 +4,6 @@ description: Configure EventBus handler discovery and understand its startup own
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## Module options
 
 | Property | Type | Default | Required | Change it when | Notes |

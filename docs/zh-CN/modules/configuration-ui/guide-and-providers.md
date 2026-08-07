@@ -4,8 +4,6 @@ description: Configuration UI 的 Guide、依赖、后端 store、source inspect
 sidebar_position: 4
 ---
 
-# Guide and Stores
-
 ## Guide methods
 
 | Method | What it enables | Required | Typical use |

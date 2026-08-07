@@ -4,8 +4,6 @@ description: Choose metadata, scheduler scope, and local or distributed executio
 sidebar_position: 4
 ---
 
-# Guide and providers
-
 ## Guide methods
 
 | Method | What it enables | Typical use |

@@ -4,8 +4,6 @@ description: 理解 Monica 对外入口与内部实现边界。
 sidebar_position: 3
 ---
 
-# Facade、Service、Provider 边界
-
 Monica 的模块文档应该优先描述**公开边界**，而不是内部实现细节。理解下面这条线非常重要：
 
 ```text

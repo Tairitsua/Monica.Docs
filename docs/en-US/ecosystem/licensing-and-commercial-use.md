@@ -4,8 +4,6 @@ description: Choose open-source, proprietary, or commercial terms for an indepen
 sidebar_position: 7
 ---
 
-# Licensing and commercial use
-
 Independent Monica package authors may choose their own license and may charge for their work. Monica's MIT license permits use, modification, publication, distribution, sublicensing, and sale of Monica software, provided the MIT copyright and permission notice is retained in copies or substantial portions of Monica software.
 
 This page explains the ecosystem policy, not legal advice. Review the Monica license, every dependency license, your copied code, and applicable trademark or consumer law with qualified counsel when the release is commercially important.

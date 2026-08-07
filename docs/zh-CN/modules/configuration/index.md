@@ -4,8 +4,6 @@ description: Schema-first 的动态配置模块，把强类型 Options、有效�
 sidebar_position: 1
 ---
 
-# Configuration
-
 `Monica.Configuration` 是 Monica 的 schema-first 动态配置模块。它从带 `[Configuration]` 的 Options 类型生成配置定义，用一个 active store bundle 保存 Monica 管理的 effective values、metadata 和 history，同时把最终值投影回 Microsoft `IConfiguration` / Options Pattern。
 
 当前设计有两个层次：

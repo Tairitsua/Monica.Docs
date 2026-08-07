@@ -4,8 +4,6 @@ description: Generate HTTP and local RPC clients directly from published request
 sidebar_position: 2
 ---
 
-# Request-owned RPC clients and local RPC
-
 `Monica.Generators.AutoController` reads `[ApiEndpoint]` directly from request symbols to generate HTTP controllers and RPC clients. RPC contracts no longer depend on handler build outputs or `*.rpc-metadata.json`, so a clean checkout can build in one pass from empty `bin` and `obj` directories.
 
 ## When to use it

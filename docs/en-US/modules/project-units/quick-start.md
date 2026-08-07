@@ -4,8 +4,6 @@ description: Register ProjectUnits, annotate a unit, and inspect the typed dashb
 sidebar_position: 2
 ---
 
-# Quick Start
-
 ## Install
 
 ```bash

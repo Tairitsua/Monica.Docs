@@ -161,7 +161,7 @@ export async function DocsArticlePage({ locale, slug }: { locale: Locale; slug: 
         <aside className="docs-toc">
           <span>{copy.onThisPage}</span>
           <ol>
-            {document.headings.filter((heading) => heading.level <= 3).map((heading) => (
+            {document.headings.filter((heading) => heading.level >= 2 && heading.level <= 3).map((heading) => (
               <li className={heading.level === 3 ? "is-nested" : undefined} key={`${heading.id}-${heading.title}`}>
                 <a href={`#${heading.id}`}>{heading.title}</a>
               </li>

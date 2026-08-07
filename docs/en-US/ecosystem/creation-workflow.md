@@ -4,8 +4,6 @@ description: Design, scaffold, implement, and validate a third-party Monica pack
 sidebar_position: 4
 ---
 
-# Creation workflow
-
 Use `$monica-third-party-module-development` to turn repository, package, module, and runtime decisions into a publish-ready release unit. The workflow treats identity, dependency graphs, licensing, artifact ownership, and operational validation as design inputs rather than cleanup after implementation.
 
 ## 1. Define the publishing boundary

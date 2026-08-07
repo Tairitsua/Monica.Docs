@@ -4,8 +4,6 @@ description: Configure entity events and explicit unit-of-work scope semantics.
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## Module option
 
 | Property | Type | Default | When to change it |

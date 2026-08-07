@@ -4,8 +4,6 @@ description: Configure request-owned endpoints, RPC targets, and conventional CR
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## `WebApiGenerationConfig`
 
 Apply one assembly-level configuration to every assembly that owns generated requests or handlers:

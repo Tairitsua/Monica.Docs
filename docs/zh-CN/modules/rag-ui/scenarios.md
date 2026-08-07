@@ -4,8 +4,6 @@ description: RAG UI 的索引、调试和切块器管理场景。
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## 场景 1 — 运营人员手动触发索引
 
 RAG 管理页适合让内部用户查看待索引文档、触发单文档索引或批量索引，并观察进度。

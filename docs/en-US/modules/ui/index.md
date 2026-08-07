@@ -4,8 +4,6 @@ description: Host Monica's Blazor operational pages in one shared, theme-aware s
 sidebar_position: 1
 ---
 
-# UI
-
 `Monica.UI` provides the interactive server Blazor shell, MudBlazor services, navigation registry, browser storage, themes, localization, and static-asset mapping used by Monica operational pages.
 
 ```bash

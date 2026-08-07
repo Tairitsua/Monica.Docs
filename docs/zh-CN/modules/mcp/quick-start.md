@@ -4,8 +4,6 @@ description: 注册 MCP 模块并定义第一个 Monica MCP Server。
 sidebar_position: 2
 ---
 
-# Quick Start
-
 ## 安装包
 
 ```bash

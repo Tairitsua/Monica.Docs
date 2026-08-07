@@ -4,8 +4,6 @@ description: Store typed state through one in-memory or distributed provider bou
 sidebar_position: 1
 ---
 
-# StateStore
-
 `Monica.StateStore` defines typed key-value operations, TTLs, bulk operations, key scanning, and optimistic concurrency through ETags. Its default `IStateStore` is host-local memory, so the smallest setup is explicit and has no external dependency.
 
 ```bash

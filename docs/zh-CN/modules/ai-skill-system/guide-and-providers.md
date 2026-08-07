@@ -4,8 +4,6 @@ description: AI Skill System 的 Guide 方法、依赖与扩展点。
 sidebar_position: 4
 ---
 
-# Guide and Providers
-
 ## Guide methods
 
 | Method | What it enables | Required | Typical use |

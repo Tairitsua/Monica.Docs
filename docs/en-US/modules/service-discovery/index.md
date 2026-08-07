@@ -4,8 +4,6 @@ description: Register service instances and coordinate a registry through a chos
 sidebar_position: 1
 ---
 
-# Service Discovery
-
 `Monica.ServiceDiscovery` manages instance metadata, registration state, health, registry leader election, and service queries. It requires an explicit state-store mode so a local host cannot accidentally pretend to be distributed.
 
 ```bash

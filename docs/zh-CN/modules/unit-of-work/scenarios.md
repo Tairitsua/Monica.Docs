@@ -4,8 +4,6 @@ description: 选择自动、独立和有界的事务作用域。
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## 场景 1 — 让普通应用入口自动加入工作单元
 
 Mediator 请求、直接 MVC Action、EventBus 处理器、Seeder 与有限 Hosted work item 使用自动执行描述。注册 UnitOfWork 后，其中的仓储操作会共享一个 ambient scope；嵌套自动边界会加入现有工作单元，不会创建冗余事务。

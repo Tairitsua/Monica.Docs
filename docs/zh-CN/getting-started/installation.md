@@ -1,10 +1,8 @@
 ---
 title: 安装与主机接入
 description: 安装 Monica 包并接入统一的主机启动流程。
-sidebar_position: 3
+sidebar_position: 4
 ---
-
-# 安装与主机接入
 
 Monica 不要求你一次性安装整套框架。通常的做法是：**先安装真正需要的包，再把它们组合到当前宿主的显式模块图中。**
 

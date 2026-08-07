@@ -4,8 +4,6 @@ description: Expose Monica application services over HTTP with host-owned routin
 sidebar_position: 1
 ---
 
-# WebApi and AutoControllers
-
 `Monica.WebApi` is the Stable HTTP composition package. `AddWebApi()` brings in AutoControllers, AutoModel, conventional DI, Swagger, authentication, mediator dispatch, object mapping, Repository, and Monica exception mapping. Use the narrower module registrations when an application does not need that aggregate.
 
 ```bash

@@ -4,8 +4,6 @@ description: 渐进补全 Agent 上下文、连接需求，并把覆盖缺口作
 sidebar_position: 5
 ---
 
-# 接入场景
-
 ## 新功能
 
 1. 确认所属子域和负责团队。

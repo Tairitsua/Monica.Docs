@@ -4,8 +4,6 @@ description: 选择聚合模式，并使用 Execution Timing 的公开记录与�
 sidebar_position: 4
 ---
 
-# Guide 与运行时 API
-
 Execution Timing 没有可替换 Provider。Guide 在两个内置聚合 Coordinator 之间选择，应用则通过宿主中立的 Factory 与 Query 抽象交互。
 
 ## Guide methods

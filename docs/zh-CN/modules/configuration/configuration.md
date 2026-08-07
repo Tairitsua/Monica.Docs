@@ -4,8 +4,6 @@ description: Configuration 的模块选项、配置定义、节点模型、路�
 sidebar_position: 4
 ---
 
-# Configuration
-
 `ModuleConfigurationOption` 继承 Monica 的基础 module option，并增加 Configuration 自己的 schema、source inventory 和 distributed reload 选项。模块的主要配置方式仍然是在 Options 类型上使用 `[Configuration]` 和 `[OptionSetting]` 声明 schema，并在宿主注册时选择 file 或 DB store preset。
 
 ## Module options

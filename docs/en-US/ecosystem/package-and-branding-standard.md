@@ -4,8 +4,6 @@ description: Apply the Monica ecosystem rules for package IDs, module keys, meta
 sidebar_position: 2
 ---
 
-# Package and branding standard
-
 The ecosystem uses publisher-first IDs so NuGet ownership is visible and the official `Monica.*` namespace remains unambiguous. The public package and compatibility rules remain ecosystem v1; schema v2 is the repository manifest format that can describe several packages and optional images.
 
 ## Repository manifest and release identity

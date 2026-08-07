@@ -4,8 +4,6 @@ description: Build searchable Markdown catalogs from one or more document roots.
 sidebar_position: 1
 ---
 
-# Markdown
-
 `Monica.Markdown` scans registered document groups, builds hierarchical navigation, parses YAML front matter, and exposes catalog and search abstractions plus `MarkdownFacade`. The built-in provider reads from the file system.
 
 ```bash

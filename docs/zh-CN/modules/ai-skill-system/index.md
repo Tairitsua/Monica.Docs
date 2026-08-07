@@ -4,8 +4,6 @@ description: 发现 Monica Skill 类型，并在 AI 模块启用时适配为 Age
 sidebar_position: 1
 ---
 
-# AI Skill System
-
 `AI Skill System` 模块负责发现继承自 `Skill<TSelf>` 的 Monica Skill 类型，将 `[SkillTool]` 方法转换为 Agent 可调用工具，并把 Skill 的说明、资源、工具参数展示给管理 UI。Skill 定义本身位于 `Monica.Core`，只有启用本模块后才会参与自动发现和 Agent 运行时。
 
 ## 何时使用这个模块

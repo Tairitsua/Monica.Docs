@@ -4,8 +4,6 @@ description: Register EF Core contexts and consume typed repository contracts.
 sidebar_position: 1
 ---
 
-# Repository
-
 `Monica.Repository` provides EF Core-backed repository contracts, context discovery, sequential GUID generation, and host-local diagnostics. Repository write methods stage changes; call `SaveChangesAsync()` explicitly or let an active Unit of Work flush and commit them.
 
 ```bash

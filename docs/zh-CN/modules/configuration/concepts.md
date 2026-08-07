@@ -4,8 +4,6 @@ description: 从开发者视角理解 Configuration 的定义、存储、运行�
 sidebar_position: 3
 ---
 
-# Concepts
-
 `Monica.Configuration` 的核心目标不是替代 Microsoft Configuration，而是在它前面增加一个更适合框架和业务模块使用的配置领域模型。开发者仍然通过 `IConfiguration` 和 Options Pattern 消费配置；配置定义、运行时修改、历史、导入导出和复杂类型规则由 Monica 管理。
 
 ## 三层模型

@@ -4,8 +4,6 @@ description: Adopt agent context incrementally, connect requirements, and use co
 sidebar_position: 5
 ---
 
-# Adoption Scenarios
-
 ## New feature
 
 1. Identify the owning subdomain and team.

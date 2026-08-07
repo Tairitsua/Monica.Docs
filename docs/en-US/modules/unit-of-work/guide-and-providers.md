@@ -4,8 +4,6 @@ description: Connect repository DbContexts and understand the execution-pipeline
 sidebar_position: 4
 ---
 
-# Guide and providers
-
 ## Guide method
 
 | Method | What it enables | Typical use |

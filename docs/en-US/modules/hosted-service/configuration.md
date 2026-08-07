@@ -4,8 +4,6 @@ description: Configure Hosted Service history, heartbeat, and startup failure be
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## Module options
 
 Pass an options callback to `monica.AddHostedService(...)`:

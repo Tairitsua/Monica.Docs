@@ -4,8 +4,6 @@ description: 理解公开配置项、额外选项与 Guide 必需配置。
 sidebar_position: 2
 ---
 
-# Option 与 Guide
-
 在 Monica 中，**不是所有配置都应该直接变成一个布尔开关或字符串属性。**
 
 ## 什么时候用 `ModuleOption`

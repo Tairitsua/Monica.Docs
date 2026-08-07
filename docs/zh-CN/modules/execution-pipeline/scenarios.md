@@ -4,8 +4,6 @@ description: 按业务边界选择 Execution Behavior、检查实际应用链，
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## 场景 1 — 只观察业务操作
 
 授权、调用链和性能指标通常只关心业务工作。用稳定描述符筛选即可：

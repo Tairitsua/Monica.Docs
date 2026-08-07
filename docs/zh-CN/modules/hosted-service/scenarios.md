@@ -4,8 +4,6 @@ description: 在真实宿主中应用实例感知的托管服务观测与检查�
 sidebar_position: 5
 ---
 
-# 使用场景
-
 ## 同一种工作器类型的多个实例
 
 当同一个工作器实现服务于多个逻辑 Provider 或租户时，可以注册多个独立的单例 `IHostedService` 描述符。每个工厂必须返回新对象，每个对象应公开具有运维意义的 `ServiceKey`。

@@ -4,8 +4,6 @@ description: 提供知识库管理页面和可复用知识库选择 UI 能力。
 sidebar_position: 1
 ---
 
-# KnowledgeBase UI
-
 `KnowledgeBase UI` 模块为 `KnowledgeBase` 提供 Blazor 管理页面，并为 AI Chat 等页面提供知识库选择能力。它负责页面注册和 UI 状态服务，不改变后端知识库和 RAG 的存储行为。
 
 ## 何时使用这个模块

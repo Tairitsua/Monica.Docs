@@ -4,8 +4,6 @@ description: Verify module behavior, public contracts, package contents, and rel
 sidebar_position: 5
 ---
 
-# Quality checklist
-
 The Monica Compatibility Mark is self-attested. Completing this checklist is the publisher's evidence that the claim is responsible; it is not Monica-team certification. Apply every relevant item to the complete schema-v2 repository release, not just its easiest package or image.
 
 ## Repository release contract

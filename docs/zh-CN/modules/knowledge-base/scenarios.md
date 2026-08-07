@@ -4,8 +4,6 @@ description: KnowledgeBase 的常见知识库和文档管理场景。
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## 场景 1 — 从 Markdown 文档组导入
 
 如果应用已经注册 Markdown 文档目录，`KnowledgeBaseFacade` 可以列出文档组，并把选中的 Markdown 文档导入知识库文档清单。导入后文档处于待索引状态，真正的向量索引由 RAG 模块执行。

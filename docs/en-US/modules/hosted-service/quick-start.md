@@ -4,8 +4,6 @@ description: Register Hosted Service observability in a .NET Generic Host and qu
 sidebar_position: 2
 ---
 
-# Quick Start
-
 ## Install the package
 
 ```bash

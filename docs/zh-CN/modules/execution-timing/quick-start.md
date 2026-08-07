@@ -4,8 +4,6 @@ description: 注册 Execution Timing，并在 Generic Host 或 Web Host 中测�
 sidebar_position: 2
 ---
 
-# Quick Start
-
 ## 安装包
 
 ```bash

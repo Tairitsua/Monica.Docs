@@ -4,8 +4,6 @@ description: Configure project-unit discovery details, naming diagnostics, reque
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## `ModuleProjectUnitsOption`
 
 | Property | Type | Default | Effect |

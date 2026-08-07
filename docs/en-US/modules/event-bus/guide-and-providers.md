@@ -4,8 +4,6 @@ description: Choose an EventBus provider, register keyed buses, and manage subsc
 sidebar_position: 4
 ---
 
-# Guide and Providers
-
 ## Guide methods
 
 | Method | What it enables | Required | Typical use |

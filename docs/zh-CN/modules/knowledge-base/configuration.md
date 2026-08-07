@@ -4,8 +4,6 @@ description: KnowledgeBase 的存储选项和默认值。
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## Module options
 
 | Property | Type | Default | Required | When to change | Notes |

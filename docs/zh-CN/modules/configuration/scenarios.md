@@ -4,8 +4,6 @@ description: Configuration 在实际项目中的配置定义、运行时来源�
 sidebar_position: 6
 ---
 
-# Scenarios
-
 ## 场景 1 — 用配置类统一 Options 注册
 
 把配置类放在拥有它的业务模块或基础设施模块中，并用 `[Configuration]` 声明配置定义。宿主需要注册 `monica.AddConfiguration()`，并显式选择 file 或 DB store。

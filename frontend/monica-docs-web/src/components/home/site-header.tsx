@@ -23,11 +23,11 @@ export function SiteHeader({ locale, nav, languageLabel, demoLabel, languageHref
   const alternateHref = languageHref ?? (locale === "en" ? "/zh-CN" : "/");
   const homeHref = localizedPath(locale, "/");
   const destinations = [
-    `${homeHref}#product`,
-    localizedPath(locale, "/reference"),
-    localizedPath(locale, "/docs"),
+    `${homeHref}#start`,
+    `${homeHref}#concepts`,
     localizedPath(locale, "/modules"),
-    localizedPath(locale, "/roadmap"),
+    `${homeHref}#example`,
+    localizedPath(locale, "/docs"),
   ] as const;
 
   useEffect(() => {

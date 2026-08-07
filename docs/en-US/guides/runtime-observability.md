@@ -4,8 +4,6 @@ description: Connect the declared architecture to Monica's operational surfaces 
 sidebar_position: 1
 ---
 
-# Runtime observability
-
 Monica keeps the declared architecture visible after startup. Runtime surfaces can show the module graph, ProjectUnits, dependency injection, configuration sources, jobs, repositories, and telemetry owned by the current host.
 
 ## Start with OpenTelemetry

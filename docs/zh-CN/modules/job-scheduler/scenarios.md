@@ -4,8 +4,6 @@ description: JobScheduler 的常见接入方式与使用陷阱。
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## 场景 1 — 本地开发用内存 Provider 跑通完整链路
 
 这是最适合文档、Demo 和本地验证的组合：`UseInMemoryMetadataRepository()` + `UseSchedulerScope("local-dev")` + `UseInMemoryProvider()`。它可以让你在单实例宿主里直接观察作业发现、调度和执行。

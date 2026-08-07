@@ -4,8 +4,6 @@ description: Coordinate repository changes through automatic execution boundarie
 sidebar_position: 1
 ---
 
-# Unit of Work
-
 The Unit of Work module lives in `Monica.Repository`. It coordinates transactional DbContexts, exposes `IUnitOfWorkManager`, and runs post-commit callbacks. It integrates with Monica's shared [Execution Pipeline](../execution-pipeline/index.md); it no longer installs an MVC action filter.
 
 ## Automatic and explicit boundaries

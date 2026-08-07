@@ -4,8 +4,6 @@ description: Register Execution Timing and measure work in a Generic or Web Host
 sidebar_position: 2
 ---
 
-# Quick Start
-
 ## Install the package
 
 ```bash

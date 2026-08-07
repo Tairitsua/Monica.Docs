@@ -4,8 +4,6 @@ description: Configuration 的 Guide 方法、存储预设、运行时来源链�
 sidebar_position: 5
 ---
 
-# Guide and Stores
-
 ## Guide methods
 
 | Method | What it enables | Required | Typical use |

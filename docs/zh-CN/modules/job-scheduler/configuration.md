@@ -4,8 +4,6 @@ description: JobScheduler 的公开选项、默认值与必需设置。
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## Module options
 
 | Property | Type | Default | Required | When to change | Notes |

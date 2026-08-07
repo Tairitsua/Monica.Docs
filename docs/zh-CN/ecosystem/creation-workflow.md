@@ -4,8 +4,6 @@ description: 设计、生成、实现并验证第三方 Monica 包仓库与可�
 sidebar_position: 4
 ---
 
-# 创建流程
-
 使用 `$monica-third-party-module-development` 可以把仓库、包、模块与运行时决策转化为可发布的完整单元。身份、依赖图、许可证、产物所有权与运维验证都是设计输入，不应等实现完成后再补。
 
 ## 1. 定义发布边界

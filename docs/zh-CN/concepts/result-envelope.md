@@ -4,8 +4,6 @@ description: 理解 Monica 中 `Res` / `Res<T>` 的使用边界与常见写法�
 sidebar_position: 4
 ---
 
-# 统一结果模型 Res
-
 Monica 使用 `Res` / `Res<T>` 作为统一结果模型，但它并不是“所有层都要统一用”的意思。
 
 ## 推荐边界

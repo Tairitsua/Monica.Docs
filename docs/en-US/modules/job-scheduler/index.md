@@ -4,8 +4,6 @@ description: Run recurring and triggered work with inspectable definitions and e
 sidebar_position: 1
 ---
 
-# JobScheduler
-
 `Monica.JobScheduler` discovers `RecurringJob` and `TriggeredJob<TArgs>` types, reconciles definitions, executes work with scoped dependency injection, and tracks execution state. The module deliberately requires a metadata repository, a scheduler scope, and an execution provider.
 
 Each recurring or triggered attempt enters the shared [Execution Pipeline](../execution-pipeline/index.md), but its descriptor uses `ExecutionTransactionMode.None`. The JobScheduler adapter therefore creates no automatic outer Unit of Work. Write-heavy jobs must divide work into business-sized or bounded batches with explicit `IUnitOfWorkManager.RunAsync(...)` scopes.

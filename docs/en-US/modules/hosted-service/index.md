@@ -4,8 +4,6 @@ description: Observe Generic Host services, query instance-aware runtime state, 
 sidebar_position: 1
 ---
 
-# Hosted Service
-
 The Hosted Service module builds an observable runtime catalog for Monica services registered through the standard .NET Generic Host. It tracks each `IMoHostedService` instance independently, exposes state and health queries, and coordinates named checkpoints without replacing `IHostedService` or the Generic Host lifecycle.
 
 ## When to use this module

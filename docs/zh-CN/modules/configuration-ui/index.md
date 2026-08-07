@@ -4,8 +4,6 @@ description: Configuration 的 Blazor 操作台，用于查看运行时来源链
 sidebar_position: 1
 ---
 
-# Configuration UI
-
 `Monica.Configuration.UI` 是 `Monica.Configuration` 的操作台模块。它通过 `ConfigurationFacade` 读取配置定义、运行时有效值、source chain、存储状态和历史，并把用户的修改暂存在 UI 状态中，最后作为一个 mutation group 保存。
 
 UI 的核心原则是：**页面展示的是当前运行时真正生效的值；保存时写入当前生效且可写的目标 source。**

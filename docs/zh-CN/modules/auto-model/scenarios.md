@@ -4,8 +4,6 @@ description: AutoModel 的常见接入方式与使用陷阱。
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## 场景 1 — 直接对仓储查询应用动态过滤
 
 如果你已经拿到了实体查询对象，可以直接注入 `IAutoModelDbOperator<TModel>`，把来自 UI 或 API 的过滤字符串作用到 `IQueryable<T>`。

@@ -4,8 +4,6 @@ description: 提供基于 EF Core 的仓储抽象、DbContext Provider 注册、
 sidebar_position: 1
 ---
 
-# Repository
-
 提供基于 EF Core 的仓储抽象、DbContext Provider 注册、实体仓储自动发现与 GUID 生成能力。
 
 ## 何时使用这个模块

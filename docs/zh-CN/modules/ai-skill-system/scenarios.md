@@ -4,8 +4,6 @@ description: AI Skill System 的常见使用场景和注意事项。
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## 场景 1 — 为业务模块提供 Agent 工具
 
 业务模块可以把稳定、边界清晰的查询或操作封装为 Skill 工具。Skill 中通过 `RequiredModules` 声明依赖，只有相关模块加载后才可用。

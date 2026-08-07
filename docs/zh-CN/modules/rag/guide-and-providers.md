@@ -4,8 +4,6 @@ description: RAG 的 Guide 方法、向量库 Provider、切块器和依赖说�
 sidebar_position: 4
 ---
 
-# Guide and Providers
-
 ## Guide methods
 
 | Method | What it enables | Required | Typical use |

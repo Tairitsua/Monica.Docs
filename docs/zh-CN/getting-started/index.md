@@ -1,10 +1,8 @@
 ---
-title: 快速开始
+title: 开始使用 Monica
 description: 安装 Monica，组合主机绑定的模块图，并启动应用。
 sidebar_position: 1
 ---
-
-# 开始使用 Monica
 
 这一组页面带你完成一个明确、可验证的 Monica 主机组合。你将只安装应用真正需要的包，并把所有模块放在同一个 `builder.AddMonica(...)` 边界中。
 

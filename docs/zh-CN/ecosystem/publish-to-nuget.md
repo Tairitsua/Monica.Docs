@@ -4,8 +4,6 @@ description: 安全确定版本、验证并发布第三方 Monica NuGet 包与�
 sidebar_position: 6
 ---
 
-# 发布包与配套镜像
-
 只有当干净消费者已运行每个包，且每个声明的配套镜像都通过运行时门禁后，才能由 CI 发布不可变产物。NuGet.org 适合公开分发包；需要限制下载访问时应使用私有源。OCI 镜像使用 schema-v2 仓库清单声明的 Registry。
 
 ## 1. 准备所有权与身份

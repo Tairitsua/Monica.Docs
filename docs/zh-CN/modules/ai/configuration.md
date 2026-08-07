@@ -4,8 +4,6 @@ description: AI 模块选项、Provider 选项和默认值。
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## Module options
 
 | Property | Type | Default | Required | When to change | Notes |

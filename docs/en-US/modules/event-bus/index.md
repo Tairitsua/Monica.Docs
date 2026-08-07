@@ -4,8 +4,6 @@ description: Publish local events now and add a distributed provider when deploy
 sidebar_position: 1
 ---
 
-# EventBus
-
 `Monica.EventBus` provides local and distributed publishing contracts, automatic handler discovery, observable subscriptions, and keyed bus composition. EventBus is a Generic Host module; Web applications use the same registration and add the normal `UseMonica()` and `MapMonica()` composition boundary.
 
 ## When to use this module

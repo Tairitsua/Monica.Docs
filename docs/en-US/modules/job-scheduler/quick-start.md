@@ -4,8 +4,6 @@ description: Register the required JobScheduler choices and run a recurring job.
 sidebar_position: 2
 ---
 
-# Quick start
-
 ## Install
 
 ```bash

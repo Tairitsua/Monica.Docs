@@ -4,8 +4,6 @@ description: 注册需求导航，同时保证未解析 ID 和架构目录仍然
 sidebar_position: 4
 ---
 
-# Guide 与需求解析器
-
 `AddProjectUnits()` 返回 `ModuleProjectUnitsGuide`。应用侧扩展点是 `UseRequirementLinkResolver<TResolver>()`。
 
 ## 实现解析器

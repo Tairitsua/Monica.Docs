@@ -4,8 +4,6 @@ description: RAG UI 的 Guide 方法、页面职责和依赖说明。
 sidebar_position: 4
 ---
 
-# Guide and Providers
-
 ## Guide methods
 
 | Method | What it enables | Required | Typical use |

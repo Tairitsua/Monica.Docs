@@ -4,8 +4,6 @@ description: 理解 AutoControllers 注册与 RPC 传输选择。
 sidebar_position: 4
 ---
 
-# Guide and Providers
-
 ## 运行时 Guide
 
 `ModuleAutoControllersGuide` 没有额外必需方法。通过 `monica.AddAutoControllers(...)` 注册后，模块会接入 MVC 端点映射、API Explorer、普通 Controller 发现与 CRUD Controller 发现。

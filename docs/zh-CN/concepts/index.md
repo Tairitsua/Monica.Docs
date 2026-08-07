@@ -4,8 +4,6 @@ description: 理解 Monica 的主机绑定组合、项目单元、Guide、公开
 sidebar_position: 2
 ---
 
-# 核心概念
-
 Monica 用一套同时面向开发者、编码 Agent 与运行时的明确契约组织应用。先理解主机绑定的模块图和 ProjectUnits，再进入具体模块，会比逐个记忆注册方法更可靠。
 
 ## 推荐顺序

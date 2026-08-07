@@ -4,8 +4,6 @@ description: 组合本地与分布式处理器、管理订阅并验证生产生�
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## 场景 1 — 使用本地事件驱动模块内部协作
 
 如果事件只在当前进程内消费，那么注册 `monica.AddEventBus()` 就足够了。处理器会在组合阶段被发现，并在 Generic Host 启动期间、Provider 的 `StartAsync` 之前完成订阅。本地发布方只需要注入 `ILocalEventBus` 调用泛型 `PublishAsync<TEvent>()`。

@@ -4,8 +4,6 @@ description: Apply Execution Timing to workers, reusable operations, pipeline bo
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## Scenario 1 — Time work in a worker
 
 Register Execution Timing in a Generic Host and inject `IExecutionTimingFactory` into the worker. Use `BeginScope(...)` when one `using` block represents the complete operation:

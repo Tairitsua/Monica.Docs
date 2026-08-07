@@ -4,8 +4,6 @@ description: 配置实体事件与显式工作单元作用域语义。
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## Module option
 
 | 属性 | 类型 | 默认值 | 何时修改 |

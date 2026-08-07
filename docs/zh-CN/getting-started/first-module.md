@@ -1,10 +1,8 @@
 ---
 title: 注册第一个模块
 description: 理解 `builder.AddMonica(...)`、`app.UseMonica()` 和 `app.MapMonica()` 的最小闭环。
-sidebar_position: 4
+sidebar_position: 5
 ---
-
-# 注册第一个模块
 
 如果你只想先跑通 Monica 的最小主机闭环，可以从配置简单的 `DependencyInjection` 与 `EventBus` 开始。所有注册都属于当前宿主，不会写入进程级共享状态。
 

@@ -4,8 +4,6 @@ description: 发现宿主范围内的架构目录，并提供类型化状态、�
 sidebar_position: 1
 ---
 
-# ProjectUnits
-
 `Monica.ProjectUnits` 会发现受支持的应用角色，连接依赖关系，记录架构诊断，并向 Agent、API 和管理界面提供可序列化的类型化投影。
 
 ## 公开入口

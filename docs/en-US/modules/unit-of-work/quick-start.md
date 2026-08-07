@@ -4,8 +4,6 @@ description: Add a Unit-of-Work-backed DbContext and run explicit transactional 
 sidebar_position: 2
 ---
 
-# Quick start
-
 ## Install
 
 ```bash

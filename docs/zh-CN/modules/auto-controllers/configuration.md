@@ -4,8 +4,6 @@ description: 配置请求端点、RPC Target 与约定式 CRUD Controller。
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## `WebApiGenerationConfig`
 
 每个拥有生成请求或 Handler 的程序集应用一份程序集级配置：

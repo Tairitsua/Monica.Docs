@@ -4,8 +4,6 @@ description: 在宿主级应用场景、原始 ProjectUnit Fixture 与 UI 组件
 sidebar_position: 2
 ---
 
-# 测试 Monica 应用
-
 `Monica.Testing` 明确提供两种不同的测试边界：完整 Monica 宿主用于验证运行时相关的应用场景，原始 `ProjectUnitFixture<TUnit>` 用于聚焦单个项目单元及其显式协作者。应根据需要证明的行为选择边界，而不是只看被测类的名称。
 
 ## 选择最小但真实的边界

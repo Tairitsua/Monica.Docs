@@ -4,8 +4,6 @@ description: Compose local and distributed handlers, manage subscriptions, and v
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## Scenario 1 — Use local events for in-process collaboration
 
 When an event is consumed only inside the current process, `monica.AddEventBus()` is sufficient. Handlers are discovered during composition and subscribed during Generic Host startup, before provider `StartAsync` runs. Publishers can use `ILocalEventBus.PublishAsync<TEvent>()` without depending on a distributed provider.

@@ -4,8 +4,6 @@ description: 用几个基础模块拼出一个可运行的 Monica API 主机。
 sidebar_position: 1
 ---
 
-# 构建最小 Monica API 主机
-
 如果你想快速搭一个“既有 Monica 模块、又能承载 Web API”的宿主，可以从下面这个组合开始。
 
 ## 推荐起步组合

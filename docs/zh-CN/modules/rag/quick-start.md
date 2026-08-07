@@ -4,8 +4,6 @@ description: 安装并注册 RAG 模块，跑通本地向量索引。
 sidebar_position: 2
 ---
 
-# Quick Start
-
 ## 安装包
 
 ```bash

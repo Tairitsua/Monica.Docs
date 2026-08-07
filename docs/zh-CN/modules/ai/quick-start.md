@@ -4,8 +4,6 @@ description: 安装并注册 AI 模块，配置第一个 Provider。
 sidebar_position: 2
 ---
 
-# Quick Start
-
 ## 安装包
 
 ```bash

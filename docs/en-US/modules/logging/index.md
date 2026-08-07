@@ -4,8 +4,6 @@ description: Configure structured logging without process-global logger state.
 sidebar_position: 1
 ---
 
-# Logging
-
 `Monica.Logging` configures a Serilog logger owned by the current host, replaces the host's logging providers, and routes Monica registration logs through that same logger. Each host owns and disposes its logger independently.
 
 ```bash

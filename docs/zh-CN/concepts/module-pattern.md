@@ -4,8 +4,6 @@ description: 理解 Monica 如何为每个宿主记录、校验并应用一份�
 sidebar_position: 1
 ---
 
-# Module 模式与主机边界
-
 `builder.AddMonica(monica => ...)` 拥有一份独立的 Monica 应用上下文。回调中的 Option、Guide、依赖边、运行时目录和诊断快照都属于当前宿主。
 
 ## 生命周期

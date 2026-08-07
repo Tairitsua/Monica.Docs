@@ -1,10 +1,8 @@
 ---
-title: Monica documentation
+title: Architecture agents can follow
 description: Build observable .NET backends with an architecture that coding agents and human teams can follow together.
 sidebar_position: 1
 ---
-
-# Architecture agents can follow
 
 Monica is an agent-governed application architecture for observable .NET backends. It turns infrastructure registration, DDD application roles, and runtime inspection into one explicit contract.
 

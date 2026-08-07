@@ -4,8 +4,6 @@ description: Select an aggregation mode and use the public Execution Timing reco
 sidebar_position: 4
 ---
 
-# Guide and Runtime APIs
-
 Execution Timing has no replaceable provider. Its Guide selects one of two built-in aggregation coordinators, while applications interact with host-neutral factory and query abstractions.
 
 ## Guide methods

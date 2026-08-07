@@ -4,8 +4,6 @@ description: 为 Monica 执行边界提供有序类型化 Behavior，并展示�
 sidebar_position: 1
 ---
 
-# ExecutionPipeline
-
 ExecutionPipeline 是 Monica 的共享执行内核。各子系统通过自己的 Adapter 把真实入口交给管线，宿主则注册类型化 Behavior，在不重复实现过滤器或代理的前提下统一授权、路由、事务、追踪与诊断。同一模块还公开只读运行时目录，用于检查已注册 Behavior，以及已经执行或被显式检查过的准确执行计划。
 
 ## 何时使用这个模块

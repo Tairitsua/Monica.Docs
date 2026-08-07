@@ -4,8 +4,6 @@ description: DataChannel 的 Guide 方法、Provider 选择与依赖说明。
 sidebar_position: 4
 ---
 
-# Guide and Providers
-
 ## Guide methods
 
 | Method | What it enables | Required | Typical use |

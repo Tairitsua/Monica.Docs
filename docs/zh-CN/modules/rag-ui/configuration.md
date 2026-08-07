@@ -4,8 +4,6 @@ description: RAG UI 的页面开关和默认行为。
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## Module options
 
 | Property | Type | Default | Required | When to change | Notes |

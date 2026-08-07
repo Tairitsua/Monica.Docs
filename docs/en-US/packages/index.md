@@ -4,8 +4,6 @@ description: Understand the Stable, Integrations, and Labs compatibility promise
 sidebar_position: 1
 ---
 
-# Package maturity
-
 Maturity labels describe compatibility expectations and adoption risk. They do not mean that every application should install every Stable package.
 
 | Tier | Promise | Representative capabilities |

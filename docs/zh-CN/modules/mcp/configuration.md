@@ -4,8 +4,6 @@ description: MCP 模块选项、本地 Server 发现规则和外部 Client 行�
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## Module options
 
 | Property | Type | Default | Required | When to change | Notes |

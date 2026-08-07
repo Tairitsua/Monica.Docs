@@ -4,8 +4,6 @@ description: 发现 Monica MCP Server，托管 HTTP / stdio MCP，并把外部 M
 sidebar_position: 1
 ---
 
-# MCP
-
 `MCP` 模块让 Monica 应用既可以托管本地 MCP Server，也可以连接外部 MCP Client。模块会发现继承自 `McpServer<TSelf>` 的服务器，使用 Monica 的 `[SkillTool]` 方法生成 MCP 工具，并把本地和外部 MCP 条目统一收集到能力目录中。
 
 ## 何时使用这个模块

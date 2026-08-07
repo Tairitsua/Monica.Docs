@@ -20,22 +20,10 @@ type HomeCopy = {
     completed: string;
     replay: string;
   };
-  proof: {
+  outcomes: {
     folio: string;
     title: string;
     description: string;
-    connected: string;
-    request: string;
-    badge: string;
-    latency: string;
-    units: string;
-    jobs: string;
-    metricNotes: readonly [string, string, string];
-    note: string;
-  };
-  pillars: {
-    folio: string;
-    title: string;
     cards: readonly { title: string; body: string }[];
   };
   starter: {
@@ -46,8 +34,23 @@ type HomeCopy = {
     quickStart: string;
     modeLabel: string;
     modes: readonly [string, string];
+    beforeTitle: string;
+    beforeItems: readonly [string, string, string, string];
     agentLabel: string;
     agents: readonly [string, string];
+    goalLabel: string;
+    goals: readonly [
+      { title: string; body: string; action: string; badge: string },
+      { title: string; body: string; action: string; badge: string },
+    ];
+    verifyTitle: string;
+    verifyDescription: string;
+    verifyCommon: readonly [string, string, string, string];
+    verifyByGoal: {
+      application: readonly [string, string];
+      extension: readonly [string, string];
+    };
+    fullPrompt: string;
     manualLabel: string;
     manualTabs: readonly [string, string];
     genericFallback: string;
@@ -55,16 +58,30 @@ type HomeCopy = {
     windowKicker: string;
     copy: string;
     copied: string;
+    copyFailed: string;
+    selectManually: string;
+    afterTitle: string;
+    afterDescription: string;
+    tasks: readonly [
+      { title: string; prompt: string },
+      { title: string; prompt: string },
+      { title: string; prompt: string },
+    ];
+    copyTask: string;
   };
-  fit: {
+  how: {
     folio: string;
     title: string;
     description: string;
-    cards: readonly { marker: string; title: string; body: string }[];
-  };
-  surfaces: {
-    folio: string;
-    title: string;
+    flowLabel: string;
+    steps: readonly [
+      { label: string; title: string; body: string },
+      { label: string; title: string; body: string },
+      { label: string; title: string; body: string },
+      { label: string; title: string; body: string },
+    ];
+    note: string;
+    surfacesTitle: string;
     captions: readonly [string, string, string];
     tabs: readonly [string, string, string];
   };
@@ -109,20 +126,20 @@ export type StarterCopy = HomeCopy["starter"];
 export const homeCopy: Record<Locale, HomeCopy> = {
   en: {
     skip: "Skip to content",
-    nav: ["Product", "Proof", "Start", "Modules", "Roadmap"],
+    nav: ["Quick start", "Concepts", "Modules", "Example", "Docs"],
     languageLabel: "阅读中文版",
     demoLabel: "Live demo",
-    heroEyebrow: "Agent-governed architecture / .NET 10",
+    heroEyebrow: ".NET 10 modular application framework",
     heroLines: [
-      "Architecture agents",
-      "can follow.",
-      "Systems humans",
-      "can inspect.",
+      "Give business code",
+      "a clear structure.",
+      "Compose infrastructure.",
+      "See the running system.",
     ],
     heroDescription:
-      "Monica gives .NET teams explicit application structure, composable infrastructure modules, and runtime evidence—without hiding ASP.NET Core.",
-    heroPrimary: "Build the reference app",
-    heroSecondary: "Read the architecture",
+      "Monica adds ProjectUnit conventions, composable infrastructure modules, and inspectable runtime surfaces to ASP.NET Core—without replacing your domain model or deployment choices.",
+    heroPrimary: "Start with Monica",
+    heroSecondary: "Explore the order example",
     facts: [
       "Builder-scoped composition",
       "Explicit package maturity",
@@ -137,23 +154,10 @@ export const homeCopy: Record<Locale, HomeCopy> = {
       completed: "completed",
       replay: "Replay walkthrough",
     },
-    proof: {
-      folio: "Living proof",
-      title: "The architecture stays visible after startup.",
-      description:
-        "Registration is only the beginning. Monica exposes application structure and execution metadata as evidence your team can inspect.",
-      connected: "Illustrative walkthrough",
-      request: "Illustrative request",
-      badge: "ILLUSTRATIVE",
-      latency: "Latency",
-      units: "ProjectUnits",
-      jobs: "Recurring jobs",
-      metricNotes: ["illustrative timing", "reference app", "reference app"],
-      note: "No opaque orchestration. This walkthrough mirrors the boundaries declared by the reference source.",
-    },
-    pillars: {
-      folio: "Product model",
-      title: "One operating model, from source to production.",
+    outcomes: {
+      folio: "Why Monica",
+      title: "Structure where teams need it. Native .NET where they do not.",
+      description: "Monica aligns source structure, infrastructure composition, and runtime evidence without introducing a separate application platform.",
       cards: [
         {
           title: "Structure",
@@ -171,19 +175,54 @@ export const homeCopy: Record<Locale, HomeCopy> = {
     },
     starter: {
       folio: "Agent-first quick start",
-      title: "Give the agent the map before the work.",
+      title: "Start with an agent or stay fully manual.",
       description:
-        "Install Monica Guide, let it identify the repository profile, and review the exact setup plan before changing files.",
+        "Monica Guide prepares your coding agent for this repository. It is setup tooling, not an application dependency, and it always previews repository changes before applying them.",
       steps: [
-        { title: "Install Guide", body: "Use the immutable Monica release" },
-        { title: "Preview", body: "Confirm the profile and complete plan" },
-        { title: "Apply", body: "Use the verified plan digest" },
+        { title: "Choose", body: "Select your host and development goal" },
+        { title: "Paste", body: "Send the generated instruction in agent chat" },
+        { title: "Review", body: "Approve the Guide dry-run before changes" },
       ],
       quickStart: "Open the full quick start",
       modeLabel: "Quick start mode",
       modes: ["Agent setup", "Manual .NET"],
+      beforeTitle: "Before you start",
+      beforeItems: [
+        "Open Codex or Claude Code at the root of the repository you want to work on.",
+        "Paste the copied instruction into agent chat—not into a terminal.",
+        "Guide is normally installed once per machine and initialized once per repository.",
+        "A different repository release may require an explicit switch of the one active global Monica skill release.",
+      ],
       agentLabel: "Coding agent",
       agents: ["Codex", "Claude Code"],
+      goalLabel: "What do you want to build?",
+      goals: [
+        {
+          title: "A Monica application",
+          body: "Create or extend a service or modular application using Monica's application conventions.",
+          action: "Copy application setup instruction",
+          badge: "Recommended",
+        },
+        {
+          title: "A Monica extension",
+          body: "Build a reusable Monica module or provider package against an exact framework source.",
+          action: "Copy extension setup instruction",
+          badge: "Source required",
+        },
+      ],
+      verifyTitle: "What Guide will verify",
+      verifyDescription: "The website selects the intent. Guide inspects the actual repository and produces the authoritative dry-run.",
+      verifyCommon: [
+        "Repository identity and compatible Monica release",
+        "The selected skill capability group",
+        "Managed AGENTS.md and optional CLAUDE.md instructions",
+        "No remote GitHub action and no repository change before approval",
+      ],
+      verifyByGoal: {
+        application: ["Application architecture is detected or requested", "Exact framework source remains optional"],
+        extension: ["Extension author profile is confirmed", "Exact read-only Monica source is required"],
+      },
+      fullPrompt: "View the full instruction",
       manualLabel: "Manual .NET setup",
       manualTabs: ["CLI", "Program.cs"],
       genericFallback: "Generic npx skills fallback",
@@ -191,33 +230,31 @@ export const homeCopy: Record<Locale, HomeCopy> = {
       windowKicker: "MONICA / PREVIEW BEFORE APPLY",
       copy: "Copy",
       copied: "Copied to clipboard",
-    },
-    fit: {
-      folio: "System fit",
-      title: "Keep ASP.NET Core. Stop rebuilding the operating model.",
-      description:
-        "Monica sits between hand-assembled infrastructure and a platform that dictates your application. Use the framework where coherence matters; keep the runtime you already know.",
-      cards: [
-        {
-          marker: "LOW CEREMONY",
-          title: "Raw ASP.NET Core",
-          body: "Maximum freedom. Your team owns conventions, dependency ordering, module discovery, operations surfaces, and the architecture handbook.",
-        },
-        {
-          marker: "EXPLICIT COHERENCE",
-          title: "A visible application model",
-          body: "Opinionated boundaries and lifecycle, modular infrastructure, inspectable runtime—without replacing ASP.NET Core or your domain model.",
-        },
-        {
-          marker: "FULL PLATFORM",
-          title: "Heavyweight platform",
-          body: "More prescribed capabilities and abstraction. Useful when standardization matters more than keeping the native framework close.",
-        },
+      copyFailed: "Clipboard access failed. The instruction is selected below so you can copy it manually.",
+      selectManually: "Select and copy this instruction manually",
+      afterTitle: "Then start building",
+      afterDescription: "After Guide is applied and doctor is clean, give your agent a concrete first task.",
+      tasks: [
+        { title: "Plan a feature", prompt: "Review this Monica repository and propose the smallest coherent plan for adding an order approval feature. Do not change files yet." },
+        { title: "Create a module", prompt: "Create a Monica module for order notifications, including its public registration, options, Guide methods, and focused tests." },
+        { title: "Review architecture", prompt: "Review this repository's Monica module and ProjectUnit boundaries. Report misplaced responsibilities and dependency-direction problems before editing." },
       ],
+      copyTask: "Copy request",
     },
-    surfaces: {
-      folio: "Runtime surfaces",
-      title: "Architecture you can point at.",
+    how: {
+      folio: "How Monica works",
+      title: "A request stays traceable from intent to runtime evidence.",
+      description:
+        "This illustrative order flow mirrors the boundaries in the reference application. It explains the model; it does not claim production benchmark data.",
+      flowLabel: "Illustrative order request flow",
+      steps: [
+        { label: "01 / REQUEST", title: "HTTP intent enters ASP.NET Core", body: "The request contract owns its endpoint metadata and remains familiar .NET code." },
+        { label: "02 / BEHAVIOR", title: "A ProjectUnit owns the use case", body: "The application behavior has an explicit name, location, lifetime, and dependency surface." },
+        { label: "03 / COMPOSITION", title: "Modules provide infrastructure", body: "Repository, unit of work, events, scheduling, and telemetry compose through the host." },
+        { label: "04 / EVIDENCE", title: "The runtime exposes the same model", body: "Diagnostics describe modules, ProjectUnits, work, health, and telemetry with shared vocabulary." },
+      ],
+      note: "The maintained reference application is the evidence source; timings shown in interactive walkthroughs are illustrative only.",
+      surfacesTitle: "Inspect the model from the running host",
       captions: [
         "Review selected capabilities from the reference host; use runtime diagnostics for the complete module graph.",
         "Inspect application behavior by kind, domain, dependencies, and convention status.",
@@ -226,7 +263,7 @@ export const homeCopy: Record<Locale, HomeCopy> = {
       tabs: ["Selected capabilities", "ProjectUnits", "Scheduler"],
     },
     adoption: {
-      folio: "Adoption",
+      folio: "Adoption paths",
       title: "Choose the smallest credible first step.",
       cards: [
         {
@@ -244,11 +281,11 @@ export const homeCopy: Record<Locale, HomeCopy> = {
           action: "Browse stable modules",
         },
         {
-          marker: "EVALUATION",
-          effort: "REALISTIC DOMAIN",
-          title: "Study the reference app",
-          body: "Trace an ordering workflow through commands, a repository seam, a unit of work, a local event, and a recurring job before making an architecture decision.",
-          action: "Open the reference app",
+          marker: "EXTENSION",
+          effort: "REUSABLE PACKAGE",
+          title: "Build a Monica extension",
+          body: "Use exact framework source to design a module or provider while generated projects continue consuming Monica through NuGet.",
+          action: "Open extension guidance",
         },
       ],
     },
@@ -294,15 +331,15 @@ export const homeCopy: Record<Locale, HomeCopy> = {
   },
   "zh-CN": {
     skip: "跳转到正文",
-    nav: ["产品", "实证", "开始", "模块", "路线图"],
+    nav: ["快速开始", "核心概念", "模块", "示例", "文档"],
     languageLabel: "Read in English",
     demoLabel: "在线演示",
-    heroEyebrow: "智能体可治理的架构 / .NET 10",
-    heroLines: ["智能体可遵循的", "应用架构。", "人类可检查的", "运行系统。"],
+    heroEyebrow: ".NET 10 模块化应用框架",
+    heroLines: ["让业务代码", "各归其位。", "让基础设施自由组合。", "让运行系统清晰可见。"],
     heroDescription:
-      "Monica 为 .NET 团队提供明确的应用结构、可组合的基础设施模块与运行时证据，同时保留熟悉的 ASP.NET Core。",
-    heroPrimary: "构建参考应用",
-    heroSecondary: "阅读架构设计",
+      "Monica 在 ASP.NET Core 之上提供 ProjectUnit 约定、可组合的基础设施模块与可检查的运行时界面，同时保留你的领域模型与部署选择。",
+    heroPrimary: "开始使用 Monica",
+    heroSecondary: "查看订单示例",
     facts: ["Builder 作用域组合", "明确的包成熟度", "可观测性内建"],
     trace: {
       label: "交互式架构演练 · 示意",
@@ -313,23 +350,10 @@ export const homeCopy: Record<Locale, HomeCopy> = {
       completed: "已完成",
       replay: "重放演练",
     },
-    proof: {
-      folio: "运行实证",
-      title: "启动完成后，架构依然清晰可见。",
-      description:
-        "注册只是开始。Monica 将应用结构与执行元数据转化为团队可检查的运行证据。",
-      connected: "示意架构演练",
-      request: "示意请求",
-      badge: "示意演练",
-      latency: "延迟",
-      units: "ProjectUnits",
-      jobs: "周期任务",
-      metricNotes: ["示意时序", "参考应用", "参考应用"],
-      note: "没有不透明的编排层。这段演练忠实映射参考应用源码中声明的边界。",
-    },
-    pillars: {
-      folio: "产品模型",
-      title: "从源码到生产，使用同一套运行模型。",
+    outcomes: {
+      folio: "为什么选择 Monica",
+      title: "需要一致性的地方有结构，其余地方仍是原生 .NET。",
+      description: "Monica 统一源码结构、基础设施组合与运行时证据，但不会引入一套独立的应用平台。",
       cards: [
         {
           title: "结构化",
@@ -347,19 +371,54 @@ export const homeCopy: Record<Locale, HomeCopy> = {
     },
     starter: {
       folio: "Agent-first 快速开始",
-      title: "先让 Agent 看懂地图，再开始工作。",
+      title: "可以从编码 Agent 开始，也可以完全手动。",
       description:
-        "安装 Monica Guide，让它识别仓库 Profile，并在修改文件前检查完整设置计划。",
+        "Monica Guide 帮助编码 Agent 准备当前仓库。它是设置工具，不是应用运行依赖；任何仓库修改都会先给出预览。",
       steps: [
-        { title: "安装 Guide", body: "使用不可变 Monica 发布版本" },
-        { title: "预览", body: "确认 Profile 与完整计划" },
-        { title: "应用", body: "使用已验证的 Plan Digest" },
+        { title: "选择", body: "选择宿主和开发目标" },
+        { title: "粘贴", body: "把生成的指令发送到 Agent 对话" },
+        { title: "审核", body: "批准 Guide 的 dry-run 后再修改" },
       ],
       quickStart: "打开完整快速开始",
       modeLabel: "快速开始模式",
       modes: ["Agent 设置", "手动 .NET"],
+      beforeTitle: "开始之前",
+      beforeItems: [
+        "在目标仓库根目录打开 Codex 或 Claude Code。",
+        "把复制的指令粘贴到 Agent 对话中，而不是终端。",
+        "Guide 通常每台机器安装一次，每个仓库初始化一次。",
+        "当不同仓库要求不兼容的 Monica 版本时，需要明确切换唯一的全局 Skill 版本。",
+      ],
       agentLabel: "编码 Agent",
       agents: ["Codex", "Claude Code"],
+      goalLabel: "你准备构建什么？",
+      goals: [
+        {
+          title: "Monica 应用",
+          body: "使用 Monica 应用约定创建或扩展服务、模块化单体。",
+          action: "复制应用设置指令",
+          badge: "推荐",
+        },
+        {
+          title: "Monica 扩展",
+          body: "基于精确的框架源码构建可复用模块或 Provider 包。",
+          action: "复制扩展设置指令",
+          badge: "需要源码",
+        },
+      ],
+      verifyTitle: "Guide 会验证什么",
+      verifyDescription: "官网只负责选择意图；Guide 会检查实际仓库，并生成权威的 dry-run 结果。",
+      verifyCommon: [
+        "仓库身份与兼容的 Monica 发布版本",
+        "所选 Skill 能力集合",
+        "受管理的 AGENTS.md 与可选 CLAUDE.md 指令",
+        "批准前不执行远程 GitHub 操作，也不修改仓库",
+      ],
+      verifyByGoal: {
+        application: ["检测应用架构，无法判断时请求选择", "精确框架源码保持可选"],
+        extension: ["确认扩展作者工作模式", "要求精确、只读的 Monica 源码"],
+      },
+      fullPrompt: "查看完整指令",
       manualLabel: "手动 .NET 设置",
       manualTabs: ["CLI", "Program.cs"],
       genericFallback: "通用 npx skills 备用方案",
@@ -367,33 +426,31 @@ export const homeCopy: Record<Locale, HomeCopy> = {
       windowKicker: "MONICA / 应用前先预览",
       copy: "复制",
       copied: "已复制到剪贴板",
-    },
-    fit: {
-      folio: "系统定位",
-      title: "保留 ASP.NET Core，不再重复搭建运行模型。",
-      description:
-        "Monica 位于手工拼装的基础设施与支配应用设计的平台之间。在需要一致性的地方采用框架，同时保留你熟悉的运行时。",
-      cards: [
-        {
-          marker: "低约束",
-          title: "原生 ASP.NET Core",
-          body: "自由度最高。团队自行维护约定、依赖顺序、模块发现、运维界面与架构手册。",
-        },
-        {
-          marker: "明确一致性",
-          title: "可见的应用模型",
-          body: "明确的边界与生命周期、模块化基础设施、可检查的运行时，同时不替代 ASP.NET Core 与你的领域模型。",
-        },
-        {
-          marker: "完整平台",
-          title: "重量级平台",
-          body: "能力与抽象更加完整且固定。当标准化比贴近原生框架更重要时，这类平台更合适。",
-        },
+      copyFailed: "无法访问剪贴板。下面的指令已被选中，你可以手动复制。",
+      selectManually: "手动选择并复制这段指令",
+      afterTitle: "然后开始构建",
+      afterDescription: "应用 Guide 且 doctor 检查通过后，给 Agent 一个明确的首个任务。",
+      tasks: [
+        { title: "规划功能", prompt: "检查当前 Monica 仓库，为新增订单审批功能提出最小且完整的实施计划。暂时不要修改文件。" },
+        { title: "创建模块", prompt: "创建一个订单通知 Monica 模块，包含公开注册入口、Option、Guide 方法与聚焦测试。" },
+        { title: "审核架构", prompt: "审核当前仓库的 Monica 模块与 ProjectUnit 边界。在修改前报告职责放置和依赖方向问题。" },
       ],
+      copyTask: "复制请求",
     },
-    surfaces: {
-      folio: "运行时界面",
-      title: "可以指给团队看的架构。",
+    how: {
+      folio: "Monica 如何工作",
+      title: "从业务意图到运行证据，一条请求始终可以追踪。",
+      description:
+        "这段订单流程映射参考应用中的真实边界，用于解释模型，不代表生产性能基准。",
+      flowLabel: "订单请求示意流程",
+      steps: [
+        { label: "01 / 请求", title: "HTTP 意图进入 ASP.NET Core", body: "请求契约持有端点元数据，仍然是熟悉的 .NET 代码。" },
+        { label: "02 / 行为", title: "ProjectUnit 承担用例", body: "应用行为具有明确的名称、位置、生命周期与依赖面。" },
+        { label: "03 / 组合", title: "模块提供基础设施", body: "仓储、工作单元、事件、调度与遥测通过宿主进行组合。" },
+        { label: "04 / 证据", title: "运行时暴露同一模型", body: "诊断界面使用共同语言描述模块、ProjectUnit、任务、健康度与遥测。" },
+      ],
+      note: "持续维护的参考应用是证据来源；交互演练中的时间数据仅为示意。",
+      surfacesTitle: "从运行主机检查应用模型",
       captions: [
         "查看参考主机中的能力选摘；完整模块图以运行时诊断结果为准。",
         "按类型、领域、依赖与约定状态检查应用行为。",
@@ -420,11 +477,11 @@ export const homeCopy: Record<Locale, HomeCopy> = {
           action: "浏览稳定模块",
         },
         {
-          marker: "架构评估",
-          effort: "真实领域",
-          title: "研究参考应用",
-          body: "沿着命令、仓储接缝、工作单元、本地事件与周期任务追踪 Ordering 工作流，再做架构选择。",
-          action: "打开参考应用",
+          marker: "扩展开发",
+          effort: "可复用包",
+          title: "构建 Monica 扩展",
+          body: "使用精确框架源码设计模块或 Provider，同时让生成项目继续通过 NuGet 使用 Monica。",
+          action: "打开扩展开发指引",
         },
       ],
     },

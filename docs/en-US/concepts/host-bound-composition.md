@@ -4,8 +4,6 @@ description: Understand how Monica records, validates, and applies one module gr
 sidebar_position: 1
 ---
 
-# Host-bound composition
-
 `builder.AddMonica(monica => ...)` owns one Monica application context. Every option, guide, dependency edge, runtime catalog, and diagnostic snapshot created during that callback belongs to the same host.
 
 ## Lifecycle

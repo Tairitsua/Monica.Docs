@@ -4,8 +4,6 @@ description: Apply ordered, typed behaviors and inspect the exact runtime plans 
 sidebar_position: 1
 ---
 
-# Execution Pipeline
-
 `Monica.Core` provides one typed pipeline for cross-cutting behavior around requests, events, jobs, hosted work, seeders, and direct MVC actions. Each subsystem owns its adapter, while the host owns the behavior catalog. The same module exposes a read-only runtime catalog of registered behaviors and the exact plans that have been observed or explicitly inspected.
 
 ## When to use this module

@@ -4,8 +4,6 @@ description: 理解 Stable、Integrations、Labs 以及第三方兼容包之间�
 sidebar_position: 1
 ---
 
-# 包成熟度
-
 成熟度标签描述官方 Monica 包的兼容预期与采用风险，并不意味着每个应用都应安装全部 Stable 包。
 
 | 层级 | 承诺 | 代表能力 |

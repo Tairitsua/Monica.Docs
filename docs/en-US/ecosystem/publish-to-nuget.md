@@ -4,8 +4,6 @@ description: Version, validate, and release third-party Monica NuGet packages an
 sidebar_position: 6
 ---
 
-# Publish packages and companion images
-
 Publish immutable artifacts from CI only after clean consumers have exercised every package and every declared companion image has passed its runtime gates. NuGet.org is appropriate for public package distribution; use a private feed when download access must be restricted. OCI images use the registry declared in the schema-v2 repository manifest.
 
 ## 1. Prepare ownership and identity

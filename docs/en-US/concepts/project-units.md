@@ -4,8 +4,6 @@ description: Build an agent-readable architecture catalog from typed roles, expl
 sidebar_position: 2
 ---
 
-# ProjectUnits
-
 ProjectUnits are Monica's typed vocabulary for application architecture. They let developers, coding agents, and the running host agree on what each discovered type does, who owns it, and which requirements justify it.
 
 ## Architectural roles

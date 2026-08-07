@@ -4,8 +4,6 @@ description: 在 .NET Generic Host 中注册托管服务观测，并查询运行
 sidebar_position: 2
 ---
 
-# 快速开始
-
 ## 安装包
 
 ```bash

@@ -4,8 +4,6 @@ description: 管理知识库清单、文档来源和文档库存，为 RAG 与 A
 sidebar_position: 1
 ---
 
-# KnowledgeBase
-
 `KnowledgeBase` 模块负责知识库本体、文档库存和源文档内容存储。它不直接要求向量库；RAG 模块会在此基础上添加 Embedding、索引、搜索和向量清理能力。
 
 ## 何时使用这个模块

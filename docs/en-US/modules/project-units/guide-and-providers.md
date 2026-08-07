@@ -4,8 +4,6 @@ description: Register requirement navigation while preserving unresolved IDs and
 sidebar_position: 4
 ---
 
-# Guide and Requirement Resolver
-
 `AddProjectUnits()` returns `ModuleProjectUnitsGuide`. Its application extension point is `UseRequirementLinkResolver<TResolver>()`.
 
 ## Implement the resolver

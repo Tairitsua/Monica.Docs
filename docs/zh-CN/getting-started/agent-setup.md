@@ -1,105 +1,60 @@
 ---
 title: Agent 设置
-description: 安装 Monica Guide，选择开发 Profile，并安全预览仓库级初始化。
+description: 为 Monica 仓库设置 Codex 或 Claude Code，预览变更，并安全开始开发。
 sidebar_position: 2
 ---
 
-# 为编码 Agent 设置 Monica
+`monica-guide` 用来让编码 Agent 为 Monica 仓库做好开发准备。它会按照你的目标安装开发指导、检查仓库，并在修改文件前预览设置方案。它不是运行时包，不会替代 .NET CLI，也不会在初始化期间修改业务代码。
 
-`monica-guide` 是 Monica Agent 辅助开发的统一入口。它会为当前仓库选择匹配的 Monica 开发 Skill，把这些 Skill 绑定到不可变的 Monica 发布版本，并在应用任何工作区变更前给出完整预览。Monica Skill 遵循可移植的 [Agent Skills 规范](https://agentskills.io/specification)及其 Progressive disclosure 模型。
+## 开始前
 
-## 从官网 Prompt 开始
+1. 在目标仓库根目录打开 **Codex** 或 **Claude Code**。
+2. 打开首页的 [Agent 设置起步区](/zh-CN/#start)，选择编码 Agent 与开发目标。
+3. 复制生成的指令，并粘贴到 **Agent 对话框**，而不是终端。
 
-打开首页的 [Agent setup 起步区](/zh-CN/#start)，选择 **Codex** 或 **Claude Code**，再复制对应 Prompt。该 Prompt 只会从官网公布的不可变 Monica tag 安装 `monica-guide`，验证宿主是否已经发现它，并在预览初始化前把同一个 tag 作为 `--release-tag` 交给 Guide。
+通常每个用户在一台机器上只需安装一次 Guide，每个仓库只需初始化一次。官网指令会把 Guide 固定到不可变的 Monica 发布版本，并要求它在 Dry-run 预览后停止。
 
-每个宿主 Prompt 还会显式传入匹配的 `--agent` 目标，因此仅设置 Codex 时不会悄悄安装 Claude Code 绑定，反之亦然；通用 fallback 会显式选择两个目标。
+## 选择开发目标
 
-通常不需要为了发现 Skill 而重启：
-
-- [Codex 会发现 Skill](https://learn.chatgpt.com/docs/build-skills) 目录中的新内容。只有 `monica-guide` 没有出现时才重启。Codex 在一次运行开始时读取 `AGENTS.md`，因此应用新的托管指令块后，需要重新开始一次运行。
-- [Claude Code 会监听 Skill](https://code.claude.com/docs/en/slash-commands) 目录中已存在的 `~/.claude/skills` 与项目 `.claude/skills`。只有会话开始时顶层 Skill 目录尚不存在，才需要重启。[`CLAUDE.md` 与相对 import](https://code.claude.com/docs/en/memory) 在会话开始时加载。
-
-## 选择 Profile
-
-Guide 可以根据仓库身份与特征文件建议 Profile，但在你确认前不会安装 Skill 或修改文件。
-
-| Profile | 适用场景 | Monica 源码策略 |
+| 目标 | 适用场景 | 源码要求 |
 |---|---|---|
-| `application` | 消费 Monica 包的应用 | 精确只读源码可选；行为依赖框架内部实现时建议绑定 |
-| `extension-author` | 独立 Monica 模块、Provider、UI 包与配套镜像 | 必须绑定精确只读 Monica 源码；生成项目仍只通过 NuGet 消费 Monica |
-| `framework-contributor` | 修改 Monica 框架仓库 | 必须使用可写 Monica checkout |
-| `docs-contributor` | Monica.Docs 内容、官网与示例应用 | 必须使用可写 Monica.Docs 与精确只读 Monica 源码；写入 Monica 需要单独授权 |
+| **开发 Monica 应用** | 仓库通过 Monica 包实现应用 | 精确的只读 Monica 源码可选；依赖框架内部行为时建议绑定 |
+| **开发扩展** | 创建独立 Monica 模块、Provider、UI 包或配套镜像 | 必须绑定精确的只读 Monica 源码；扩展项目本身仍通过 NuGet 使用 Monica |
 
-对于模糊、混合或非 Monica 仓库，Guide 会把 Profile 留给用户选择，不会根据薄弱证据猜测。
+Guide 可以检查仓库并解释建议，但对于模糊或混合仓库，最终选择仍由你确认。框架与文档贡献者应使用[Guide 运维与安全](./guide-operations.md#贡献者仓库)中的仓库专用流程。
 
-## 先预览，再应用
+## 审核预览
 
-让 Guide 初始化仓库并展示计划：
+粘贴后的指令会要求 Agent：
+
+- 只从官网公布的不可变 Monica tag 安装 `monica-guide`；
+- 验证所选宿主能否发现已安装的 Skill；
+- 仅在无法发现 Skill 时重启；
+- 按所选目标初始化，但不传入 `--apply`；
+- 报告解析后的发布版本、操作、受影响文件、Diff、警告、阻塞项与 `planDigest`。
+
+请先审核结果再批准。设置过程可能全局安装 Monica 开发 Skill，也可能建议在仓库根 `AGENTS.md` 中加入托管区块；它不会授权 Commit、Push、Issue、Pull Request 或其他远程变更。
+
+## 应用未变化的计划
+
+如果预览正确，请让 Agent 应用这份原样计划。Guide 同时要求 `--apply` 与预览中显示的 `--plan-digest`；如果预览后仓库或计划发生变化，它会拒绝执行。此时应重新生成预览，不要复用旧 Digest。
+
+应用成功后，让 Agent 运行 `doctor` 并解释仍存在的警告。如果托管的 `AGENTS.md` 或 `CLAUDE.md` 指令发生变化，请开始一次新的 Agent 运行，让宿主读取新的仓库指导。
+
+## 开始开发
+
+设置完成后，可以先提出一个具体请求：
 
 ```text
-$monica-guide 初始化这个仓库。解释检测到的 Profile，并在应用前预览全部操作。
+解释这个仓库的 Monica 架构，并指出新增订单功能应该放在哪里。先不要修改文件。
 ```
-
-`init`、`update`、`configure`、`source`、`contribute` 与 `forget` 等会修改状态的 intent 默认都是 dry run。预览包含完整操作清单、文件 diff 与 `planDigest`。真正应用时必须同时提供 `--apply` 与该 digest；如果预览后工作区或计划发生变化，Guide 会中止。
-
-对于需要安装全局 Skill 的计划，Guide 会在同一个补偿边界内保护选中的 Monica Skill 与全部计划文件。任一受保护操作失败时，只恢复已经尝试的工作并验证结果。中断、补偿不完整或清理待完成的私有恢复证据会出现在 `status` 与 `doctor` 中，并阻止下一次修改，直到完成核对。底层 CLI 不公开每个 Agent 的 copy/symlink 拓扑，因此 Guide 验证规范路径内容、权限、成员关系与来源，而不会声称隐藏拓扑具备原子性。
-
-使用 `status` 查看当前绑定，使用 `doctor` 获取可执行诊断；两者都支持可读输出与自动化所需的 `--json`：
 
 ```text
-$monica-guide 运行 doctor --json，并在修改任何文件前解释所有阻塞项。
+使用此仓库已选择的 Monica Skill 实现下一个应用功能，然后运行相关测试。
 ```
 
-## 发布通道与全局版本行为
+```text
+运行 Monica Guide status，并告诉我此仓库是否仍与当前激活的 Skill 发布版本一致。
+```
 
-- `stable` 与 `preview` 通过 Monica Skill index 解析到不可变 Monica tag 与已验证 catalog digest。
-- `source` 绑定显式选择的 commit，绝不会跟随移动分支。
-- 离线时只使用已经验证的缓存 catalog 与源码。所需产物不可用时，Guide 不会改用其他发布版本或默认分支。
-
-Monica Skill 采用全局安装，因此每个用户同时只有一个激活的 Monica Skill 发布版本。仓库在 `.monica/guide.json` 中记录期望版本。如果它与当前全局版本不同，`doctor` 会报告冲突，并要求显式切换全局版本或升级仓库；系统不会声称支持全局多版本并存隔离。
-
-### 识别单个 Skill 的更新
-
-对于每个带 tag 的 `stable` 或 `preview` 发布，catalog 都会为每个 Monica Skill 生成三个值：
-
-- 类似 `r7` 的 Revision；只有该 Skill 内容变化时才递增。
-- SHA-256 Digest；它是精确 Skill 字节内容的权威身份。
-- 该 Revision 最近一次发生变化时对应的不可变 Monica tag。
-
-Revision 保存在发布 catalog 中，而不是写入 `SKILL.md` frontmatter；这样 Skill 保持可移植，更新语义则由 Guide 统一负责。
-
-`status` 与 `update` 会并列显示已安装和目标 Revision，让你在应用计划前看清哪些 Skill 发生了变化。Guide 会验证 Digest，只重新安装有变化的 Skill；未变化的 Monica Skill 和无关的用户 Skill 都保持不动。
-
-`update --skill <name>` 可以缩小请求范围，但 Guide 仍会纳入必需依赖。若操作会形成混合的全局 Monica 发布版本，它会把完整且一致的依赖闭包加入预览，或者拒绝执行。`source` 通道不会虚构发布 Revision；它始终以选定 commit 与已验证 Skill Digest 作为身份。
-
-## 源码绑定
-
-Guide 依次从 `ProjectReference`、lock/assets 数据、中央包管理和项目声明解析框架版本。混合版本、无法解析的范围、缺失的不可变发布版本，以及无法确认 commit 的脏源码 checkout 都会 Fail closed。
-
-精确源码通过 `inspect-dependency-source` 解析。绑定记录经过验证的 ref、commit、来源、访问模式与本地路径；Guide 绝不会修改 catalog 管理的源码。
-
-## 托管指令与状态
-
-Guide 只管理根 `AGENTS.md` 中带标记的区块，周围原有指令保持不变。标记损坏、重复或嵌套时只诊断，不擅自重写。对 Claude Code，Guide 可以维护一个只导入 `@AGENTS.md` 的最小根 `CLAUDE.md`。
-
-状态被明确拆分：
-
-- `.monica/guide.json` 是仓库共享配置，包含 Profile、通道、已选能力、期望 catalog 发布版本与托管指令版本。
-- 平台标准位置中的用户 `state.json` 保存激活的全局发布版本、Agent 目标、已验证源码绑定与用户偏好；带时间戳的观察记录与偏好分开保存。
-
-状态更新使用 schema migration、锁与原子替换。`forget` 会先预览将移除的 Guide 自有项目状态或用户状态。
-
-仓库共享文件有意排除用户本地源码路径。用户状态可能包含本地路径、来源与带时间戳的观察记录，因此它保留在平台标准的用户位置，而不会进入仓库。请像审查其他提交配置一样审查 `.monica/guide.json`。
-
-## 贡献安全
-
-`monica-contribution` 负责问题分类、复现、重复项搜索，以及 Issue、Discussion 或 PR 草稿准备。它只持久化 `never`、`prepare` 或 `ask` 三种贡献偏好。
-
-远程创建 Issue/PR、创建分支、Push 与发布 Draft PR 始终需要当前会话授权。疑似安全漏洞必须走私密渠道，绝不能创建公开 Issue。
-
-## 下一步
-
-- 切换 Monica 发布版本或源码绑定后运行 `doctor`。
-- 使用 `update` 预览 catalog 选择的 Skill 更新；不会触碰无关的用户 Skill。
-- 日常开发继续交给 Profile 选择的 `monica-application`、`monica-framework` 与细粒度 Skill；Guide 只负责引导、配置、诊断与路由。
-- 如果要手动组合宿主，请继续阅读[快速开始](./index.md)。
+如需了解通道、更新、源码绑定、状态、恢复与贡献控制，请继续阅读 [Guide 运维与安全](./guide-operations.md)。

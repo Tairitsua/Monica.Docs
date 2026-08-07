@@ -11,6 +11,7 @@ import { docsPath, normalizeDocSlug } from "@/lib/routes";
 type FallbackDraft = {
   slug: string;
   title: string;
+  description: string;
   markdown: string;
   tags: string[];
   headings: DocHeading[];
@@ -20,7 +21,8 @@ const fallbackDrafts: Record<Locale, FallbackDraft[]> = {
   en: [
     {
       slug: "getting-started",
-      title: "Getting started",
+      title: "Getting started with Monica",
+      description: "Install Monica, compose a host-bound module graph, and run the application.",
       tags: ["template", "quick start", ".NET 10"],
       headings: [
         { id: "install-the-template", title: "Install the template", level: 2 },
@@ -55,38 +57,92 @@ Continue with [Architecture](architecture.md?from=starter#host-owned-composition
     {
       slug: "getting-started/agent-setup",
       title: "Agent setup",
+      description: "Set up Codex or Claude Code for a Monica repository, preview the changes, and begin development safely.",
       tags: ["agent", "Codex", "Claude Code", "monica-guide"],
       headings: [
-        { id: "choose-a-profile", title: "Choose a profile", level: 2 },
-        { id: "preview-then-apply", title: "Preview, then apply", level: 2 },
-        { id: "release-and-source-safety", title: "Release and source safety", level: 2 },
+        { id: "before-you-start", title: "Before you start", level: 2 },
+        { id: "choose-your-goal", title: "Choose your goal", level: 2 },
+        { id: "review-the-preview", title: "Review the preview", level: 2 },
+        { id: "apply-the-unchanged-plan", title: "Apply the unchanged plan", level: 2 },
+        { id: "start-development", title: "Start development", level: 2 },
       ],
-      markdown: `Install **monica-guide** from the immutable Monica ref shown on the website home page. The Codex and Claude Code prompts pass their matching explicit \`--agent\` target; the generic fallback selects both. Guide configures agent development skills for the repository while keeping every mutating action behind a preview and verified plan digest.
+      markdown: `**monica-guide** prepares a coding agent to work in a Monica repository. It installs the development guidance for your goal, checks the repository, and previews setup before changing files. It is not a runtime package and does not edit business code during initialization.
 
-## Choose a profile
+## Before you start
 
-- **application** for Monica-consuming applications.
-- **extension-author** for independent modules and providers.
-- **framework-contributor** for the Monica framework checkout.
-- **docs-contributor** for Monica.Docs and its source-backed examples.
+Open Codex or Claude Code at the target repository root. Choose the host and goal in the [Agent setup starter](/#start), then paste the generated instruction into agent chat—not a terminal. Guide is normally installed once per user account and initialized once per repository.
 
-Guide can suggest a profile, but ambiguous repositories remain a user decision.
+## Choose your goal
 
-## Preview, then apply
+- **Build a Monica application** when the repository consumes Monica packages.
+- **Build an extension** for an independent module, provider, UI package, or companion image.
 
-The mutating intents \`init\`, \`update\`, \`configure\`, \`source\`, \`contribute\`, and \`forget\` default to dry-run. Applying requires \`--apply\` plus the exact \`planDigest\`, and aborts after workspace drift. Global-skill plans protect selected skills and planned files in one compensating boundary; retained recovery evidence is reported by \`doctor\` and blocks later mutation until reconciled. Use \`doctor --json\` for automation.
+Guide explains its repository recommendation, but ambiguous repositories remain your decision. Contributor flows live in [Guide operations and safety](guide-operations.md#contributor-repositories).
 
-## Release and source safety
+## Review the preview
 
-One Monica skill release is active globally per user. Repository expectations live in \`.monica/guide.json\`; \`doctor\` reports conflicts instead of claiming global multi-version isolation. Stable and preview catalogs give each skill a generated revision, an authoritative SHA-256 digest, and the immutable tag where it last changed. Revisions stay in the release catalog rather than \`SKILL.md\` frontmatter, preserving portable skills while Guide owns update semantics. \`status\` and \`update\` compare installed and target revisions, while Guide verifies digests and installs only changed skills.
+The instruction installs Guide from an immutable Monica tag, verifies discovery, initializes the selected goal without \`--apply\`, and reports the release, actions, files, diff, blockers, and \`planDigest\`. It does not authorize commits, pushes, issues, pull requests, or other remote changes.
 
-\`update --skill <name>\` includes required dependencies and expands to a coherent closure or refuses a mixed global release. Source bindings use an exact commit plus verified digests rather than inventing release revisions. Offline mode never substitutes another release.
+## Apply the unchanged plan
 
-Guide manages only its marked root \`AGENTS.md\` block and can keep a minimal \`CLAUDE.md\` import. Remote contribution actions always need current-session approval, while suspected vulnerabilities are routed privately.`,
+After approval, Guide requires \`--apply\` and the exact \`--plan-digest\`. It refuses an apply after repository or plan drift. Run \`doctor\` after apply and start a new agent run when managed instructions changed.
+
+## Start development
+
+Ask the agent to explain the repository architecture and identify where the next feature belongs before editing. For channels, updates, state, source, and recovery, continue to [Guide operations and safety](guide-operations.md).`,
+    },
+    {
+      slug: "getting-started/guide-operations",
+      title: "Guide operations and safety",
+      description: "Understand Monica Guide releases, updates, source bindings, managed state, recovery, and contribution safeguards.",
+      tags: ["agent", "release", "update", "safety"],
+      headings: [
+        { id: "three-version-axes", title: "Three version axes", level: 2 },
+        { id: "channels-and-exact-releases", title: "Channels and exact releases", level: 2 },
+        { id: "status-doctor-and-update", title: "Status, doctor, and update", level: 2 },
+        { id: "plan-digests-and-protected-apply", title: "Plan digests and protected apply", level: 2 },
+        { id: "source-binding", title: "Source binding", level: 2 },
+        { id: "managed-instructions-and-state", title: "Managed instructions and state", level: 2 },
+        { id: "contributor-repositories", title: "Contributor repositories", level: 2 },
+      ],
+      markdown: `Use this page after the first [Agent setup](agent-setup.md), when maintaining an existing setup, or when working in a Monica contributor repository.
+
+## Three version axes
+
+- The **framework version** is the Monica dependency used by the project.
+- The **skill-bundle release** is one tested set published with an immutable Monica release.
+- A **per-skill revision** advances during a release only when that skill's authoritative digest changed.
+
+Ordinary CI validates contracts and revision accounting. Only Monica's release workflow publishes immutable assets, advances revisions, or moves \`stable\` and \`preview\` pointers after smoke tests pass.
+
+## Channels and exact releases
+
+Stable and preview resolve to immutable tags. An explicit release tag selects that exact release and derives its channel. Source selects an exact commit. Offline mode never substitutes another artifact. One global Monica skill-bundle release is active per user, and \`doctor\` reports repository conflicts.
+
+## Status, doctor, and update
+
+Use \`status\` for current bindings and \`doctor\` for actionable checks; both support \`--json\`. \`update\` previews changed revisions and reinstalls only changed or unhealthy Monica skills. A targeted update still requires a coherent dependency closure.
+
+## Plan digests and protected apply
+
+Every mutating intent previews actions and diffs. Apply requires \`--apply --plan-digest <digest>\` and fails after drift. Global-skill changes use a compensating boundary, and unresolved recovery evidence blocks another mutation.
+
+## Source binding
+
+Required source is bound to a verified ref, commit, provenance, access mode, and local path through the stable \`inspect-dependency-source resolve --json\` contract. Mixed versions and unavailable exact artifacts fail closed.
+
+## Managed instructions and state
+
+Guide manages only its marked root \`AGENTS.md\` block and can maintain a minimal \`CLAUDE.md\` import. Repository choices live in \`.monica/guide.json\`; global release, local source paths, preferences, and observations remain in user state.
+
+## Contributor repositories
+
+Framework and docs profiles require their canonical writable repositories and the documented source access. Remote Issues, pull requests, branches, and pushes always need current-session approval. Suspected vulnerabilities must use a private route.`,
     },
     {
       slug: "architecture",
       title: "Architecture",
+      description: "Understand Monica host composition, ProjectUnits, and runtime evidence.",
       tags: ["architecture", "module graph", "ProjectUnit"],
       headings: [
         { id: "host-owned-composition", title: "Host-owned composition", level: 2 },
@@ -112,6 +168,7 @@ See [Module maturity](/docs/module-system) before choosing packages.`,
     {
       slug: "module-system",
       title: "Module system and maturity",
+      description: "Choose Monica packages using the Stable, Integrations, and Labs maturity contract.",
       tags: ["modules", "stable", "integrations", "labs"],
       headings: [
         { id: "three-maturity-tiers", title: "Three maturity tiers", level: 2 },
@@ -140,7 +197,8 @@ Browse the [complete package catalog](/modules) for the release-tier inventory.`
   "zh-CN": [
     {
       slug: "getting-started",
-      title: "快速开始",
+      title: "开始使用 Monica",
+      description: "安装 Monica，组合主机绑定的模块图，并启动应用。",
       tags: ["模板", "快速开始", ".NET 10"],
       headings: [
         { id: "安装项目模板", title: "安装项目模板", level: 2 },
@@ -175,38 +233,92 @@ dotnet run
     {
       slug: "getting-started/agent-setup",
       title: "Agent 设置",
+      description: "为 Monica 仓库设置 Codex 或 Claude Code，预览变更，并安全开始开发。",
       tags: ["Agent", "Codex", "Claude Code", "monica-guide"],
       headings: [
-        { id: "选择-profile", title: "选择 Profile", level: 2 },
-        { id: "先预览再应用", title: "先预览，再应用", level: 2 },
-        { id: "发布与源码安全", title: "发布与源码安全", level: 2 },
+        { id: "开始前", title: "开始前", level: 2 },
+        { id: "选择开发目标", title: "选择开发目标", level: 2 },
+        { id: "审核预览", title: "审核预览", level: 2 },
+        { id: "应用未变化的计划", title: "应用未变化的计划", level: 2 },
+        { id: "开始开发", title: "开始开发", level: 2 },
       ],
-      markdown: `从官网首页展示的不可变 Monica ref 安装 **monica-guide**。Codex 与 Claude Code Prompt 会显式传入各自的 \`--agent\` 目标，通用 fallback 则选择两者。Guide 会为当前仓库配置 Agent 开发 Skill，并把所有修改操作放在完整预览与已验证 Plan Digest 之后。
+      markdown: `**monica-guide** 用来让编码 Agent 为 Monica 仓库做好开发准备。它会按目标安装开发指导、检查仓库，并在修改文件前预览设置方案。它不是运行时包，也不会在初始化期间修改业务代码。
 
-## 选择 Profile
+## 开始前
 
-- **application**：消费 Monica 的应用。
-- **extension-author**：独立模块与 Provider。
-- **framework-contributor**：Monica 框架 checkout。
-- **docs-contributor**：Monica.Docs 及其源码支撑示例。
+在目标仓库根目录打开 Codex 或 Claude Code。前往首页的 [Agent 设置起步区](/zh-CN/#start)选择宿主与目标，再把生成的指令粘贴到 Agent 对话框，而不是终端。通常每个用户只需安装一次 Guide，每个仓库只需初始化一次。
 
-Guide 可以建议 Profile，但模糊仓库仍由用户决定。
+## 选择开发目标
 
-## 先预览，再应用
+- **开发 Monica 应用**：仓库通过 Monica 包实现应用。
+- **开发扩展**：创建独立模块、Provider、UI 包或配套镜像。
 
-\`init\`、\`update\`、\`configure\`、\`source\`、\`contribute\` 与 \`forget\` 默认 Dry run。应用时必须提供 \`--apply\` 与精确的 \`planDigest\`；工作区漂移后会中止。全局 Skill 计划会在同一补偿边界中保护选中 Skill 与计划文件；保留的恢复证据会由 \`doctor\` 报告，并在核对前阻止后续修改。自动化诊断可以使用 \`doctor --json\`。
+Guide 会解释仓库建议，但模糊仓库仍由你决定。贡献者流程位于 [Guide 运维与安全](guide-operations.md#贡献者仓库)。
 
-## 发布与源码安全
+## 审核预览
 
-每个用户同时只有一个全局 Monica Skill 发布版本。仓库期望值写入 \`.monica/guide.json\`；\`doctor\` 会报告冲突，不会声称支持全局多版本隔离。Stable 与 Preview catalog 会为每个 Skill 生成 Revision、权威 SHA-256 Digest，以及最近变化时对应的不可变 tag。Revision 保存在发布 catalog 中，而不是 \`SKILL.md\` frontmatter；这样 Skill 保持可移植，更新语义由 Guide 统一负责。\`status\` 与 \`update\` 会比较已安装和目标 Revision；Guide 验证 Digest，并只安装有变化的 Skill。
+指令会从不可变 Monica tag 安装 Guide、验证发现能力、不带 \`--apply\` 初始化目标，并报告发布版本、操作、文件、Diff、阻塞项与 \`planDigest\`。它不会授权 Commit、Push、Issue、Pull Request 或其他远程变更。
 
-\`update --skill <name>\` 会纳入必需依赖，并扩展成一致的依赖闭包；若会形成混合全局发布版本则拒绝执行。Source 绑定使用精确 commit 与已验证 Digest，不会虚构发布 Revision。离线模式不会替换成其他发布版本。
+## 应用未变化的计划
 
-Guide 只管理根 \`AGENTS.md\` 中自己的标记区块，并可维护最小 \`CLAUDE.md\` import。远程贡献操作始终需要当前会话授权；疑似漏洞只走私密渠道。`,
+批准后，Guide 要求同时提供 \`--apply\` 与精确的 \`--plan-digest\`。仓库或计划漂移后会拒绝执行。应用完成后运行 \`doctor\`；托管指令变化后开始一次新的 Agent 运行。
+
+## 开始开发
+
+可以先让 Agent 解释仓库架构，并在修改前指出下一个功能应该放在哪里。如需了解通道、更新、状态、源码与恢复，请继续阅读 [Guide 运维与安全](guide-operations.md)。`,
+    },
+    {
+      slug: "getting-started/guide-operations",
+      title: "Guide 运维与安全",
+      description: "了解 Monica Guide 的发布、更新、源码绑定、托管状态、恢复机制与贡献安全边界。",
+      tags: ["Agent", "发布", "更新", "安全"],
+      headings: [
+        { id: "三类版本身份", title: "三类版本身份", level: 2 },
+        { id: "通道与精确发布版本", title: "通道与精确发布版本", level: 2 },
+        { id: "statusdoctor-与-update", title: "Status、Doctor 与 Update", level: 2 },
+        { id: "plan-digest-与受保护执行", title: "Plan Digest 与受保护执行", level: 2 },
+        { id: "源码绑定", title: "源码绑定", level: 2 },
+        { id: "托管指令与状态", title: "托管指令与状态", level: 2 },
+        { id: "贡献者仓库", title: "贡献者仓库", level: 2 },
+      ],
+      markdown: `完成首次 [Agent 设置](agent-setup.md)后、维护已有设置时，或在 Monica 贡献仓库中工作时，请使用本页。
+
+## 三类版本身份
+
+- **框架版本**是项目使用的 Monica 依赖版本。
+- **Skill Bundle 发布版本**是随不可变 Monica 版本发布的一组共同测试资产。
+- **单个 Skill Revision**仅在发布时该 Skill 的权威 Digest 发生变化后递增。
+
+日常 CI 只验证契约与 Revision 记账。只有 Monica Release Workflow 会在 Smoke Test 通过后发布不可变资产、递增 Revision 或移动 \`stable\` 与 \`preview\` 指针。
+
+## 通道与精确发布版本
+
+Stable 与 Preview 解析到不可变 tag。显式 release tag 选择精确发布版本并推导通道；Source 选择精确 commit。离线模式不会替换其他产物。每个用户同时只有一个全局 Monica Skill Bundle 发布版本，\`doctor\` 会报告仓库冲突。
+
+## Status、Doctor 与 Update
+
+使用 \`status\` 查看当前绑定，使用 \`doctor\` 获取可执行检查；两者都支持 \`--json\`。\`update\` 会预览变化的 Revision，并只重新安装已变化或不健康的 Monica Skill。定向更新仍必须形成一致的依赖闭包。
+
+## Plan Digest 与受保护执行
+
+每个修改型 Intent 都会预览操作与 Diff。应用要求 \`--apply --plan-digest <digest>\`，发生漂移后会失败。全局 Skill 变更使用补偿边界；未解决的恢复证据会阻止下一次修改。
+
+## 源码绑定
+
+必须使用的源码通过稳定的 \`inspect-dependency-source resolve --json\` 契约绑定到经过验证的 ref、commit、来源、访问模式与本地路径。混合版本与不可用的精确产物会 Fail closed。
+
+## 托管指令与状态
+
+Guide 只管理根 \`AGENTS.md\` 中自己的标记区块，并可维护最小 \`CLAUDE.md\` import。仓库选择保存在 \`.monica/guide.json\`；全局发布版本、本地源码路径、偏好与观察记录保留在用户状态中。
+
+## 贡献者仓库
+
+框架与文档 Profile 要求对应的规范可写仓库以及文档规定的源码访问模式。远程 Issue、Pull Request、分支与 Push 始终需要当前会话授权。疑似漏洞必须走私密渠道。`,
     },
     {
       slug: "architecture",
       title: "架构设计",
+      description: "理解 Monica 的主机组合、ProjectUnit 与运行时证据。",
       tags: ["架构", "模块图", "ProjectUnit"],
       headings: [
         { id: "主机拥有组合权", title: "主机拥有组合权", level: 2 },
@@ -232,6 +344,7 @@ ProjectUnit 为应用行为赋予名称与位置：\`ApplicationService\`、\`Do
     {
       slug: "module-system",
       title: "模块系统与成熟度",
+      description: "按照 Stable、生态集成与 Labs 成熟度契约选择 Monica 包。",
       tags: ["模块", "Stable", "集成", "Labs"],
       headings: [
         { id: "三个成熟度层级", title: "三个成熟度层级", level: 2 },
@@ -276,7 +389,7 @@ function createContent(locale: Locale, draft: FallbackDraft, index: number): Doc
     lastModifiedUtc: "2026-07-13T00:00:00.000Z",
     date: null,
     tags: draft.tags,
-    metadata: { source: "launch-fallback" },
+    metadata: { source: "launch-fallback", description: draft.description },
     headings: draft.headings,
     breadcrumbs: [
       { title: locale === "en" ? "Docs" : "文档", slug: null, isCurrent: false },
@@ -310,15 +423,19 @@ export function getFallbackDocument(locale: Locale, slug: string): DocContent | 
 
 export function getFallbackTree(locale: Locale): DocTreeItem[] {
   const documents = getFallbackDocuments(locale);
-  const [gettingStarted, agentSetup, architecture, moduleSystem] = documents;
+  const gettingStarted = documents.find((document) => document.slug === "getting-started");
+  const agentSetup = documents.find((document) => document.slug === "getting-started/agent-setup");
+  const guideOperations = documents.find((document) => document.slug === "getting-started/guide-operations");
+  const architecture = documents.find((document) => document.slug === "architecture");
+  const moduleSystem = documents.find((document) => document.slug === "module-system");
 
-  if (!gettingStarted || !agentSetup || !architecture || !moduleSystem) {
+  if (!gettingStarted || !agentSetup || !guideOperations || !architecture || !moduleSystem) {
     return [];
   }
 
   return [
     {
-      title: locale === "en" ? "Start" : "开始",
+      title: locale === "en" ? "Getting started" : "快速开始",
       path: "getting-started",
       slug: null,
       isDocument: false,
@@ -334,6 +451,13 @@ export function getFallbackTree(locale: Locale): DocTreeItem[] {
           title: agentSetup.title,
           path: "getting-started/agent-setup.md",
           slug: agentSetup.slug,
+          isDocument: true,
+          children: [],
+        },
+        {
+          title: guideOperations.title,
+          path: "getting-started/guide-operations.md",
+          slug: guideOperations.slug,
           isDocument: true,
           children: [],
         },

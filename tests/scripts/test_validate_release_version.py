@@ -382,24 +382,39 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
         cli_package = "skills"
         cli_version = "9.8.7"
         reference = f"npx --yes {cli_package}@{cli_version}"
-        prompt_prefix = (
-            f"{reference} add https://example/{{{{MONICA_IMMUTABLE_REF}}}}; "
-            "init --release-tag {{MONICA_IMMUTABLE_REF}}"
-        )
         prompts = {
-            target: f"{prompt_prefix} {' '.join(VALIDATOR.PROMPT_AGENT_FLAGS[target])}"
-            for target in VALIDATOR.PROMPT_TARGETS
+            host: {
+                "goals": {
+                    goal: {
+                        "prompt": (
+                            f"{reference} add https://example/"
+                            "{{MONICA_IMMUTABLE_REF}}; verify "
+                            "{{MONICA_CATALOG_DIGEST}}; init --release-tag "
+                            f"{{{{MONICA_IMMUTABLE_REF}}}} --profile "
+                            f"{VALIDATOR.PROMPT_PROFILES[goal]} --json "
+                            f"{' '.join(VALIDATOR.PROMPT_AGENT_FLAGS[host])}"
+                        )
+                    }
+                    for goal in VALIDATOR.PROMPT_GOALS
+                }
+            }
+            for host in VALIDATOR.PROMPT_HOSTS
         }
+        immutable_skill_url_template = (
+            "https://github.com/Tairitsua/Monica/tree/{tag}/skills/{skill}"
+        )
         catalog_path = Path(self.temporary_directory.name) / "catalog.json"
         prompt_path = Path(self.temporary_directory.name) / "prompts.json"
         catalog_path.write_text(
             json.dumps(
                 {
                     "distribution": {
-                        "skillsCli": {"package": cli_package, "version": cli_version}
+                        "skillsCli": {"package": cli_package, "version": cli_version},
+                        "immutableSkillUrlTemplate": immutable_skill_url_template,
                     },
                     "prompts": {
-                        "bootstrapAsset": "skills/monica-guide/assets/bootstrap-prompts.json"
+                        "bootstrapAsset": "skills/monica-guide/assets/bootstrap-prompts.json",
+                        "bootstrapSchema": "skills/monica-guide/assets/bootstrap-prompts.schema.json",
                     },
                     "skills": {"monica-guide": {"path": "skills/monica-guide"}},
                 }
@@ -409,12 +424,27 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
         prompt_path.write_text(
             json.dumps(
                 {
-                    "schemaVersion": 1,
+                    "schemaVersion": 2,
                     "repository": "Tairitsua/Monica",
                     "skill": "monica-guide",
                     "immutableRef": "{{MONICA_IMMUTABLE_REF}}",
+                    "catalogDigest": "{{MONICA_CATALOG_DIGEST}}",
+                    "distribution": {
+                        "skillsCli": {"package": cli_package, "version": cli_version},
+                        "immutableSkillUrlTemplate": immutable_skill_url_template,
+                    },
+                    "hosts": {
+                        host: {
+                            "agentTargets": VALIDATOR.PROMPT_AGENT_TARGETS[host]
+                        }
+                        for host in VALIDATOR.PROMPT_HOSTS
+                    },
+                    "goals": {
+                        goal: {"profile": VALIDATOR.PROMPT_PROFILES[goal]}
+                        for goal in VALIDATOR.PROMPT_GOALS
+                    },
                     "locales": {
-                        locale: prompts
+                        locale: {"hosts": prompts}
                         for locale in VALIDATOR.PROMPT_LOCALES
                     },
                 }
@@ -496,6 +526,7 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
         guide_files = {
             "SKILL.md": b"---\nname: monica-guide\n---\n",
             "assets/bootstrap-prompts.json": self.PROMPT_BYTES,
+            "assets/bootstrap-prompts.schema.json": b'{"schema":true}\n',
         }
         extra_skills = additional_skills or {}
         if "monica-guide" in extra_skills:
@@ -511,7 +542,8 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
                 ),
             },
             "prompts": {
-                "bootstrapAsset": "skills/monica-guide/assets/bootstrap-prompts.json"
+                "bootstrapAsset": "skills/monica-guide/assets/bootstrap-prompts.json",
+                "bootstrapSchema": "skills/monica-guide/assets/bootstrap-prompts.schema.json",
             },
             "skills": {
                 name: {

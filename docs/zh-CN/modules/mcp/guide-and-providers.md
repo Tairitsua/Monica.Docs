@@ -4,8 +4,6 @@ description: MCP 模块的 Guide 方法、传输选择和依赖说明。
 sidebar_position: 4
 ---
 
-# Guide and Providers
-
 ## Guide methods
 
 | Method | What it enables | Required | Typical use |

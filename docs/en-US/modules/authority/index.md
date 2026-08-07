@@ -4,8 +4,6 @@ description: Configure authentication identity and enum-backed permission checks
 sidebar_position: 1
 ---
 
-# Authority
-
 `Monica.Authority` contains separate Authentication, Authorization, and CORS modules. Authentication supplies JWT bearer support and requires an explicit system-user definition. Authorization maps a flags enum to a configured claim type.
 
 ```bash

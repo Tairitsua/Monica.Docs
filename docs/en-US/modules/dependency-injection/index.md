@@ -4,8 +4,6 @@ description: Register services by explicit lifetime markers and exposure rules.
 sidebar_position: 1
 ---
 
-# Dependency Injection
-
 `Monica.DependencyInjection` scans business types and registers services through explicit lifetime markers or `[Dependency]`. It complements Microsoft DI; ordinary `builder.Services` registrations remain valid. This module performs registration only—it does not proxy or intercept services.
 
 ```bash

@@ -4,8 +4,6 @@ description: Use the Monica development skill to create publish-ready independen
 sidebar_position: 1
 ---
 
-# Build a third-party Monica repository
-
 The Monica third-party ecosystem lets an individual or organization publish independently maintained modules while keeping repository, package, runtime, and branding identities predictable. A repository can release one or several NuGet packages and, when a provider is better isolated, one companion OCI repository with CPU and NVIDIA image variants. A release can be open source, proprietary, free, or commercial. Compatibility with Monica does not make it official or imply Monica-team review.
 
 ## Start with the skill

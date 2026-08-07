@@ -4,8 +4,6 @@ description: 按 Monica 模块与发布成熟度组织的简体中文文档目�
 sidebar_position: 3
 ---
 
-# 模块文档
-
 这一层按照**模块**而不是旧历史目录来组织。一个 NuGet 包可以包含多个内聚的 Monica 模块，但每个模块仍然拥有独立注册契约和文档入口。表中的 `monica` 是 `builder.AddMonica(monica => { ... })` 回调参数。第三方包的组织方式见[多模块包架构](../ecosystem/multi-module-package-architecture.md)。
 
 发布成熟度分为三层：Stable 是 Monica 1.0 的受支持应用路径；Integrations 是围绕外部系统的版本化适配；Labs 用于刻意快速演进、仍可能发生破坏性调整的能力。

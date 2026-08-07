@@ -4,8 +4,6 @@ description: Choose automatic, independent, and bounded transaction scopes.
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## Scenario 1 — Let a normal application boundary join automatically
 
 Mediator requests, direct MVC actions, EventBus handlers, seeders, and finite hosted work items use automatic execution descriptors. With Unit of Work registered, their repository operations share one ambient scope. Nested automatic boundaries join rather than create redundant transactions.

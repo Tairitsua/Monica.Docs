@@ -4,8 +4,6 @@ description: Choose published or local endpoint contracts and avoid common gener
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## Published RPC endpoint
 
 Place a command or query under `Platform.Protocol.PublishedLanguages.Domain{Domain}.Requests`, apply `[ApiEndpoint]`, and enable the required `RpcClientTargets` in the protocol assembly. Monica generates the HTTP controller plus `I{Domain}CommandApi` or `I{Domain}QueryApi` and the selected transport implementations.

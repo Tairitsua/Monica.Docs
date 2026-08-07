@@ -4,8 +4,6 @@ description: Generate HTTP endpoints and RPC clients from request-owned applicat
 sidebar_position: 1
 ---
 
-# AutoControllers
-
 AutoControllers exposes Monica `ApplicationService` handlers through generated ASP.NET Core controllers. The request owns its HTTP verb, relative route, binding, and API documentation, while the handler owns only use-case orchestration.
 
 ## When to use it

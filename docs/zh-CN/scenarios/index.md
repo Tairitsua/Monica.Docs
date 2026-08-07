@@ -4,8 +4,6 @@ description: 围绕真实主机集成的 Monica 场景页。
 sidebar_position: 4
 ---
 
-# 场景指南
-
 这一组页面不重复模块参考，而是说明**多个模块怎么组合**。
 
 ## 页面

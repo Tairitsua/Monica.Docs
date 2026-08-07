@@ -4,8 +4,6 @@ description: Choose between host-owned application scenarios, raw ProjectUnit fi
 sidebar_position: 2
 ---
 
-# Testing Monica applications
-
 `Monica.Testing` provides two deliberately different test boundaries: a complete Monica host for runtime-aware application scenarios and a raw `ProjectUnitFixture<TUnit>` for focused collaboration tests. Choose the boundary from the behavior you need to prove, not from the class name under test.
 
 ## Choose the smallest honest boundary

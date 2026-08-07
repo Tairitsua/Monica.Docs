@@ -4,8 +4,6 @@ description: 配置 ExecutionPipeline 的 Behavior 选择、目录元数据与�
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## Module options
 
 `ModuleExecutionPipelineOption` 当前没有面向应用的标量配置项。Behavior 目录由 `ModuleExecutionPipelineGuide.AddBehavior(...)` 维护，不应直接修改模块选项。

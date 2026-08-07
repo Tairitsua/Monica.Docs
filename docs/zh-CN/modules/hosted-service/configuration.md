@@ -4,8 +4,6 @@ description: 配置托管服务的历史记录、心跳和启动失败行为。
 sidebar_position: 3
 ---
 
-# 配置
-
 ## 模块选项
 
 向 `monica.AddHostedService(...)` 传入选项回调：

@@ -4,8 +4,6 @@ description: AutoModel 的 Guide 方法、Provider 选择与依赖说明。
 sidebar_position: 4
 ---
 
-# Guide and Providers
-
 ## Guide methods
 
 这个模块没有额外公开的 Guide 方法，通常直接通过 `monica.AddAutoModel()` 进入即可。

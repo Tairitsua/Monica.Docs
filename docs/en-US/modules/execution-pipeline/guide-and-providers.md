@@ -4,8 +4,6 @@ description: Register execution behaviors, query observed plans, and add the run
 sidebar_position: 4
 ---
 
-# Guide and Adapters
-
 The pipeline has one registration Guide and multiple subsystem-owned adapters. There is no provider selection: each subsystem describes its own entry point and invokes `IExecutionPipeline`.
 
 ## Guide methods

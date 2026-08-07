@@ -4,16 +4,20 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run validate:docs && next build",
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
+    "test:deployed-contract": "node scripts/test-deployed-site.mjs",
     "test:guide-prompts": "node scripts/test-guide-prompts.mjs",
     "validate:guide-prompts": "node scripts/validate-guide-prompts.mjs",
     "validate:guide-prompts:production": "node scripts/validate-guide-prompts.mjs --production",
+    "validate:docs": "node scripts/validate-doc-content.mjs",
+    "verify:manual-dotnet": "node scripts/verify-manual-dotnet.mjs",
     "verify:guide-release:production": "node scripts/verify-published-guide-release.mjs",
-    "check": "npm run validate:guide-prompts && npm run test:guide-prompts && npm run lint && npm run typecheck && npm run build"
+    "verify:deployed": "node scripts/verify-deployed-site.mjs",
+    "check": "npm run validate:guide-prompts && npm run test:guide-prompts && npm run test:deployed-contract && npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "5.2.10",

@@ -4,8 +4,6 @@ description: Configuration UI 的常见使用方式、来源链路排查、导�
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## 场景 1 — 内部运维配置台
 
 在内部管理应用中注册 `monica.AddConfigurationUI()`，即可提供配置查看、编辑、来源链路、导入导出和历史页面。单体应用可使用 file store；分布式应用应使用 DB store，这样所有实例共享同一份 Monica-managed effective values、metadata 和 history。

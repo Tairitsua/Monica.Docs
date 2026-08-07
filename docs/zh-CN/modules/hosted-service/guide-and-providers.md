@@ -4,8 +4,6 @@ description: 理解托管服务注册、实例身份、目录查询和检查点�
 sidebar_position: 4
 ---
 
-# Guide 与运行时 API
-
 ## Guide 方法
 
 | 方法 | 启用能力 | 必需 | 典型用途 |

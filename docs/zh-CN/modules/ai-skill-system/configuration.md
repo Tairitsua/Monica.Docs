@@ -4,8 +4,6 @@ description: AI Skill System 的选项、发现规则与启用状态。
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## Module options
 
 `ModuleSkillSystemOption` 当前没有公开配置属性。模块启用后会扫描 Monica 模块加载范围内的非抽象 `Skill` 类型。

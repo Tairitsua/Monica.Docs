@@ -4,8 +4,6 @@ description: Apply instance-aware Hosted Service observation and checkpoint coor
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## Multiple instances of one worker type
 
 Use separate singleton `IHostedService` descriptors when one worker implementation serves several logical providers or tenants. Each factory must return a new object, and each object should expose an operationally meaningful `ServiceKey`.

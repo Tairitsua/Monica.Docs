@@ -4,8 +4,6 @@ description: MCP 模块的典型托管、连接和管理场景。
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## 场景 1 — 把业务工具暴露为 MCP endpoint
 
 为业务模块定义 `McpServer<TSelf>`，把稳定查询方法标记为 `[SkillTool]`，并使用 HTTP transport。外部 MCP Client 连接应用的 `/mcp` endpoint 后即可发现这些工具。

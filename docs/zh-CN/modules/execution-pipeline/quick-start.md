@@ -4,8 +4,6 @@ description: 注册第一个类型化 Behavior，并检查已经观察到的运�
 sidebar_position: 2
 ---
 
-# Quick Start
-
 ## 安装包
 
 ```bash

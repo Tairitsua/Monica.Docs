@@ -29,6 +29,8 @@ FRONTEND_SOURCE_ROOT = REPOSITORY_ROOT / "frontend" / "monica-docs-web" / "src"
 DOCS_ROOT = REPOSITORY_ROOT / "docs"
 MONICA_VERSION_TOKEN = "{{monica.version}}"
 MONICA_GUIDE_REF_TOKEN = "{{MONICA_IMMUTABLE_REF}}"
+MONICA_GUIDE_CATALOG_DIGEST_TOKEN = "{{MONICA_CATALOG_DIGEST}}"
+PROMPT_TEMPLATE_TOKEN = re.compile(r"\{\{[^{}\r\n]+\}\}")
 TEMPLATE_PACKAGE_ID = "Monica.Templates"
 VERSION_ELEMENT = re.compile(r"<Version>([^<]+)</Version>")
 SEMANTIC_VERSION = re.compile(
@@ -63,12 +65,22 @@ MONICA_RELEASE_TAG = re.compile(
     r"(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
     r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$"
 )
-PROMPT_TARGETS = ("codex", "claude", "generic")
+PROMPT_HOSTS = ("codex", "claude-code", "generic")
+PROMPT_GOALS = ("application", "extension")
 PROMPT_LOCALES = ("en-US", "zh-CN")
 PROMPT_AGENT_FLAGS = {
     "codex": ("--agent codex",),
-    "claude": ("--agent claude-code",),
+    "claude-code": ("--agent claude-code",),
     "generic": ("--agent codex", "--agent claude-code"),
+}
+PROMPT_AGENT_TARGETS = {
+    "codex": ["codex"],
+    "claude-code": ["claude-code"],
+    "generic": ["codex", "claude-code"],
+}
+PROMPT_PROFILES = {
+    "application": "application",
+    "extension": "extension-author",
 }
 
 
@@ -325,51 +337,128 @@ def validate_guide_prompts(agent_skill_ref: str, require_ref: bool, failures: li
         failures.append(str(exception))
         return
 
-    prompt_asset = catalog.get("prompts")
+    prompt_contract = catalog.get("prompts")
     prompt_asset = (
-        prompt_asset.get("bootstrapAsset") if isinstance(prompt_asset, dict) else None
+        prompt_contract.get("bootstrapAsset")
+        if isinstance(prompt_contract, dict)
+        else None
+    )
+    prompt_schema = (
+        prompt_contract.get("bootstrapSchema")
+        if isinstance(prompt_contract, dict)
+        else None
     )
     guide_entry = catalog.get("skills")
     guide_entry = guide_entry.get("monica-guide") if isinstance(guide_entry, dict) else None
+    catalog_distribution = catalog.get("distribution")
+    immutable_skill_url_template = (
+        catalog_distribution.get("immutableSkillUrlTemplate")
+        if isinstance(catalog_distribution, dict)
+        else None
+    )
     if (
         prompt_asset != "skills/monica-guide/assets/bootstrap-prompts.json"
+        or prompt_schema
+        != "skills/monica-guide/assets/bootstrap-prompts.schema.json"
         or not isinstance(guide_entry, dict)
         or guide_entry.get("path") != "skills/monica-guide"
+        or immutable_skill_url_template
+        != "https://github.com/Tairitsua/Monica/tree/{tag}/skills/{skill}"
     ):
         failures.append(f"unexpected Monica Guide catalog contract in {catalog_path}")
         return
 
+    payload_distribution = payload.get("distribution")
     if (
-        payload.get("schemaVersion") != 1
+        payload.get("schemaVersion") != 2
         or payload.get("repository") != "Tairitsua/Monica"
         or payload.get("skill") != "monica-guide"
         or payload.get("immutableRef") != MONICA_GUIDE_REF_TOKEN
+        or payload.get("catalogDigest") != MONICA_GUIDE_CATALOG_DIGEST_TOKEN
+        or not isinstance(payload_distribution, dict)
+        or payload_distribution.get("skillsCli")
+        != {"package": cli_package, "version": cli_version}
+        or payload_distribution.get("immutableSkillUrlTemplate")
+        != immutable_skill_url_template
     ):
         failures.append(f"unexpected Monica Guide prompt contract in {prompt_path}")
         return
 
+    hosts = payload.get("hosts")
+    goals = payload.get("goals")
+    if (
+        not isinstance(hosts, dict)
+        or set(hosts) != set(PROMPT_HOSTS)
+        or any(
+            not isinstance(hosts.get(host), dict)
+            or hosts[host].get("agentTargets") != PROMPT_AGENT_TARGETS[host]
+            for host in PROMPT_HOSTS
+        )
+        or not isinstance(goals, dict)
+        or set(goals) != set(PROMPT_GOALS)
+        or any(
+            not isinstance(goals.get(goal), dict)
+            or goals[goal].get("profile") != PROMPT_PROFILES[goal]
+            for goal in PROMPT_GOALS
+        )
+    ):
+        failures.append(f"invalid Monica Guide host/goal mapping in {prompt_path}")
+        return
+
     locales = payload.get("locales")
-    if not isinstance(locales, dict):
+    if not isinstance(locales, dict) or set(locales) != set(PROMPT_LOCALES):
         failures.append(f"missing Monica Guide prompt locales in {prompt_path}")
         return
     cli_reference = f"npx --yes {cli_package}@{cli_version}"
     for locale in PROMPT_LOCALES:
         localized = locales.get(locale)
-        if not isinstance(localized, dict):
+        localized_hosts = localized.get("hosts") if isinstance(localized, dict) else None
+        if not isinstance(localized_hosts, dict) or set(localized_hosts) != set(PROMPT_HOSTS):
             failures.append(f"missing Monica Guide {locale} prompts in {prompt_path}")
             continue
-        for target in PROMPT_TARGETS:
-            prompt = localized.get(target)
-            if (
-                not isinstance(prompt, str)
-                or not prompt.strip()
-                or MONICA_GUIDE_REF_TOKEN not in prompt
-                or f"--release-tag {MONICA_GUIDE_REF_TOKEN}" not in prompt
-                or cli_reference not in prompt
-                or f"{cli_package}@latest" in prompt
-                or any(flag not in prompt for flag in PROMPT_AGENT_FLAGS[target])
+        for host in PROMPT_HOSTS:
+            localized_host = localized_hosts.get(host)
+            localized_goals = (
+                localized_host.get("goals")
+                if isinstance(localized_host, dict)
+                else None
+            )
+            if not isinstance(localized_goals, dict) or set(localized_goals) != set(
+                PROMPT_GOALS
             ):
-                failures.append(f"invalid Monica Guide {locale}.{target} prompt in {prompt_path}")
+                failures.append(
+                    f"missing Monica Guide {locale}.{host} goals in {prompt_path}"
+                )
+                continue
+            for goal in PROMPT_GOALS:
+                prompt_entry = localized_goals.get(goal)
+                prompt = (
+                    prompt_entry.get("prompt")
+                    if isinstance(prompt_entry, dict)
+                    else None
+                )
+                if (
+                    not isinstance(prompt, str)
+                    or not prompt.strip()
+                    or MONICA_GUIDE_REF_TOKEN not in prompt
+                    or MONICA_GUIDE_CATALOG_DIGEST_TOKEN not in prompt
+                    or f"--release-tag {MONICA_GUIDE_REF_TOKEN}" not in prompt
+                    or f"--profile {PROMPT_PROFILES[goal]}" not in prompt
+                    or "--json" not in prompt
+                    or "--apply" in prompt
+                    or "--channel" in prompt
+                    or set(PROMPT_TEMPLATE_TOKEN.findall(prompt))
+                    - {
+                        MONICA_GUIDE_REF_TOKEN,
+                        MONICA_GUIDE_CATALOG_DIGEST_TOKEN,
+                    }
+                    or cli_reference not in prompt
+                    or f"{cli_package}@latest" in prompt
+                    or any(flag not in prompt for flag in PROMPT_AGENT_FLAGS[host])
+                ):
+                    failures.append(
+                        f"invalid Monica Guide {locale}.{host}.{goal} prompt in {prompt_path}"
+                    )
 
     normalized_ref = agent_skill_ref.strip()
     if require_ref and not normalized_ref:
@@ -652,12 +741,19 @@ def verify_agent_skill_release(
 
     prompts = catalog.get("prompts")
     bootstrap_asset = prompts.get("bootstrapAsset") if isinstance(prompts, dict) else None
+    bootstrap_schema = prompts.get("bootstrapSchema") if isinstance(prompts, dict) else None
     if (
         bootstrap_asset != "skills/monica-guide/assets/bootstrap-prompts.json"
+        or bootstrap_schema
+        != "skills/monica-guide/assets/bootstrap-prompts.schema.json"
         or bootstrap_asset not in files
+        or bootstrap_schema not in files
         or bootstrap_asset.removeprefix(guide_prefix) not in guide_files
+        or bootstrap_schema.removeprefix(guide_prefix) not in guide_files
     ):
-        raise ValueError(f"GitHub release {tag} catalog has no released bootstrap prompt asset")
+        raise ValueError(
+            f"GitHub release {tag} catalog has no released bootstrap prompt contract"
+        )
     prompt_path = local_prompt_path or configured_contract_path(
         "MONICA_GUIDE_PROMPTS_PATH", MONICA_GUIDE_PROMPTS_PATH
     )

@@ -4,8 +4,6 @@ description: 通过自动执行边界或显式业务粒度作用域协调仓储�
 sidebar_position: 1
 ---
 
-# UnitOfWork
-
 UnitOfWork 模块位于 `Monica.Repository`。它协调事务性 DbContext、提供 `IUnitOfWorkManager`，并在提交成功后运行回调。模块接入 Monica 统一 [Execution Pipeline](../execution-pipeline/index.md)，不再安装 MVC Action Filter。
 
 ## 自动边界与显式边界

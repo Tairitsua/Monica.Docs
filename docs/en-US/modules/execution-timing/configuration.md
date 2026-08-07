@@ -4,8 +4,6 @@ description: Configure Execution Timing aggregation, flush cadence, and Web endp
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## Module options
 
 | Property | Type | Default | Required | When to change | Notes |

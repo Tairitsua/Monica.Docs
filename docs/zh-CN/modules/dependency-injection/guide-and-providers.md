@@ -4,8 +4,6 @@ description: DependencyInjection 的 Guide 方法、Provider 选择与依赖说�
 sidebar_position: 4
 ---
 
-# Guide and Providers
-
 ## Guide methods
 
 这个模块没有额外公开的 Guide 方法，通常直接通过 `monica.AddDependencyInjection()` 进入即可。它只负责约定注册、暴露规则与诊断，不提供方法拦截能力。

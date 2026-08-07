@@ -4,8 +4,6 @@ description: Register EventBus in a Generic Host and activate discovered handler
 sidebar_position: 2
 ---
 
-# Quick Start
-
 ## Install the package
 
 ```bash

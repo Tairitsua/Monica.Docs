@@ -4,8 +4,6 @@ description: 使用 Monica 开发 Skill 创建可发布的独立包与配套 Pro
 sidebar_position: 1
 ---
 
-# 创建第三方 Monica 仓库
-
 Monica 第三方生态允许个人或组织独立发布模块，同时让仓库、包、运行时与品牌身份保持一致。一个仓库可以发布一个或多个 NuGet 包；当 Provider 更适合进程隔离时，还可以配套一个同时提供 CPU 与 NVIDIA 变体的 OCI 镜像仓库。发布内容可以开源、闭源、免费或收费；“兼容 Monica”并不代表官方身份或 Monica 团队已审查。
 
 ## 从 Skill 开始

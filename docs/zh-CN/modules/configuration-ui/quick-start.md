@@ -4,8 +4,6 @@ description: 安装并启用 Configuration UI，打开配置状态、历史和�
 sidebar_position: 2
 ---
 
-# Quick Start
-
 ## 安装包
 
 ```bash

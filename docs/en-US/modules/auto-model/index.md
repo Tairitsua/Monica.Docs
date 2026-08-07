@@ -4,8 +4,6 @@ description: Describe queryable model fields once and consume host-owned metadat
 sidebar_position: 1
 ---
 
-# AutoModel
-
 `Monica.AutoModel` creates host-owned model snapshots and provides dynamic expression normalization, tokenization, conversion, and EF Core or in-memory operators. AutoControllers uses it for generated CRUD querying, but it can also be registered directly.
 
 ```bash

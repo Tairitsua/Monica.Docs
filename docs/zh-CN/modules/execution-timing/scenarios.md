@@ -4,8 +4,6 @@ description: 将 Execution Timing 用于 Worker、可复用操作、Pipeline 边
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## 场景 1 — 在 Worker 中测量工作
 
 在 Generic Host 中注册 Execution Timing，并把 `IExecutionTimingFactory` 注入 Worker。一个 `using` 块表示完整操作时，使用 `BeginScope(...)`：

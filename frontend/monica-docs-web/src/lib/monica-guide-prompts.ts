@@ -1,23 +1,25 @@
-type PromptSet = {
-  codex: string;
-  claude: string;
-  generic: string;
-};
+export type MonicaGuideHost = "codex" | "claude-code" | "generic";
+export type MonicaGuideGoal = "application" | "extension";
+
+type PromptMatrix = Record<MonicaGuideHost, Record<MonicaGuideGoal, string>>;
 
 type MonicaGuidePrompts = {
-  schemaVersion: 1;
+  schemaVersion: 2;
   repository: "Tairitsua/Monica";
   skill: "monica-guide";
   ref: string;
+  catalogDigest: `sha256:${string}`;
   isLocalDevelopment: boolean;
   skillsCli: {
-    package: string;
+    package: "skills";
     version: string;
   };
   immutableSkillUrlTemplate: string;
+  hosts: Record<MonicaGuideHost, { agentTargets: string[] }>;
+  goals: Record<MonicaGuideGoal, { profile: "application" | "extension-author" }>;
   locales: {
-    en: PromptSet;
-    "zh-CN": PromptSet;
+    en: PromptMatrix;
+    "zh-CN": PromptMatrix;
   };
 };
 

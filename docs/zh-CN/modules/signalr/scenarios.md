@@ -4,8 +4,6 @@ description: SignalR 的常见接入方式与使用陷阱。
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## 场景 1 — 用强类型 Contract 做服务端推送
 
 最适合 Monica 的做法是把所有客户端可调用方法放到 `ISignalRHubContract` 上，然后在业务服务里注入 `IChatHubOperator` 之类的抽象，通过用户或连接维度推送。

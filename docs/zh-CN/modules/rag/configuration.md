@@ -4,8 +4,6 @@ description: RAG 模块选项、Qdrant 选项和必需设置。
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## Module options
 
 | Property | Type | Default | Required | When to change | Notes |

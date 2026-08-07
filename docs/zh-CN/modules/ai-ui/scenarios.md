@@ -4,8 +4,6 @@ description: AI UI 的常见页面组合和使用方式。
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## 场景 1 — 完整 AI 工作台
 
 注册 `monica.AddAIUI()` 的默认配置即可获得聊天、Provider 管理和能力管理三类页面。适合开发、调试和内部管理。

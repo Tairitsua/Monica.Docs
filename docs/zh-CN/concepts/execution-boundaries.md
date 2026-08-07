@@ -4,8 +4,6 @@ description: 理解 Monica 如何让不同项目单元共享授权、事务、�
 sidebar_position: 6
 ---
 
-# 统一执行边界
-
 Monica 的统一执行管线把“某段代码从哪里进入系统”表达成明确的执行边界。Mediator 请求、MVC Action、事件处理器、Seeder、后台工作项和 Job 仍由各自模块负责调度，但可以通过同一套类型化 Behavior 承接授权、路由、UnitOfWork、追踪和性能诊断。
 
 ## 为什么需要统一边界

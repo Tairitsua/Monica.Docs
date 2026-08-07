@@ -4,8 +4,6 @@ description: Repository 的常见接入方式与使用陷阱。
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## 场景 1 — 用默认 Provider 跑通单 `DbContext` 仓储
 
 对于大多数宿主，先使用 `DbContextProviderType.Default` 即可。它最贴近普通 EF Core 使用习惯，也最容易和标准请求生命周期对齐。

@@ -4,8 +4,6 @@ description: Compose, validate, and start a host-owned Monica module graph.
 sidebar_position: 1
 ---
 
-# Core composition
-
 `Monica.Core` provides the host boundary shared by every Monica application. One call to `AddMonica(...)` records the modules, application identity, type-discovery scope, and module-system policy for one host. The graph is validated and sealed before `Build()` returns a service provider.
 
 ## Install and compose

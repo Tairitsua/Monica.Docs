@@ -4,8 +4,6 @@ description: 配置 Execution Timing 的聚合方式、刷新周期与 Web 端�
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## Module options
 
 | Property | Type | Default | Required | When to change | Notes |

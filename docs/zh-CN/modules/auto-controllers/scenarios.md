@@ -4,8 +4,6 @@ description: 选择发布或本地端点契约，并避开常见生成错误。
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## 发布为 RPC 的端点
 
 把 Command 或 Query 放到 `Platform.Protocol.PublishedLanguages.Domain{Domain}.Requests`，应用 `[ApiEndpoint]`，并在协议程序集中启用需要的 `RpcClientTargets`。Monica 会生成 HTTP Controller、`I{Domain}CommandApi` 或 `I{Domain}QueryApi`，以及选中的传输实现。

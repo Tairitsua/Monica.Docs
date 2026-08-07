@@ -1,10 +1,8 @@
 ---
-title: Monica 文档
+title: Agent 能遵循的架构
 description: 使用人类与编码 Agent 都能遵循的架构，构建可观测的 .NET 后端。
 sidebar_position: 1
 ---
-
-# Agent 能遵循的架构
 
 Monica 是面向可观测 .NET 后端的 Agent-governed application architecture。它把基础设施模块、DDD 项目单元和运行时检查统一为一份显式契约，让编码 Agent 不必在每个功能里重新猜测架构，也让开发者与运维人员能看到应用实际启动了什么。
 

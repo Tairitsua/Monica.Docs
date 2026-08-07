@@ -4,8 +4,6 @@ description: 注册 ProjectUnits、为单元添加注解，并查看类型化状
 sidebar_position: 2
 ---
 
-# 快速开始
-
 ## 安装
 
 ```bash

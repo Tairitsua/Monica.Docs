@@ -4,8 +4,6 @@ description: AI UI 的页面开关和聊天显示选项。
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## Module options
 
 | Property | Type | Default | Required | When to change | Notes |

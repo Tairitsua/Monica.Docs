@@ -4,8 +4,6 @@ description: RAG 的索引、搜索、切块和向量库管理场景。
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## 场景 1 — 本地演示 RAG
 
 组合内存向量库和 Fake Embedding 模型，可以在没有外部服务的情况下演示知识库创建、文档导入、索引和搜索。

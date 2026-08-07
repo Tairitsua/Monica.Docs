@@ -4,8 +4,6 @@ description: 在 KnowledgeBase 基础上提供文档切块、Embedding、向量�
 sidebar_position: 1
 ---
 
-# RAG
-
 `RAG` 模块在 `KnowledgeBase` 的文档清单和源内容之上，增加文档切块、Embedding 模型绑定、向量集合管理、批量索引和文本检索。它也注册内置知识工具，让 AI Chat 可以按知识库进行检索增强。
 
 ## 何时使用这个模块

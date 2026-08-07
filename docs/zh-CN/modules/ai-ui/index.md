@@ -4,8 +4,6 @@ description: 提供 AI Chat、Provider 管理和 Skill / MCP 能力管理页面�
 sidebar_position: 1
 ---
 
-# AI UI
-
 `AI UI` 模块提供 Monica AI 的 Blazor 管理界面，包括聊天页、Provider 管理页、Skill / MCP 能力管理页，以及聊天输入中的知识库选择和斜杠能力引用。
 
 ## 何时使用这个模块

@@ -4,8 +4,6 @@ description: Choose Stable Monica capabilities and explicitly identified Labs mo
 sidebar_position: 1
 ---
 
-# Module catalog
-
 The pages in this section cover Monica's user-facing module surface. Stable means a capability belongs to the supported Monica 1.0 application path; selected Labs capabilities are listed separately and remain explicitly fast-moving. Neither maturity level means every application should install every package.
 
 Independent packages may bundle several coherent modules in one NuGet package. Each module still has its own registration contract and package-scoped key. See [Multi-module package architecture](../ecosystem/multi-module-package-architecture.md).

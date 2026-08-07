@@ -4,8 +4,6 @@ description: KnowledgeBase 的 Guide 方法、存储 Provider 和模块依赖。
 sidebar_position: 4
 ---
 
-# Guide and Providers
-
 ## Guide methods
 
 | Method | What it enables | Required | Typical use |

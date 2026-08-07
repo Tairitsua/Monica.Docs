@@ -4,8 +4,6 @@ description: 在 Web Host 或 Generic Host 中测量 Monica 业务执行与应�
 sidebar_position: 1
 ---
 
-# Execution Timing
-
 Execution Timing 为 Monica 业务执行和应用自定义作用域记录运行中操作，并聚合耗时统计。它同时支持 ASP.NET Core 与 Generic Host：Web 应用可以选择公开诊断端点，Worker 则保留完全相同的记录、聚合和查询 API，而不会增加 HTTP 接口。
 
 ## 何时使用此模块

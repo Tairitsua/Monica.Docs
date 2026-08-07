@@ -4,8 +4,6 @@ description: Configuration UI 的页面能力、暂存模型、验证状态、�
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## Module options
 
 `ModuleConfigurationUIOption` 当前没有公开配置属性。模块行为主要由 `Monica.Configuration` 的配置定义、active store bundle、runtime source chain 和 `ConfigurationFacade` 决定。

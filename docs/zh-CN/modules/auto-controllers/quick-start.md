@@ -4,8 +4,6 @@ description: 注册 AutoControllers 并暴露一个由请求拥有的应用端�
 sidebar_position: 2
 ---
 
-# Quick Start
-
 ## 安装包
 
 ```bash

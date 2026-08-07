@@ -4,8 +4,6 @@ description: AI 模块的常见接入方式与使用陷阱。
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## 场景 1 — 注册多个 Provider
 
 同一个应用可以注册多个 Provider，并通过 `ProviderId` 在 UI 或业务代码中选择。

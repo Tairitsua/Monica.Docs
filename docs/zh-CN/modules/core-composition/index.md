@@ -4,8 +4,6 @@ description: 组合、校验并启动宿主拥有的 Monica 模块图。
 sidebar_position: 1
 ---
 
-# 核心组合
-
 `Monica.Core` 提供所有 Monica 应用共享的宿主边界。一次 `AddMonica(...)` 调用会为一个宿主记录模块、应用身份、类型发现范围与模块系统策略。模块图会在 `Build()` 返回 Service Provider 前完成校验与封闭。
 
 ## 安装与组合

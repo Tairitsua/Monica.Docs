@@ -4,8 +4,6 @@ description: AI UI 的 Guide、页面注册和模块依赖说明。
 sidebar_position: 4
 ---
 
-# Guide and Providers
-
 ## Guide methods
 
 | Method | What it enables | Required | Typical use |

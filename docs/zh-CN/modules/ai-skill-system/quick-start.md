@@ -4,8 +4,6 @@ description: 定义第一个 Monica AI Skill。
 sidebar_position: 2
 ---
 
-# Quick Start
-
 ## 安装包
 
 ```bash

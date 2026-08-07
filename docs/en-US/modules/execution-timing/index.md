@@ -4,8 +4,6 @@ description: Measure Monica business executions and application-owned scopes in 
 sidebar_position: 1
 ---
 
-# Execution Timing
-
 Execution Timing collects running-operation snapshots and aggregated duration statistics for Monica business executions and application-owned scopes. It works in both ASP.NET Core and Generic Hosts: Web applications may expose diagnostic endpoints, while workers retain the same recording, aggregation, and query APIs without adding an HTTP surface.
 
 ## When to use this module

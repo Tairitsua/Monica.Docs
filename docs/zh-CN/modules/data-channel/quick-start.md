@@ -4,8 +4,6 @@ description: 安装并注册 DataChannel。
 sidebar_position: 2
 ---
 
-# Quick Start
-
 ## 安装包
 
 ```bash

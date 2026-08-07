@@ -4,8 +4,6 @@ description: 用 DataChannel pipeline 管理外部系统通信通道，并提供
 sidebar_position: 1
 ---
 
-# DataChannel
-
 用 DataChannel pipeline 管理外部系统通信通道，并提供状态、异常与重初始化等宿主管理入口。
 
 ## 何时使用这个模块

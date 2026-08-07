@@ -4,8 +4,6 @@ description: 定义新模块系统里最合理的跨模块配置读取方式与 
 sidebar_position: 3
 ---
 
-# 配置读取与 Contribution 模型
-
 这轮模块系统重构里，最核心的问题不是“怎么更方便地拿到别人的配置”，而是：
 
 **哪些信息应该被读取，哪些信息应该被 owner 聚合，哪些协作应该被建模为 contribution。**

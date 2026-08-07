@@ -4,8 +4,6 @@ description: 安装并注册 Configuration，声明第一个可管理的 Options
 sidebar_position: 2
 ---
 
-# Quick Start
-
 ## 安装包
 
 ```bash

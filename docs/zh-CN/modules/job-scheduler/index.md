@@ -4,8 +4,6 @@ description: 扫描定时作业与触发式作业定义，提供控制面、执�
 sidebar_position: 1
 ---
 
-# JobScheduler
-
 扫描定时作业与触发式作业定义，提供控制面、执行面、元数据存储和监控查询 Facade。
 
 每次定时或触发式作业尝试都会进入统一 [Execution Pipeline](../execution-pipeline/index.md)，但描述符使用 `ExecutionTransactionMode.None`。JobScheduler Adapter 因此不会自动创建作业级外层 UnitOfWork；有数据库写入的作业必须通过 `IUnitOfWorkManager.RunAsync(...)` 划分业务粒度或有界批次。

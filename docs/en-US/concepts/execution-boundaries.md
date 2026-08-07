@@ -4,8 +4,6 @@ description: Understand how Monica applies one typed behavior pipeline across re
 sidebar_position: 3
 ---
 
-# Execution Boundaries
-
 An execution boundary is a code entry point that a Monica subsystem owns and can describe consistently. The shared execution pipeline lets authorization, routing, diagnostics, and transactions wrap those entry points without giving each subsystem a different interception model.
 
 ## Boundary, descriptor, and invocation

@@ -4,8 +4,6 @@ description: Define managed options schemas and project effective values into Mi
 sidebar_position: 1
 ---
 
-# Configuration
-
 `Monica.Configuration` turns annotated options types into schemas, stores effective JSON documents, records audited mutations and history, and projects the active values back into Microsoft `IConfiguration` and the Options pattern.
 
 ## Minimal file-backed setup

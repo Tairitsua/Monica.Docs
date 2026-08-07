@@ -4,8 +4,6 @@ description: Discover a host-scoped architecture catalog and expose typed status
 sidebar_position: 1
 ---
 
-# ProjectUnits
-
 `Monica.ProjectUnits` discovers supported application roles, connects their dependencies, records architecture diagnostics, and exposes serializable projections for agents, APIs, and management UI.
 
 ## Public entry points

@@ -4,8 +4,6 @@ description: Export Monica and .NET metrics through OTLP, Prometheus, console, o
 sidebar_position: 1
 ---
 
-# OpenTelemetry
-
 `Monica.OpenTelemetry` wires the OpenTelemetry metrics SDK for first-party Monica meters and common .NET instrumentation. Exporters and the bounded in-process collector are opt-in; the package does not silently choose a production backend.
 
 ```bash

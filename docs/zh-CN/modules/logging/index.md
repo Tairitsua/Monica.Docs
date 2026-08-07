@@ -4,8 +4,6 @@ description: 使用 Monica.Logging 配置宿主独立的 Serilog，并在业务�
 sidebar_position: 1
 ---
 
-# Logging
-
 `Monica.Logging` 为当前宿主配置并持有一套 Serilog pipeline，同时把 Monica 组合阶段的诊断写入同一套日志。不同宿主不会共享或覆盖 Logger 状态。
 
 ## 安装与注册

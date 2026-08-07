@@ -52,6 +52,7 @@ COPY Monica.Docs/frontend/monica-docs-web/package.json ./
 COPY Monica.Docs/frontend/monica-docs-web/package-lock.json ./
 RUN apk add --no-cache git python3 && npm ci
 COPY Monica.Docs/frontend/monica-docs-web ./
+COPY Monica.Docs/docs /src/Monica.Docs/docs
 COPY Monica.Docs/scripts/validate_release_version.py /src/Monica.Docs/scripts/validate_release_version.py
 RUN npm run validate:guide-prompts:production
 RUN npm run verify:guide-release:production

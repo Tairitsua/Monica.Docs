@@ -25,7 +25,9 @@ export async function createDocumentationArticleMetadata(locale: Locale, slug: s
 
   return {
     title: article.data?.title ?? fallback.title,
-    description: article.data ? summarizeMarkdown(article.data.markdown) : fallback.description,
+    description: article.data
+      ? getMetadataString(article.data.metadata, "description") ?? summarizeMarkdown(article.data.markdown)
+      : fallback.description,
     alternates: {
       canonical: docsPath(locale, canonicalSlug),
       languages: {
@@ -34,6 +36,16 @@ export async function createDocumentationArticleMetadata(locale: Locale, slug: s
       },
     },
   };
+}
+
+function getMetadataString(metadata: Record<string, unknown>, name: string): string | null {
+  const entry = Object.entries(metadata).find(([key]) => key.toLocaleLowerCase() === name);
+  if (typeof entry?.[1] !== "string") {
+    return null;
+  }
+
+  const value = entry[1].trim();
+  return value.length > 0 ? value : null;
 }
 
 function summarizeMarkdown(markdown: string): string {

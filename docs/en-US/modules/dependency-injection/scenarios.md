@@ -4,8 +4,6 @@ description: Apply conventional registration while keeping service lifetime and 
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## Scenario 1 — Use lifetime markers for conventional registration
 
 In most business modules, declare registration intent with `ITransientDependency`, `IScopedDependency`, or `ISingletonDependency`. This keeps the service definition and its lifetime together instead of repeating `services.AddScoped(...)` calls in every host.

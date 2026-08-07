@@ -4,8 +4,6 @@ description: 从 Platform.Protocol 中的发布请求直接生成 HTTP 与 Local
 sidebar_position: 2
 ---
 
-# 请求拥有的 RPC 客户端与 Local RPC
-
 `Monica.Generators.AutoController` 直接从带 `[ApiEndpoint]` 的请求符号生成 HTTP Controller 与 RPC 客户端。RPC 契约不再从 Handler 构建产物或 `*.rpc-metadata.json` 中恢复，因此从空的 `bin/`、`obj/` 开始就能一次构建成功。
 
 ## 何时使用

@@ -4,8 +4,6 @@ description: 注册 AI Provider、模型目录、聊天 Facade 与面向 Agent �
 sidebar_position: 1
 ---
 
-# AI
-
 `AI` 模块是 Monica 的 AI 基础设施入口。它统一注册 Provider、模型元数据、聊天会话、流式响应，以及 Skill / MCP 能力的全局启用状态；UI、RAG、Skill System 与 MCP 都围绕这个运行时能力层组合。
 
 ## 何时使用这个模块

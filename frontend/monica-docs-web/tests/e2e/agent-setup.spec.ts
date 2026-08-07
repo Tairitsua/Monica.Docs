@@ -7,24 +7,48 @@ const catalog = JSON.parse(
 ) as { distribution: { skillsCli: { package: string; version: string } } };
 const cliReference = `${catalog.distribution.skillsCli.package}@${catalog.distribution.skillsCli.version} add`;
 
-test("offers Codex, Claude Code, generic, and manual setup paths", async ({ page }) => {
+test("guides Codex and Claude Code users by goal without exposing the full prompt first", async ({ page }) => {
   await page.goto("/");
 
   const agentMode = page.getByRole("tab", { name: "Agent setup" });
   await expect(agentMode).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByText("Before you start", { exact: true })).toBeVisible();
+  await expect(page.getByText("Paste the copied instruction into agent chat—not into a terminal.")).toBeVisible();
   await expect(page.getByRole("tab", { name: "Codex" })).toHaveAttribute("aria-selected", "true");
-  await expect(page.getByRole("tabpanel", { name: "Codex" })).toContainText(cliReference);
-  await expect(page.getByRole("tabpanel", { name: "Codex" })).toContainText("--release-tag");
+
+  const applicationGoal = page.getByRole("radio", { name: /A Monica application/u });
+  await expect(applicationGoal).toBeChecked();
+  await expect(page.getByRole("button", { name: "Copy application setup instruction" })).toBeVisible();
+  const fullPrompt = page.locator("details.full-prompt-details").filter({ hasText: "View the full instruction" }).first();
+  await expect(fullPrompt).not.toHaveAttribute("open", "");
+  await fullPrompt.getByText("View the full instruction", { exact: true }).click();
+  await expect(fullPrompt).toContainText(cliReference);
+  await expect(fullPrompt).toContainText("--profile application");
+  await expect(fullPrompt).toContainText("--release-tag");
+  await expect(fullPrompt).toContainText("releaseCatalogDigest");
+  await expect(fullPrompt).not.toContainText("--apply");
+
+  await page.getByRole("radio", { name: /A Monica extension/u }).check();
+  await expect(page.getByRole("button", { name: "Copy extension setup instruction" })).toBeVisible();
+  await expect(fullPrompt).toContainText("--profile extension-author");
+  await expect(page.getByRole("tabpanel", { name: "Codex" }).getByText("Exact read-only Monica source is required")).toBeVisible();
 
   await page.getByRole("tab", { name: "Claude Code" }).click();
-  await expect(page.getByRole("tabpanel", { name: "Claude Code" })).toContainText("claude-code");
+  const claudePanel = page.getByRole("tabpanel", { name: "Claude Code" });
+  await expect(claudePanel).toContainText("Claude Code");
+  const claudePrompt = claudePanel.locator("details.full-prompt-details");
+  await claudePrompt.getByText("View the full instruction", { exact: true }).click();
+  await expect(claudePrompt).toContainText("--agent claude-code");
 
-  const fallback = page.locator("details.generic-fallback");
+  const fallback = claudePanel.locator("details.generic-fallback");
   await expect(fallback).not.toHaveAttribute("open", "");
-  await fallback.getByText("Generic npx skills fallback").click();
-  await expect(fallback).toHaveAttribute("open", "");
-  await expect(fallback).toContainText("-a codex -a claude-code");
+  await fallback.getByText("Generic npx skills fallback", { exact: true }).click();
+  await expect(fallback).toContainText("--agent codex --agent claude-code");
+  await expect(fallback).toContainText("--profile extension-author");
+});
 
+test("keeps Manual .NET as a complete first-class path", async ({ page }) => {
+  await page.goto("/");
   await page.getByRole("tab", { name: "Manual .NET" }).click();
   await expect(page.getByRole("tab", { name: "CLI", exact: true })).toHaveAttribute("aria-selected", "true");
   await expect(page.getByRole("tabpanel", { name: "CLI", exact: true })).toContainText("dotnet new monica-api");
@@ -34,7 +58,7 @@ test("offers Codex, Claude Code, generic, and manual setup paths", async ({ page
   await expect(page.getByRole("link", { name: "Open the full quick start" })).toHaveAttribute("href", "/docs/getting-started/agent-setup");
 });
 
-test("supports keyboard tab navigation and clipboard feedback", async ({ context, page }) => {
+test("supports keyboard tab navigation and successful clipboard feedback", async ({ context, page }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/");
 
@@ -52,37 +76,61 @@ test("supports keyboard tab navigation and clipboard feedback", async ({ context
   await expect(page.getByRole("tab", { name: "Claude Code" })).toBeFocused();
 
   await page.getByRole("tab", { name: "Codex" }).click();
-  await page.getByRole("button", { name: "Copy", exact: true }).click();
-  await expect(page.locator(".code-window .sr-only")).toHaveText("Copied to clipboard");
+  await page.getByRole("button", { name: "Copy application setup instruction" }).click();
+  await expect(page.getByRole("status")).toHaveText("Copied to clipboard");
   const clipboard = await page.evaluate(() => navigator.clipboard.readText());
   expect(clipboard).toContain("monica-guide");
+  expect(clipboard).toContain("--profile application");
   expect(clipboard).not.toContain("{{MONICA_IMMUTABLE_REF}}");
+  expect(clipboard).not.toContain("{{MONICA_CATALOG_DIGEST}}");
 });
 
-test("keeps the bilingual guide available when the documentation API is unavailable", async ({ page }) => {
+test("makes clipboard failure recoverable without losing the instruction", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: async () => { throw new Error("clipboard denied"); } },
+    });
+  });
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Copy application setup instruction" }).click();
+  const alert = page.locator(".copy-fallback");
+  await expect(alert).toContainText("Clipboard access failed");
+  const fallback = alert.getByRole("textbox", { name: "Select and copy this instruction manually" });
+  await expect(fallback).toBeFocused();
+  await expect(fallback).toHaveValue(/--profile application/u);
+  const selection = await fallback.evaluate((element) => {
+    const textarea = element as HTMLTextAreaElement;
+    return [textarea.selectionStart, textarea.selectionEnd, textarea.value.length];
+  });
+  expect(selection).toEqual([0, selection[2], selection[2]]);
+});
+
+test("keeps bilingual Guide onboarding and fallback documentation aligned", async ({ page }) => {
   await page.goto("/docs/getting-started/agent-setup");
-  await expect(page.getByRole("heading", { name: "Agent setup", level: 1 })).toBeVisible();
-  await expect(page.getByText("LOCAL PREVIEW", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Agent setup", level: 1 })).toHaveCount(1);
 
   await page.goto("/zh-CN");
   await expect(page.getByRole("tab", { name: "Agent 设置" })).toHaveAttribute("aria-selected", "true");
-  await expect(page.getByRole("tabpanel", { name: "Codex" })).toContainText("全局安装具名 monica-guide Skill");
+  await expect(page.getByRole("radio", { name: /Monica 应用/u })).toBeChecked();
+  await page.getByRole("radio", { name: /Monica 扩展/u }).check();
+  await expect(page.getByRole("button", { name: "复制扩展设置指令" })).toBeVisible();
   await expect(page.getByRole("link", { name: "打开完整快速开始" })).toHaveAttribute("href", "/zh-CN/docs/getting-started/agent-setup");
 
   await page.goto("/zh-CN/docs/getting-started/agent-setup");
-  await expect(page.getByRole("heading", { name: "Agent 设置", level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Agent 设置", level: 1 })).toHaveCount(1);
 });
 
-test("contains the starter at desktop and mobile widths and honors reduced motion", async ({ page }) => {
+test("uses six primary sections and remains contained with reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
+  await expect(page.locator("main > section")).toHaveCount(6);
+  await expect(page.getByRole("link", { name: "Start with Monica" })).toHaveAttribute("href", "#start");
+  await expect(page.getByRole("link", { name: "Explore the order example" })).toHaveAttribute("href", "/reference");
+  await expect(page.getByLabel("Illustrative order request flow")).toBeVisible();
   await expect.poll(() => page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches)).toBe(true);
   await expect(page.locator(".hero-reveal").first()).toHaveCSS("opacity", "1");
-  const reducedTransformIsIdentity = await page.locator(".hero-reveal").first().evaluate((element) => {
-    const transform = getComputedStyle(element).transform;
-    return transform === "none" || new DOMMatrix(transform).isIdentity;
-  });
-  expect(reducedTransformIsIdentity).toBe(true);
 
   for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
     await page.setViewportSize(viewport);

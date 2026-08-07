@@ -4,8 +4,6 @@ description: Configure scheduler identity, execution limits, recovery, and reten
 sidebar_position: 3
 ---
 
-# Configuration
-
 ## Core options
 
 | Property | Default | Purpose |

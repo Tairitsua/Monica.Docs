@@ -4,8 +4,6 @@ description: 为 Monica 提供强类型 SignalR Hub 注册、连接跟踪、Hub 
 sidebar_position: 1
 ---
 
-# SignalR
-
 为 Monica 提供强类型 SignalR Hub 注册、连接跟踪、Hub 元数据检查与可选调试界面。
 
 ## 何时使用这个模块

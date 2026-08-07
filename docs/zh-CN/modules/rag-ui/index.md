@@ -4,8 +4,6 @@ description: 提供 RAG 管理、搜索调试和切块器管理页面。
 sidebar_position: 1
 ---
 
-# RAG UI
-
 `RAG UI` 模块提供 RAG 的 Blazor 管理界面，包括索引与队列管理、检索调试、向量库诊断、Embedding 模型绑定和切块器路由管理。它依赖后端 RAG 模块，并默认组合 KnowledgeBase UI。
 
 ## 何时使用这个模块

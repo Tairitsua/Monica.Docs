@@ -4,8 +4,6 @@ description: Compose local and distributed jobs with explicit transaction owners
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## Scenario 1 — Run locally with complete scheduler composition
 
 Use `UseInMemoryMetadataRepository()`, `UseSchedulerScope("local-development")`, and `UseInMemoryProvider()` to exercise discovery, reconciliation, and execution in one process.

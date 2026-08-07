@@ -4,8 +4,6 @@ description: 观测 Generic Host 服务、按实例查询运行状态，并协�
 sidebar_position: 1
 ---
 
-# 托管服务
-
 托管服务模块为通过标准 .NET Generic Host 注册的 Monica 服务建立可观测运行目录。它独立跟踪每个 `IMoHostedService` 实例，提供状态与健康查询，并通过命名检查点协调实例间依赖，而不会替代 `IHostedService` 或 Generic Host 生命周期。
 
 ## 适用场景

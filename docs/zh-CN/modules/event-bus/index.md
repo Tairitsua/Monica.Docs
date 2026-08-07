@@ -4,8 +4,6 @@ description: 提供统一的本地/分布式事件总线抽象、自动发现事
 sidebar_position: 1
 ---
 
-# EventBus
-
 提供统一的本地/分布式事件总线抽象、自动发现事件处理器，以及 keyed event bus 组合能力。EventBus 是 Generic Host 模块，不要求 Web Host；Web 应用只是在相同注册基础上额外完成 `UseMonica()` 与 `MapMonica()`。
 
 ## 何时使用这个模块

@@ -4,8 +4,6 @@ description: Target execution points, inspect applied runtime behaviors, and cho
 sidebar_position: 5
 ---
 
-# Scenarios
-
 ## Scenario 1 — Apply a behavior to one subsystem
 
 Use the public execution-point constant in the descriptor filter:

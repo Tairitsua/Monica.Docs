@@ -4,8 +4,6 @@ description: Understand Hosted Service registration, instance identity, registry
 sidebar_position: 4
 ---
 
-# Guide and Runtime APIs
-
 ## Guide method
 
 | Method | What it enables | Required | Typical use |

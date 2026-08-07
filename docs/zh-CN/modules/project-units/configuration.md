@@ -4,8 +4,6 @@ description: 配置项目单元详情解析、命名诊断、请求过滤和 UI 
 sidebar_position: 3
 ---
 
-# 配置
-
 ## `ModuleProjectUnitsOption`
 
 | 属性 | 类型 | 默认值 | 作用 |

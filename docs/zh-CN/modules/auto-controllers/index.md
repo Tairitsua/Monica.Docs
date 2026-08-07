@@ -4,8 +4,6 @@ description: 根据请求拥有的端点契约生成 HTTP Controller 与 RPC 客
 sidebar_position: 1
 ---
 
-# AutoControllers
-
 AutoControllers 把 Monica `ApplicationService` 暴露为生成式 ASP.NET Core Controller。HTTP 方法、相对路由、绑定方式和 API 文档都由请求类型拥有，Handler 只负责用例编排。
 
 ## 何时使用

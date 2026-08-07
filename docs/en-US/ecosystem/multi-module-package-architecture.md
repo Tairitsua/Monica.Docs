@@ -4,8 +4,6 @@ description: Organize one repository into coherent NuGet packages, Monica module
 sidebar_position: 3
 ---
 
-# Repository, package, and module architecture
-
 One schema-v2 repository may release several aligned NuGet packages, and each package may contain any coherent number of Monica modules. Repository boundaries express common ownership and release policy; package boundaries express installation and dependency choices; module boundaries express independently registered runtime capabilities. Do not confuse these three identities or split a cohesive library only to force one module per package.
 
 ## Keep the two dependency graphs explicit

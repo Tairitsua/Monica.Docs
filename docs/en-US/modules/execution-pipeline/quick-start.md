@@ -4,8 +4,6 @@ description: Register a typed execution behavior and inspect its observed runtim
 sidebar_position: 2
 ---
 
-# Quick Start
-
 ## Install the package
 
 ```bash

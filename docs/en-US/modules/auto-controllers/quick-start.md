@@ -4,8 +4,6 @@ description: Register AutoControllers and expose a request-owned application end
 sidebar_position: 2
 ---
 
-# Quick Start
-
 ## Install the packages
 
 ```bash

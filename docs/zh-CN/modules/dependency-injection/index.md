@@ -4,8 +4,6 @@ description: 提供 Monica 的约定式依赖注入、服务暴露规则与自�
 sidebar_position: 1
 ---
 
-# DependencyInjection
-
 提供 Monica 的约定式依赖注入、服务暴露规则与自动注册诊断快照。这个模块只负责注册，不会代理或拦截服务。
 
 ## 何时使用这个模块
