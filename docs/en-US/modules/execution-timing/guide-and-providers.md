@@ -1,12 +1,12 @@
 ---
-title: Guide and Runtime APIs
+title: Registration Extensions and Runtime APIs
 description: Select an aggregation mode and use the public Execution Timing recording and query contracts.
 sidebar_position: 4
 ---
 
-Execution Timing has no replaceable provider. Its Guide selects one of two built-in aggregation coordinators, while applications interact with host-neutral factory and query abstractions.
+Execution Timing has no replaceable provider. Its registration extensions select one of two built-in aggregation coordinators, while applications interact with host-neutral factory and query abstractions.
 
-## Guide methods
+## Registration extensions
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|

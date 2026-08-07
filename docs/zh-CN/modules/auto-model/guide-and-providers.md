@@ -1,19 +1,19 @@
 ---
-title: Guide and Providers
-description: AutoModel 的 Guide 方法、Provider 选择与依赖说明。
+title: 注册与 Provider
+description: AutoModel 的注册、Provider 选择与依赖说明。
 sidebar_position: 4
 ---
 
-## Guide methods
+## 模块注册
 
-这个模块没有额外公开的 Guide 方法，通常直接通过 `monica.AddAutoModel()` 进入即可。
+这个模块没有额外公开的模块专用注册扩展，通常直接调用 `monica.AddAutoModel()` 即可。
 
 ## Provider choices
 
 | Choice | How to enable it | When to use it |
 |---|---|---|
-| 默认数据库过滤 Provider | 内置注册，无需额外 Guide | 大多数 `IQueryable<T>` 动态过滤场景。 |
-| 默认内存过滤 Provider | 内置注册，无需额外 Guide | 对内存集合进行同语法过滤时。 |
+| 默认数据库过滤 Provider | 内置注册，无需额外注册扩展 | 大多数 `IQueryable<T>` 动态过滤场景。 |
+| 默认内存过滤 Provider | 内置注册，无需额外注册扩展 | 对内存集合进行同语法过滤时。 |
 | 快照工厂 | 内置 `IAutoModelSnapshotFactory` | 需要读取当前实体公开字段快照时。 |
 
 ## Module dependencies

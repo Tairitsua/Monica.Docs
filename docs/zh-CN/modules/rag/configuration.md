@@ -36,4 +36,4 @@ sidebar_position: 3
 |---|---|---|
 | `CONFIG_VECTOR_STORE` | `UseVectorStoreInMemoryProvider()`、`UseVectorStoreProvider<TVectorStore>()`、`UseVectorStoreQdrantProvider(...)` | 没有向量存储时，模块无法完成索引和搜索。 |
 
-Embedding 模型不是 Guide 的启动期必需项，但知识库要索引时必须绑定一个可用 Embedding 模型。
+Embedding 模型不是模块启动期必需注册项，但知识库要索引时必须绑定一个可用 Embedding 模型。

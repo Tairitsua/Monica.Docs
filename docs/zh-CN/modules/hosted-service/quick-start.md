@@ -71,5 +71,5 @@ public sealed class QueueConsumer(
 ## 后续阅读
 
 - [配置](./configuration.md)说明历史记录、心跳和启动错误的默认值。
-- [Guide 与运行时 API](./guide-and-providers.md)介绍身份、目录查询和检查点。
+- [注册与运行时 API](./guide-and-providers.md)介绍身份、目录查询和检查点。
 - [使用场景](./scenarios.md)展示多实例和依赖协调方式。

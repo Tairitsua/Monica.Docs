@@ -1,10 +1,10 @@
 ---
-title: Guide and Providers
-description: ExecutionPipeline 的 Guide、运行时目录 API、准确顺序与内置 Adapter。
+title: 注册扩展与 Adapter
+description: ExecutionPipeline 的注册扩展、运行时目录 API、准确顺序与内置 Adapter。
 sidebar_position: 4
 ---
 
-## Guide methods
+## 注册扩展
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|

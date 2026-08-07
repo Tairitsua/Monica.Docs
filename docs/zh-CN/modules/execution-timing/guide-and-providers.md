@@ -1,12 +1,12 @@
 ---
-title: Guide 与运行时 API
+title: 注册扩展与运行时 API
 description: 选择聚合模式，并使用 Execution Timing 的公开记录与查询契约。
 sidebar_position: 4
 ---
 
-Execution Timing 没有可替换 Provider。Guide 在两个内置聚合 Coordinator 之间选择，应用则通过宿主中立的 Factory 与 Query 抽象交互。
+Execution Timing 没有可替换 Provider。注册扩展用于在两个内置聚合 Coordinator 之间选择，应用则通过宿主中立的 Factory 与 Query 抽象交互。
 
-## Guide methods
+## 注册扩展
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|

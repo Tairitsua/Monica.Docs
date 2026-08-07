@@ -12,7 +12,7 @@ sidebar_position: 4
 
 - 持久仓库 ID、对齐的发布版本、Publisher 与 NuGet.org 所有者
 - 每个 NuGet 包的 ID、职责、项目路径与包间依赖
-- 每个模块的键、类型、模块间依赖与 Provider 目标
+- 每个模块的 Manifest 生态键、类型、模块间依赖与 Provider 目标
 - 非 Web、Web、Provider/Integration、混合 UI 或独立 UI 形态
 - Provider 是进程内运行，还是通过配套 OCI Service 运行
 - OCI Service 需要的镜像仓库、Connector 包、CPU/NVIDIA 目标、平台、运行时 Stage、不可变 Tag 后缀、Provider 专用 Smoke Command 与受管 NVIDIA Runner Label
@@ -28,14 +28,14 @@ sidebar_position: 4
 `monica.manifest.json` 是完整发布单元的权威描述：
 
 - `packages[].packageDependencies` 是仓库内 NuGet 依赖图，必须使用完整包 ID。
-- `packages[].modules[].dependsOn` 是 Monica 运行时依赖图，必须使用完整模块键。
+- `packages[].modules[].dependsOn` 是 Manifest 模块图，必须使用完整生态键；Scaffold 会把它解析为具体 CLR 类型依赖。
 - 每个跨包模块依赖都必须由对应包依赖承载。
 - `kind: provider` 模块要设置 `providerFor`，并在 `dependsOn` 中列出同一目标。
 - `ociImages[]` 通过 `companionPackageId` 把一个镜像仓库映射到拥有 Provider 模块的 Connector 包；CPU 与 NVIDIA 变体是同一仓库的不同 Target。
 - 可选 `releaseGates` 声明用于证明有意义 CPU/NVIDIA Provider 推理的仓库命令。NVIDIA 门禁还包含共享的 `managedNvidiaRunnerLabels`，其中必须有 `self-hosted` 与 `nvidia`。
 - `version` 同时适用于所有 NuGet 包与每个 `<version>-<tagSuffix>` 镜像 Tag。
 
-两张依赖图都必须完整且无环。不要从项目引用猜测运行时依赖，也不要把身份缩写为仓库内局部名称。
+两张依赖图都必须完整且无环。不要从项目引用猜测 Manifest 模块依赖，也不要把生态键缩写为仓库内局部名称。
 
 ## 3. 使用 Skill 生成
 
@@ -50,7 +50,7 @@ $monica-third-party-module-development 把 Tairitsua.Monica.AI.OCR 设计为一�
 
 这只是设计示例，不代表这些包或镜像已经发布。接受生成结果前，检查身份清单、包/模块依赖图、项目引用、OCI 声明、元数据与许可证。声明 OCI 目标只会生成 Bake 契约与目录，不会生成真实 Provider Service 实现。只要有一个声明的镜像缺少完整发布门禁，Scaffold 就会省略整个发布工作流，避免产生部分 NuGet/OCI 发布。
 
-对于每个 UI 模块，Scaffold 会从该模块键移除末尾 `.UI` 得到稳定导航分类 ID，使用 `RegisterLocalizedCategory<TResource>()` 注册分类文本，再通过 `RegisterLocalizedPage<TPage, TResource>()` 注册页面。后续增加页面时继续使用这一显式资源归属模式，不要改回集中资源或按翻译文本分组。
+对于每个 UI 模块，Scaffold 会从该模块的 Manifest 键移除末尾 `.UI` 得到稳定导航分类 ID，使用 `RegisterLocalizedCategory<TResource>()` 注册分类文本，再通过 `RegisterLocalizedPage<TPage, TResource>()` 注册页面。后续增加页面时继续使用这一显式资源归属模式，不要改回集中资源或按翻译文本分组。
 
 ## 4. 实现公开模块契约
 
@@ -59,7 +59,8 @@ $monica-third-party-module-development 把 Tairitsua.Monica.AI.OCR 设计为一�
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using Monica.Core.Modularity.Abstractions;
-using Monica.Core.Modularity.Annotations;
+using Monica.Core.Modularity.Models;
+using Monica.Modules;
 
 // ReSharper disable once CheckNamespace
 namespace Acme.Monica.Analytics.Modules;
@@ -68,30 +69,27 @@ public static class ModuleAnalyticsBuilderExtensions
 {
     extension(IMonicaBuilder builder)
     {
-        public ModuleAnalyticsGuide AddAnalytics(
+        public ModuleRegistration<ModuleAnalytics, ModuleAnalyticsOption> AddAnalytics(
             Action<ModuleAnalyticsOption>? configure = null)
         {
-            return builder.AddModule<
-                ModuleAnalytics,
-                ModuleAnalyticsOption,
-                ModuleAnalyticsGuide>(configure);
+            return builder.AddModule<ModuleAnalytics, ModuleAnalyticsOption>(configure);
         }
     }
 }
 
-[ModuleKey("Acme.Monica.Analytics")]
-public sealed class ModuleAnalytics(ModuleAnalyticsOption option)
-    : ModuleBase<ModuleAnalytics, ModuleAnalyticsOption, ModuleAnalyticsGuide>(option)
+public sealed class ModuleAnalytics : MonicaModule<ModuleAnalyticsOption>
 {
-    public override void ConfigureServices(IServiceCollection services)
+    public override void Describe(ModuleDescriptor module)
+    {
+        module.Require<ModuleResultEnvelope, ModuleResultEnvelopeOption>();
+        module.AfterIfPresent<ModuleObjectMapping, ModuleObjectMappingOption>();
+    }
+
+    public override void ConfigureServices(ModuleContext<ModuleAnalyticsOption> context)
     {
         // Register the module's implementation boundary.
+        context.Services.AddSingleton<AnalyticsService>();
     }
-}
-
-public sealed class ModuleAnalyticsGuide
-    : ModuleGuide<ModuleAnalytics, ModuleAnalyticsOption, ModuleAnalyticsGuide>
-{
 }
 
 public sealed class ModuleAnalyticsOption : ModuleOptions<ModuleAnalytics>
@@ -99,39 +97,42 @@ public sealed class ModuleAnalyticsOption : ModuleOptions<ModuleAnalytics>
 }
 ```
 
-为 Module 入口、Option、Guide 方法、公开 Abstraction、Model 与 Facade 编写 XML 文档，说明默认值、前置条件、生命周期、副作用和失败行为。
+`Describe(ModuleDescriptor)` 不读取 Option，在 Monica 编译模块图时只执行一次。`Require<TModule, TOptions>()` 会包含硬依赖；`AfterIfPresent<TModule, TOptions>()` 只在目标已存在时增加排序关系。流式 Feature 方法扩展 `ModuleRegistration<TModule, TOptions>`，在同一个宿主绑定的注册对象上增加能力，不再引入独立 Guide 对象。
+
+为 Module 入口、Option、注册扩展方法、公开 Abstraction、Model 与 Facade 编写 XML 文档，说明默认值、前置条件、生命周期、副作用和失败行为。
 
 ### 只调度隔离的 CPU 密集型组合工作
 
-当完成物化的模块中有同步 CPU 密集型工作可以与后续串行回调重叠时，先准备不可变或由本模块独占的输入快照，再从该模块的 `ConfigureBuilder`、`ConfigureServices` 或 `PostConfigureServices` 回调线程同步调用受保护的 `ScheduleCompositionWork(...)` 方法。选择最晚需要结果的检查点：
+当完成物化的模块中有同步 CPU 密集型工作可以与后续串行回调重叠时，先准备不可变或由本模块独占的输入快照，再从该模块的 `ConfigureBuilder`、`ConfigureServices`、`PostConfigureServices`，或通过 `discovery.Match(...)` 声明的类型发现 Commit 回调中同步调用受保护的 `ScheduleStartupWork(...)` 方法。`DeclareTypeDiscovery(...)` Override 本身只记录计划，不是可调度回调。选择最晚需要结果的屏障：
 
 ```csharp
-[ModuleKey("Acme.Monica.Analytics")]
-public sealed class ModuleAnalytics(ModuleAnalyticsOption option)
-    : ModuleBase<ModuleAnalytics, ModuleAnalyticsOption, ModuleAnalyticsGuide>(option)
+public sealed class ModuleAnalytics : MonicaModule<ModuleAnalyticsOption>
 {
-    private readonly AnalyticsExpressionCatalog _catalog = new(option);
+    private readonly AnalyticsExpressionCatalog _catalog = new();
 
-    public override void ConfigureServices(IServiceCollection services)
+    public override void ConfigureServices(ModuleContext<ModuleAnalyticsOption> context)
     {
-        services.AddSingleton(_catalog);
+        context.Services.AddSingleton(_catalog);
     }
 
-    public override void PostConfigureServices(IServiceCollection _)
+    public override void PostConfigureServices(ModuleContext<ModuleAnalyticsOption> context)
     {
-        ScheduleCompositionWork(
+        var candidate = _catalog.CreateCompilationCandidate();
+
+        ScheduleStartupWork(
             "compile-analytics-expressions",
-            _catalog.Compile,
-            ModuleCompositionWorkDeadline.BeforeServiceRegistrationCompletion);
+            candidate.Compile,
+            () => _catalog.Publish(candidate),
+            ModuleStartupWorkBarrier.BeforeServiceRegistrationCompletion);
     }
 }
 ```
 
-`BeforeServiceRegistrationCompletion` 是默认值，可以省略。后续组合阶段更早需要结果时，使用 `BeforeBusinessTypeIteration` 或 `BeforePostConfigureServices`。Deadline 表示最晚需要完成的组合检查点，不是超时设置。
+`BeforeServiceRegistrationCompletion` 是默认值，可以省略。类型发现注册 Commit 需要结果时使用 `BeforeTypeDiscovery`，Post Configure 阶段需要结果时使用 `BeforePostConfigureServices`。从类型发现 Commit 内提交的工作不能选择 `BeforeTypeDiscovery`，因为 Monica 调用该 Commit 前已经跨过此 Barrier。`BeforeHostLifecycle` 允许组合先完成，但会阻塞 Generic Host 启动；`NoBarrier` 从不阻塞就绪状态，失败只进入诊断。串行 Commit 重载只支持不晚于 `BeforeServiceRegistrationCompletion` 的屏障；更晚或非阻塞工作不能提交 Service 注册变更。屏障是排序边界，不是超时设置。
 
-工作 Action 必须同步、具有确定性并保持隔离；Monica 会拒绝 `async`/`async void` 委托。它不得修改宿主 Builder、`IServiceCollection`、模块图、Service Provider 或共享静态状态，也不得依赖其他工作项的完成顺序。Monica 负责限制并发调度，在声明的检查点等待，在继续组合前传播失败，并在 `AddMonica(...)` 返回前排空每个工作项。不要在模块内增加 `Task.Run`、`Task.WhenAll` 或 Fire-and-forget 工作。
+工作 Action 与可选 Commit Action 必须同步；Monica 会拒绝 `async`/`async void` 委托。Worker 必须具有确定性并保持隔离：不得修改宿主 Builder、`IServiceCollection`、模块图、Service Provider 或共享静态状态，也不得依赖其他工作项的完成顺序。Monica 负责限制并发调度，在选定屏障处等待，并在继续前传播阻塞型工作的失败。`NoBarrier` 工作由宿主持有并持续可观测，直到完成或宿主释放。不要在模块内增加 `Task.Run`、`Task.WhenAll` 或 Fire-and-forget 工作。
 
-运行时激活、I/O、长时间任务与清理应使用 `IHostedLifecycleService` 或 Hosted Service。`ScheduleCompositionWork(...)` 不会让 `ConfigureServices`、`PostConfigureServices` 或其他模块回调并发执行。
+运行时激活、I/O、长时间任务与清理应使用 `IHostedLifecycleService` 或 Hosted Service。`ScheduleStartupWork(...)` 不会让 `ConfigureServices`、`PostConfigureServices` 或其他模块回调并发执行。
 
 ## 5. 组合真实宿主
 

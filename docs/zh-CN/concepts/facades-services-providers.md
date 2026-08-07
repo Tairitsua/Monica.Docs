@@ -42,7 +42,7 @@ Provider 负责“替换型基础设施实现”，例如：
 写模块文档时应该优先回答：
 
 - 用户应该注册哪个模块入口？
-- 用户应该配置哪些 Option / Guide？
+- 用户应该配置哪些 Option，并选择哪些注册扩展？
 - 用户可直接依赖哪些 Facade / Abstraction / Model？
 - 用户什么时候需要选择 Provider？
 

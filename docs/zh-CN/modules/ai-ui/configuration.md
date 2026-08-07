@@ -24,4 +24,4 @@ sidebar_position: 3
 
 ## Required setup
 
-本模块没有必需 Guide 配置。若启用任意页面，会自动注册本模块自己的本地化资源；页面显示依赖 Shell UI。
+本模块没有必需注册扩展。若启用任意页面，会自动注册本模块自己的本地化资源；页面显示依赖 Shell UI。

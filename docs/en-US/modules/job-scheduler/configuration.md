@@ -21,7 +21,7 @@ Zombie detection, long-interval scheduling, and history cleanup are enabled by d
 
 These options control scheduling and metadata lifecycle; none changes transaction ownership. Job attempts always use `ExecutionTransactionMode.None`, so database chunking remains explicit application code.
 
-## Required Guide choices
+## Required registration choices
 
 | Requirement | Methods |
 |---|---|

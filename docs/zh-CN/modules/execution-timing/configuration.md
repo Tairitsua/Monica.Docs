@@ -47,7 +47,7 @@ using var host = builder.Build();
 await host.RunAsync();
 ```
 
-选择标准聚合模式时优先使用 Guide 方法；如果一段配置代码需要同时设置多个模块属性，也可以直接赋值 Option。
+选择标准聚合模式时优先使用注册扩展；如果一段配置代码需要同时设置多个模块属性，也可以直接赋值 Option。
 
 ## 端点行为
 

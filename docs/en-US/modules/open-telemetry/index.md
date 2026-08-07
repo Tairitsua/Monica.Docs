@@ -42,7 +42,7 @@ app.Run();
 
 The SDK subscribes to `Monica.*` by default. ASP.NET Core, `HttpClient`, and runtime instrumentation are enabled by default. `UseOtlpExporter()` honors the OpenTelemetry SDK's `OTEL_EXPORTER_OTLP_*` environment variables when no endpoint override is supplied.
 
-| Guide method | Purpose |
+| Registration extension | Purpose |
 |---|---|
 | `UseOtlpExporter(...)` | Sends metrics to an OpenTelemetry collector or compatible backend. |
 | `UsePrometheusEndpoint(path)` | Maps a Monica-owned scraping endpoint; default `/metrics`. |

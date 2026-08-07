@@ -11,9 +11,9 @@ sidebar_position: 3
 仓库清单描述两张完整的有向无环图：
 
 - NuGet 图使用 `packages[].packageDependencies` 和完整包 ID。开发期的每条边都必须对应项目引用，打包后则对应 NuGet 依赖。
-- Monica 图使用 `modules[].dependsOn` 和完整模块键，用于控制运行时组合与注册顺序。
+- Manifest 模块图使用 `modules[].dependsOn` 和完整生态键。仓库工具会把这些声明解析为具体 CLR 模块类型，并生成用于运行时组合的 `Require<TModule, TOptions>()` 边。
 
-每个跨包模块依赖都必须有对应包依赖，但反向不强制：一个包可以仅使用另一个包的公开类型，而不依赖其中每个模块。Provider 模块还要设置 `providerFor`，依赖对应目标模块键，并实现 `IModuleProvider`。
+每个跨包模块依赖都必须有对应包依赖，但反向不强制：一个包可以仅使用另一个包的公开类型，而不依赖其中每个模块。Provider 模块还要设置 `providerFor`，依赖对应目标 Manifest 键，并实现 `IModuleProvider`。Manifest 键描述分发元数据；Monica 运行时使用每个具体策略 `Type` 作为身份。
 
 ## 多包 OCR 示例
 
@@ -43,7 +43,7 @@ Tairitsua.Monica.AI.OCR/
 | `Tairitsua.Monica.AI.OCR.PaddleOCR` | `Tairitsua.Monica.AI.OCR` | HTTP Connector 与 PaddleOCR Provider 模块 |
 | `Tairitsua.Monica.AI.OCR.UI` | `Tairitsua.Monica.AI.OCR` | 可选的本地化 OCR Workbench |
 
-完整 Monica 运行时图：
+完整 Manifest 模块图：
 
 | 模块键 | 类型 | `dependsOn` | `providerFor` |
 |---|---|---|---|
@@ -96,7 +96,7 @@ src/Acme.Monica.Analytics/
 
 ## Feature-first 组织方式
 
-小型包先使用简单的项目级分层。当真正的子领域逐渐形成后，再增加 `Analytics/`、`Alerts/` 之类的根功能目录，并在每个功能中使用标准层。Module 注册文件集中放在 `Modules/`，只包含注册、Option、Guide 与依赖声明，不承载业务逻辑。
+小型包先使用简单的项目级分层。当真正的子领域逐渐形成后，再增加 `Analytics/`、`Alerts/` 之类的根功能目录，并在每个功能中使用标准层。Module 注册文件集中放在 `Modules/`，只包含策略、Option、`ModuleRegistration<TModule, TOptions>` 扩展与 `Describe(ModuleDescriptor)` 依赖声明，不承载业务逻辑。
 
 按需选择层，不创建空目录：
 
@@ -114,11 +114,11 @@ src/Acme.Monica.Analytics/
 
 即使多个模块位于同一程序集，每个模块仍然需要：
 
-- 唯一且归属于当前包的 `ModuleKey`
-- 自己的 `Module{Name}`、`Module{Name}Option` 与 `Module{Name}Guide`
-- 自己的 `monica.Add{Name}()` 入口
+- 唯一且归属于当前包的 Manifest 键，用于分发元数据
+- 自己的 `Module{Name} : MonicaModule<Module{Name}Option>` 策略与 `Module{Name}Option : ModuleOptions<Module{Name}>`
+- 自己返回 `ModuleRegistration<Module{Name}, Module{Name}Option>` 的 `monica.Add{Name}()` 入口
 - 位于 `<PackageId>.Modules` 下的包自有注册类型
-- 通过模块图显式声明的依赖
+- 在 `Describe(ModuleDescriptor)` 中用 `Require<TModule, TOptions>()` 声明硬依赖，并用 `AfterIfPresent<TModule, TOptions>()` 声明可选排序
 - 聚焦当前模块的宿主组合测试
 - 在 README 表格中说明注册方法、副作用与依赖
 
@@ -130,11 +130,11 @@ src/Acme.Monica.Analytics/
 
 - 基础设施模块拥有 Abstraction、Model、Service、Provider 与 Facade。
 - UI 组件注入公开 Facade，不直接访问 `Services/` 或 `Providers/`。
-- UI 模块使用自己以 `.UI` 结尾的模块键和独立 `Add{Name}UI()` 注册方法。
+- UI 模块使用自己以 `.UI` 结尾的 Manifest 键和独立 `Add{Name}UI()` 注册方法。
 - UI 路由位于移除 `<Publisher>.Monica.` 后的包族路径下，例如 `/analytics`；Monica 会在共享的宿主路由空间中拒绝重复路由。
-- 每个 UI 模块都从自身模块键中移除末尾 `.UI`，得到稳定的导航分类 ID。一个包内的多个 UI 模块因此可以贡献不同分类，而不必拆分 NuGet 包。
+- 每个 UI 模块都从自身 Manifest 键中移除末尾 `.UI`，得到稳定的导航分类 ID。一个包内的多个 UI 模块因此可以贡献不同分类，而不必拆分 NuGet 包。
 - 每个页面使用 `RegisterLocalizedPage<TPage, TResource>()`；包自有分类使用 `RegisterLocalizedCategory<TResource>()`。标题与分类显示键保留在归属资源中，并通过 `AddResource<TResource>()` 注册该资源。
-- UI 模块通常继承 `ModuleBase`；只有真正配置中间件或端点时才使用 `WebModuleBase`。
+- 每个 UI 策略都继承 `MonicaModule<TOptions>` 并实现 `IUIModule`。只有贡献中间件或端点时才实现 `IWebModule`；只有这些 Web 贡献是模块可用性的内在前提时才实现 `IWebHostRequiredModule`。
 - 路由页保持轻量，把可复用展示、状态与格式化逻辑放入 `UI{Name}/Components`、`State` 和 `Support`。
 - 本地化资源统一位于项目级 `Localization/`，静态资源位于 `wwwroot/`。
 

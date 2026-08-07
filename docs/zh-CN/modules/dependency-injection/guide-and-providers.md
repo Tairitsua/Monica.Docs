@@ -1,12 +1,12 @@
 ---
-title: Guide and Providers
-description: DependencyInjection 的 Guide 方法、Provider 选择与依赖说明。
+title: 注册与 Provider
+description: DependencyInjection 的注册、Provider 选择与依赖说明。
 sidebar_position: 4
 ---
 
-## Guide methods
+## 模块注册
 
-这个模块没有额外公开的 Guide 方法，通常直接通过 `monica.AddDependencyInjection()` 进入即可。它只负责约定注册、暴露规则与诊断，不提供方法拦截能力。
+这个模块没有额外公开的模块专用注册扩展，通常直接调用 `monica.AddDependencyInjection()` 即可。它只负责约定注册、暴露规则与诊断，不提供方法拦截能力。
 
 ## Provider choices
 

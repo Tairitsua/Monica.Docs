@@ -12,4 +12,4 @@ sidebar_position: 3
 
 ## Required setup
 
-本模块没有必需 Guide 配置。启用管理页时会自动注册 AI UI 本地化资源、Shell UI 导航项，并依赖 `monica.AddRAG()`。
+本模块没有必需注册扩展。启用管理页时会自动注册 AI UI 本地化资源、Shell UI 导航项，并依赖 `monica.AddRAG()`。

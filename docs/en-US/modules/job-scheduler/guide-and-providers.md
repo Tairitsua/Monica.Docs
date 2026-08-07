@@ -1,10 +1,10 @@
 ---
-title: Guide and providers
+title: Registration Extensions and Providers
 description: Choose metadata, scheduler scope, and local or distributed execution.
 sidebar_position: 4
 ---
 
-## Guide methods
+## Registration extensions
 
 | Method | What it enables | Typical use |
 |---|---|---|

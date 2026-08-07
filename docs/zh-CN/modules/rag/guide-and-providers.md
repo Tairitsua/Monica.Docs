@@ -1,10 +1,10 @@
 ---
-title: Guide and Providers
-description: RAG 的 Guide 方法、向量库 Provider、切块器和依赖说明。
+title: 注册扩展与 Provider
+description: RAG 的注册扩展、向量库 Provider、切块器和依赖说明。
 sidebar_position: 4
 ---
 
-## Guide methods
+## 注册扩展
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|

@@ -48,7 +48,7 @@ public sealed class OrderBacklogJob(ILogger<OrderBacklogJob> logger)
 }
 ```
 
-## Required Guide choices
+## Required registration choices
 
 | Requirement | Local choice | Production/provider choice |
 |---|---|---|
@@ -62,5 +62,5 @@ The default cron timezone is `TimeZoneInfo.Local`. Zombie detection, long-interv
 
 - [Quick start](./quick-start.md)
 - [Configuration](./configuration.md)
-- [Guide and providers](./guide-and-providers.md)
+- [Registration Extensions and Providers](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)

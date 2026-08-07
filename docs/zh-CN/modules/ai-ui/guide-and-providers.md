@@ -1,16 +1,17 @@
 ---
-title: Guide and Providers
-description: AI UI 的 Guide、页面注册和模块依赖说明。
+title: 注册与 Provider
+description: AI UI 的注册扩展、页面注册和模块依赖说明。
 sidebar_position: 4
 ---
 
-## Guide methods
+## 注册扩展
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|
 | `monica.AddAIUI(Action<ModuleAIUIOption>?)` | 注册 AI Chat、Provider 管理和能力管理页面 | 否 | 需要内置 AI 管理 UI 时。 |
+| `.UseBrowserChatHistory(Action<BrowserChatHistoryOptions>?)` | 使用当前浏览器配置文件持久化聊天历史 | 否 | 需要会话跨页面重载保留时。 |
 
-`ModuleAIUIGuide` 当前没有额外 Guide 方法，主要通过 `ModuleAIUIOption` 控制页面和聊天行为。
+`AddAIUI(...)` 返回 `ModuleRegistration<ModuleAIUI, ModuleAIUIOption>`。在该注册上调用 `UseBrowserChatHistory(...)` 可替换聊天历史 Provider；其余页面和聊天行为由 `ModuleAIUIOption` 控制。
 
 ## Module dependencies
 

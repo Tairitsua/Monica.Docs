@@ -43,6 +43,6 @@ The catalog is startup-stable, so refresh is manual. The page always represents 
 
 - [Quick start](./quick-start.md)
 - [Configuration](./configuration.md)
-- [Guide and resolver](./guide-and-providers.md)
+- [Registration and Resolver](./guide-and-providers.md)
 - [Adoption scenarios](./scenarios.md)
 - [ProjectUnits as an architecture contract](../../concepts/project-units.md)

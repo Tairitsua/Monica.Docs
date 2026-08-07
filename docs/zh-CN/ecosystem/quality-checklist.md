@@ -19,33 +19,36 @@ Monica 兼容标识采用发布者自我声明。完成本清单是发布者对�
 - [ ] 显式设置 `PackageId`，并符合 `<Publisher>.Monica.<Package>[.<Variant>]`。
 - [ ] 项目名、程序集名与根命名空间和包 ID 一致。
 - [ ] 目标源上的包 ID 可用，且没有使用 `Monica.*`。
-- [ ] 每个模块键等于包 ID，或以 `PackageId.` 开头。
-- [ ] 每个 UI 模块键都以 `.UI` 结尾。
-- [ ] README 列出模块键与注册方法。
+- [ ] 每个 Manifest 模块键等于包 ID，或以 `PackageId.` 开头。
+- [ ] 每个 UI Manifest 键都以 `.UI` 结尾。
+- [ ] README 列出 Manifest 模块键与注册方法。
 - [ ] 包内模块属于一个内聚的版本与分发边界。
 - [ ] 每个包与镜像都清楚标识为独立发布；没有把设计示例写成可用产物。
 
 ## 架构与公开 API
 
-- [ ] 每个模块都有自己的 Module、Option、Guide、Builder 扩展与依赖声明。
+- [ ] 每个模块都有自己的 `MonicaModule<TOptions>` 策略、`ModuleOptions<TModule>` 类型、`ModuleRegistration<TModule, TOptions>` Builder 入口/扩展与依赖声明。
 - [ ] `packageDependencies` 是完整无环的仓库内 NuGet 图，并使用完整包 ID。
-- [ ] `modules[].dependsOn` 是完整无环的 Monica 运行时图，并使用完整模块键。
+- [ ] `modules[].dependsOn` 是完整无环的 Manifest 模块图，使用完整生态键，并能解析到预期的具体 CLR 模块类型。
 - [ ] 每个跨包模块边都有对应包边；每个 Provider 都设置 `providerFor`、依赖对应目标，并实现 `IModuleProvider`。
 - [ ] 项目引用与声明的仓库内包边完全一致；没有把兄弟包程序集嵌入另一包。
 - [ ] 第三方注册类型位于 `<PackageId>.Modules`，而不是官方专用的 `Monica.Modules` 命名空间。
 - [ ] UI 路由从移除 `<Publisher>.Monica.` 后的包族派生，宿主组合中不存在重复的规范化路由。
 - [ ] 每个本地化页面都显式声明 `TResource`，不存在 `RegisterLocalizedComponent` 或集中式页面标题资源。
-- [ ] 每个包自有分类 ID 都等于对应 UI 模块键移除末尾 `.UI`，具有显式顺序，并且只用页面所属资源注册一次。
+- [ ] 每个包自有分类 ID 都等于对应 UI Manifest 键移除末尾 `.UI`，具有显式顺序，并且只用页面所属资源注册一次。
 - [ ] 每个导航资源都通过 `AddResource<TResource>()` 注册，`en-US` 与 `zh-CN` 键保持同步。
 - [ ] `Modules/` 只包含注册逻辑。
 - [ ] 公开 Abstraction/Model 与内部 Service/Provider 边界清晰。
 - [ ] Facade 是返回 `Res` 或 `Res<T>` 的轻量宿主/UI 入口；内部 Service 使用普通 .NET 异常与返回类型。
 - [ ] 其他模块依赖公开 Abstraction 与 Model，而不是 Facade 或内部 Service。
-- [ ] 默认使用 `ModuleBase`；只有参与中间件或端点时才使用 `WebModuleBase`。
-- [ ] 调用 `ScheduleCompositionWork(...)` 的模块只提供基于不可变或由本模块独占输入的隔离、确定性 CPU 密集型工作，不修改宿主 Builder、Service Collection、Service Provider、模块图或共享静态状态。
+- [ ] 运行时身份是具体模块 `Type`；Manifest 键只保留为分发元数据，不存在自定义身份特性或第二套身份注册表。
+- [ ] 每个策略都继承 `MonicaModule<TOptions>`；UI 策略实现 `IUIModule`，具备 Web 能力的策略实现 `IWebModule`，只有内在依赖 Web 宿主的策略才实现 `IWebHostRequiredModule`。
+- [ ] 硬依赖在不读取 Option 的 `Describe(ModuleDescriptor)` 回调中使用 `Require<TModule, TOptions>()`，可选排序使用 `AfterIfPresent<TModule, TOptions>()`。
+- [ ] 调用 `ScheduleStartupWork(...)` 的模块只提供基于不可变或由本模块独占输入的隔离、确定性、同步 CPU 密集型工作，不修改宿主 Builder、Service Collection、Service Provider、模块图或共享静态状态。
+- [ ] Startup Work 选择真实的 `ModuleStartupWorkBarrier`；串行 Commit 只用于不晚于 `BeforeServiceRegistrationCompletion` 的屏障，`NoBarrier` 工作只影响诊断而不阻塞宿主就绪。
 - [ ] UI 模块消费公开 Facade，不访问内部 Service 或 Provider。
 - [ ] 公开和面向开发者的 API 具有有用的 XML 文档。
-- [ ] Option 解释默认值和实际影响；Guide 方法解释前置条件与副作用。
+- [ ] Option 解释默认值和实际影响；`ModuleRegistration<TModule, TOptions>` Feature 方法解释前置条件与副作用。
 - [ ] 所有 Monica 依赖都通过 `PackageReference` 从声明的 NuGet 源/版本还原；不存在 `MonicaSourceRoot`、同级 Monica 项目引用或本地重新标记版本的 Monica 包。
 - [ ] 每个解析后的 `Monica.*` 包版本（包括中央管理/属性声明）都精确等于 Manifest `monicaVersion`。
 
@@ -54,9 +57,9 @@ Monica 兼容标识采用发布者自我声明。完成本清单是发布者对�
 - [ ] 完整解决方案以零警告完成 Restore、Build 与 Test。
 - [ ] 测试通过真实 `builder.AddMonica(...)` 宿主边界组合包。
 - [ ] 每个公开包入口都通过其打包后 NuGet 产物测试，包括跨包 Provider 选择。
-- [ ] 使用调度组合工作时，测试证明存在有效重叠、每个声明的 Deadline 都会等待、失败会在对应检查点与 `Build()` 前传播、诊断保持确定性，并发执行保持安全。
+- [ ] 使用 Startup Work 时，测试证明存在有效重叠、每个选定屏障都会等待、阻塞型失败在正确边界传播、`NoBarrier` 失败只进入诊断、诊断保持确定性、串行 Commit 顺序正确且并发执行安全。
 - [ ] 设计为可独立使用的模块能够单独注册成功。
-- [ ] 声明的依赖能正确解析，缺少必需 Guide 配置时会清晰失败。
+- [ ] 声明的依赖能正确解析，缺少必需 Feature 选择时会在 Option Finalize 前清晰失败。
 - [ ] 重复注册具有幂等语义，或按明确契约拒绝。
 - [ ] 按实际风险覆盖取消、并发、释放、超时与异常行为。
 - [ ] UI 模块具有组件测试，并为主要路由提供可运行 Bridge/Demo。

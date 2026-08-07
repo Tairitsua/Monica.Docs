@@ -11,9 +11,9 @@ One schema-v2 repository may release several aligned NuGet packages, and each pa
 The repository manifest describes two complete directed acyclic graphs:
 
 - The NuGet graph uses `packages[].packageDependencies` with full package IDs. Every edge must match a project reference during development and a NuGet dependency after packing.
-- The Monica graph uses `modules[].dependsOn` with full module keys. It governs runtime composition and registration order.
+- The manifest module graph uses `modules[].dependsOn` with full ecosystem keys. Repository tooling resolves those declarations to concrete CLR module types and generates `Require<TModule, TOptions>()` edges for runtime composition.
 
-Every cross-package module edge requires a corresponding package edge. The reverse is not required: a package may use another package's public types without its module depending on every module in that package. Provider modules additionally set `providerFor`, depend on that target module key, and implement `IModuleProvider`.
+Every cross-package module edge requires a corresponding package edge. The reverse is not required: a package may use another package's public types without its module depending on every module in that package. Provider modules additionally set `providerFor`, depend on that target manifest key, and implement `IModuleProvider`. Manifest keys describe distribution metadata; Monica uses each concrete strategy `Type` as runtime identity.
 
 ## Multi-package OCR example
 
@@ -43,7 +43,7 @@ Complete NuGet graph:
 | `Tairitsua.Monica.AI.OCR.PaddleOCR` | `Tairitsua.Monica.AI.OCR` | HTTP connector and PaddleOCR provider module |
 | `Tairitsua.Monica.AI.OCR.UI` | `Tairitsua.Monica.AI.OCR` | Optional localized OCR workbench |
 
-Complete Monica runtime graph:
+Complete manifest module graph:
 
 | Module key | Kind | `dependsOn` | `providerFor` |
 |---|---|---|---|
@@ -96,7 +96,7 @@ Consumers install one package and register only the modules their host needs.
 
 ## Feature-first organization
 
-Start with simple project-level layers for a small package. When real sub-domains emerge, add root feature folders such as `Analytics/` and `Alerts/`, with the usual layers inside each feature. Keep module registration artifacts in `Modules/`; they contain registration, options, Guide methods, and dependency declarations, not business logic.
+Start with simple project-level layers for a small package. When real sub-domains emerge, add root feature folders such as `Analytics/` and `Alerts/`, with the usual layers inside each feature. Keep module registration artifacts in `Modules/`; they contain the strategy, options, `ModuleRegistration<TModule, TOptions>` extensions, and `Describe(ModuleDescriptor)` dependency declarations, not business logic.
 
 Use only the layers a feature needs:
 
@@ -114,11 +114,11 @@ Features must not call another feature's internal services. Depend on its public
 
 Even when several modules share an assembly, each module still needs:
 
-- A unique package-scoped `ModuleKey`
-- Its own `Module{Name}`, `Module{Name}Option`, and `Module{Name}Guide`
-- Its own `monica.Add{Name}()` entry point
+- A unique package-scoped manifest key for distribution metadata
+- Its own `Module{Name} : MonicaModule<Module{Name}Option>` strategy and `Module{Name}Option : ModuleOptions<Module{Name}>`
+- Its own `monica.Add{Name}()` entry point returning `ModuleRegistration<Module{Name}, Module{Name}Option>`
 - Package-owned registration types under `<PackageId>.Modules`
-- Explicit dependencies declared through the module graph
+- Hard dependencies declared with `Require<TModule, TOptions>()` and optional ordering declared with `AfterIfPresent<TModule, TOptions>()` in `Describe(ModuleDescriptor)`
 - Focused host-composition tests
 - A README table explaining registration, side effects, and dependencies
 
@@ -132,9 +132,9 @@ A mixed package may contain infrastructure and UI modules in the same Razor SDK 
 - UI components inject public Facades; they do not reach into `Services/` or `Providers/`.
 - The UI module gets its own key ending in `.UI` and its own `Add{Name}UI()` registration.
 - UI routes live at or below the package-family path without `<Publisher>.Monica.`, such as `/analytics`; Monica rejects duplicate routes in the shared host namespace.
-- Each UI module derives a stable navigation category ID from its own module key minus the final `.UI`. Multiple UI modules in one package therefore contribute distinct categories without splitting the NuGet distribution.
+- Each UI module derives a stable navigation category ID from its own manifest key minus the final `.UI`. Multiple UI modules in one package therefore contribute distinct categories without splitting the NuGet distribution.
 - Each page uses `RegisterLocalizedPage<TPage, TResource>()`; package categories use `RegisterLocalizedCategory<TResource>()`. Title and category-label keys stay in the owning resource and that resource is registered through `AddResource<TResource>()`.
-- A UI module normally derives from `ModuleBase`. Use `WebModuleBase` only when it actually configures middleware or endpoints.
+- Every UI strategy derives from `MonicaModule<TOptions>` and implements `IUIModule`. It implements `IWebModule` only when it contributes middleware or endpoints, and `IWebHostRequiredModule` only when those web contributions are intrinsic to a usable module.
 - Keep route pages thin; move reusable presentation, state, and formatting into `UI{Name}/Components`, `State`, and `Support`.
 - Keep localization resources in the project-level `Localization/` folder and static assets under `wwwroot/`.
 

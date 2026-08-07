@@ -19,33 +19,36 @@ The Monica Compatibility Mark is self-attested. Completing this checklist is the
 - [ ] `PackageId` follows `<Publisher>.Monica.<Package>[.<Variant>]` and is explicitly set.
 - [ ] Project, assembly, and root namespace match the package ID.
 - [ ] The package ID is available on the target feed and does not use `Monica.*`.
-- [ ] Every module key equals the package ID or starts with `PackageId.`.
-- [ ] Every UI module key ends in `.UI`.
-- [ ] Module keys and registration methods are listed in the README.
+- [ ] Every manifest module key equals the package ID or starts with `PackageId.`.
+- [ ] Every UI manifest key ends in `.UI`.
+- [ ] Manifest module keys and registration methods are listed in the README.
 - [ ] Every bundled module belongs to one coherent versioning and distribution boundary.
 - [ ] Every package and image is clearly identified as independently published; no design example is presented as an available artifact.
 
 ## Architecture and public API
 
-- [ ] Each module has its own Module, Option, Guide, builder extension, and dependency declarations.
+- [ ] Each module has its own `MonicaModule<TOptions>` strategy, `ModuleOptions<TModule>` type, `ModuleRegistration<TModule, TOptions>` builder entry/extensions, and dependency declarations.
 - [ ] `packageDependencies` is the complete acyclic internal NuGet graph and uses full package IDs.
-- [ ] `modules[].dependsOn` is the complete acyclic Monica runtime graph and uses full module keys.
+- [ ] `modules[].dependsOn` is the complete acyclic manifest module graph, uses full ecosystem keys, and resolves to the intended concrete CLR module types.
 - [ ] Every cross-package module edge has a matching package edge; every provider sets `providerFor`, depends on that target, and implements `IModuleProvider`.
 - [ ] Project references exactly match declared internal package edges; no sibling package assembly is embedded into another package.
 - [ ] Third-party registration types live under `<PackageId>.Modules`, not the first-party `Monica.Modules` namespace.
 - [ ] UI routes derive from the package family without `<Publisher>.Monica.`, and the host composition has no duplicate normalized routes.
 - [ ] Every localized page declares `TResource`; no `RegisterLocalizedComponent` or central page-title resource remains.
-- [ ] Each package-owned category ID equals its UI module key without the final `.UI`, has explicit order, and is registered once with the same module-owned resource used by its pages.
+- [ ] Each package-owned category ID equals its UI manifest key without the final `.UI`, has explicit order, and is registered once with the same module-owned resource used by its pages.
 - [ ] Every navigation resource is registered through `AddResource<TResource>()`, with synchronized `en-US` and `zh-CN` keys.
 - [ ] `Modules/` contains registration logic only.
 - [ ] Public abstractions and models are separated from internal services and providers.
 - [ ] Facades are thin host/UI entry points returning `Res` or `Res<T>`; internal services use normal .NET exceptions and return types.
 - [ ] Other modules consume public abstractions and models rather than Facades or internal services.
-- [ ] `ModuleBase` is the default; `WebModuleBase` is used only for middleware or endpoint participation.
-- [ ] A module that calls `ScheduleCompositionWork(...)` supplies isolated deterministic CPU-bound work over immutable or exclusively module-owned inputs and does not mutate the host builder, service collection, service provider, module graph, or shared static state.
+- [ ] Runtime identity is the concrete module `Type`; manifest keys remain distribution metadata and no custom identity attribute or second identity registry exists.
+- [ ] Every strategy derives from `MonicaModule<TOptions>`; UI strategies implement `IUIModule`, web-capable strategies implement `IWebModule`, and only intrinsically web-only strategies implement `IWebHostRequiredModule`.
+- [ ] Hard dependencies use `Require<TModule, TOptions>()` and optional ordering uses `AfterIfPresent<TModule, TOptions>()` inside the option-free `Describe(ModuleDescriptor)` callback.
+- [ ] A module that calls `ScheduleStartupWork(...)` supplies isolated deterministic synchronous CPU-bound work over immutable or exclusively module-owned inputs and does not mutate the host builder, service collection, service provider, module graph, or shared static state.
+- [ ] Startup work selects a real `ModuleStartupWorkBarrier`; serial commits are used only through `BeforeServiceRegistrationCompletion`, and `NoBarrier` work is treated as diagnostic-only rather than host-readiness work.
 - [ ] UI modules consume public Facades and do not access internal services or providers.
 - [ ] Public and developer-facing APIs have useful XML documentation.
-- [ ] Options document their defaults and practical effect; Guide methods document prerequisites and side effects.
+- [ ] Options document their defaults and practical effect; `ModuleRegistration<TModule, TOptions>` feature methods document prerequisites and side effects.
 - [ ] Every Monica dependency is restored through `PackageReference` from the declared NuGet source/version; no `MonicaSourceRoot`, sibling Monica project reference, or locally relabeled Monica package participates.
 - [ ] Every resolved `Monica.*` package version, including central/property-based declarations, exactly equals manifest `monicaVersion`.
 
@@ -54,9 +57,9 @@ The Monica Compatibility Mark is self-attested. Completing this checklist is the
 - [ ] The complete solution restores, builds, and tests with zero warnings.
 - [ ] Tests compose the package through a real `builder.AddMonica(...)` host boundary.
 - [ ] Every public package entry point is tested through its packed NuGet artifact, including provider selection across package boundaries.
-- [ ] Scheduled-work tests, when applicable, prove useful overlap, waiting at each declared deadline, failure propagation before the relevant checkpoint and `Build()`, deterministic diagnostics, and safe concurrent execution.
+- [ ] Scheduled-work tests, when applicable, prove useful overlap, waiting at each selected barrier, blocking-failure propagation at the correct boundary, diagnostic-only `NoBarrier` failures, deterministic diagnostics, serial commit ordering, and safe concurrent execution.
 - [ ] Every module registration succeeds independently when it is intended to be independent.
-- [ ] Declared dependencies are resolved and missing required Guide configuration fails clearly.
+- [ ] Declared dependencies are resolved and missing required feature selection fails clearly before options are finalized.
 - [ ] Duplicate registrations are idempotent or rejected with a clear contract.
 - [ ] Cancellation, concurrency, disposal, timeout, and exception behavior are covered where relevant.
 - [ ] UI modules have component tests and a runnable bridge/demo for their primary route.

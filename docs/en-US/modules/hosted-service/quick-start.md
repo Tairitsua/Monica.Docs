@@ -71,5 +71,5 @@ public sealed class QueueConsumer(
 ## What to read next
 
 - [Configuration](./configuration.md) explains history, heartbeat, and startup-error defaults.
-- [Guide and Runtime APIs](./guide-and-providers.md) covers identity, registry queries, and checkpoints.
+- [Registration and Runtime APIs](./guide-and-providers.md) covers identity, registry queries, and checkpoints.
 - [Scenarios](./scenarios.md) shows multiple instances and dependency coordination.

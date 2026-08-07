@@ -89,5 +89,5 @@ GET /execution-timing/running
 ## 接下来读什么
 
 - [Configuration](./configuration.md) 说明聚合与端点默认值。
-- [Guide 与运行时 API](./guide-and-providers.md) 说明 Factory 和 Query 契约。
+- [注册扩展与运行时 API](./guide-and-providers.md) 说明 Factory 和 Query 契约。
 - [Scenarios](./scenarios.md) 展示可复用 Recorder 和运维诊断用法。

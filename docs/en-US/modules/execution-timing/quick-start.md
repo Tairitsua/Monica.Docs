@@ -89,5 +89,5 @@ The first route returns completed aggregates ordered by average duration. The se
 ## What to read next
 
 - [Configuration](./configuration.md) explains aggregation and endpoint defaults.
-- [Guide and Runtime APIs](./guide-and-providers.md) documents the factory and query contracts.
+- [Registration Extensions and Runtime APIs](./guide-and-providers.md) documents the factory and query contracts.
 - [Scenarios](./scenarios.md) covers reusable recorders and operational diagnostics.

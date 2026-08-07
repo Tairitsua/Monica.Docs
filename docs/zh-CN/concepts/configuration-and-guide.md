@@ -1,62 +1,60 @@
 ---
-title: Option 与 Guide
-description: 理解公开配置项、额外选项与 Guide 必需配置。
+title: Option 与注册扩展
+description: 在模块 Option、链式注册扩展、命名 Profile 与必需 Feature 之间做出清晰选择。
 sidebar_position: 2
 ---
 
-在 Monica 中，**不是所有配置都应该直接变成一个布尔开关或字符串属性。**
+Monica 把启动阶段冻结的配置值，与会改变模块图或注册能力的动作分开表达。
 
-## 什么时候用 `ModuleOption`
+## 用 `ModuleOptions<TModule>` 表达值
 
-适合放进 `ModuleOption` 的内容通常有这些特征：
+Option 属性应当公开、稳定、不依赖实现细节也能理解，并拥有写入文档的默认值。典型内容包括功能开关、限制、路由前缀、重试或批处理策略。
 
-- 是公开、稳定、用户能直接理解的配置项
-- 有清晰的默认值
-- 可以用表格列出来说明用途、默认值和何时修改
+```csharp
+public sealed class ModuleAnalyticsOption : ModuleOptions<ModuleAnalytics>
+{
+    public bool EnableDetailedMetrics { get; set; }
 
-例子：
+    public int BatchSize { get; set; } = 100;
+}
+```
 
-- `ModuleConfigurationOption.GenerateFileForEachOption`
-- `ModuleJobSchedulerOption.MaxWorkerExecutionThreads`
-- `ModuleProjectUnitsOption.ParseUnitDetails`
+通过模块 `Add*` 方法的回调配置 Option。Monica 先应用依赖与 Feature 拥有的默认 Contribution，再应用宿主拥有的 Contribution，并在各自区段内保留记录顺序。因此无论依赖以什么顺序被发现，宿主直接配置都能覆盖传递默认值。随后 Monica 定稿 Option，并在修改宿主 Builder 或 Service Collection 前调用 `ValidateOptions(...)`。
 
-## 什么时候用 `ModuleGuide`
+一个模块需要拥有多个 keyed provider 实例时，可用 `ConfigureProfile(name, ...)` 保存启动阶段冻结的命名 Option。Profile 是显式配置，不是可变运行时 Settings Bag。
 
-适合做成 Guide 方法的内容通常有这些特征：
+## 用注册扩展表达能力
 
-- 是“启用某种能力”的动作，而不是单纯的值配置
-- 涉及服务注册、Provider 选择或必需依赖声明
-- 同一个需求可能有多种实现方式二选一 / 多选一
+以下动作适合实现为 `ModuleRegistration<TModule,TOptions>` 上的 `Add*`、`Use*`、`Map*` 或 `Register*` 扩展：
 
-例子：
+- 包含或硬依赖另一个模块；
+- 选择一种 Provider 实现；
+- 记录 keyed service 标识；
+- 贡献服务、中间件或端点；
+- 满足必需 Feature；
+- 使用不属于主 Option 的专用配置对象。
 
-- `UseInMemoryMetadataRepository()`
-- `UseSchedulerScope("local-dev")`
-- `MapSignalRHub<THub>("/signalr/chat")`
-- `UseSetup<TSetup>()`
+例如 `UseInMemoryMetadataRepository()`、`UseSchedulerScope("local-dev")`、`MapSignalRHub<THub>(...)` 与 `UseSetup<TSetup>()`。
 
-## 额外选项
+注册扩展只在外层 `AddMonica(...)` 回调内有效。返回的 Registration 会随模块图一起封闭，不能保存后再修改。
 
-有些模块还会使用**额外选项**而不是把所有内容都塞进 `ModuleOption`。例如 `AutoControllers` 的第二个参数 `crudOptionAction` 实际上配置的是 `CrudControllerOption`。
+## 必需 Feature
 
-这类配置一般用于：
+模块固有契约在 `Describe(...)` 中调用 `module.RequireFeature("feature-name")`。可选链式路径也可以调用 `registration.RequireFeature(...)`。具体 Provider 或能力扩展只有在记录了对应注册后，才调用 `SatisfyFeature(...)`。
 
-- 某个子能力的专用参数
-- 不适合混在主模块选项里的附加规则
+校验与调用顺序无关：满足未声明的 Feature 是错误，声明后未满足同样是错误。这样必需 Provider 选择会清晰出现在组合根，而不会由框架静默决定默认实现。
 
-## 必需 Guide 配置
+## 跨模块 Option 读取
 
-有些模块会在内部声明“必需配置键”，如果你没调用对应的 Guide 方法，模块系统会在启动时直接报错。
+模块回调通过 `Option` 或 `context.Options` 读取自己的最终值。跨模块只能读取已声明关系：
 
-典型模块：
+- 通过 `GetOptions` 或 `context.Modules.Get` 读取直接硬依赖；
+- 通过 `TryGetOptions` 或 `context.Modules.TryGet` 读取当前激活的可选顺序目标。
 
-- `JobScheduler`：必须选元数据仓储、Provider、Scope
-- `SignalR`：必须调用 `AddSignalR<...>()`
-- `DataChannel`：必须提供 `UseSetup<TSetup>()`
+一个模块需要扩展另一个模块的运行时行为时，应优先使用 owner 定义的注册 API 或抽象。不要把其他模块的可变 Option 暴露成通用注册表。
 
-## 文档写法建议
+## Option 诊断
 
-阅读 Monica 模块文档时，可以先找两个区块：
+诊断目录会按名称与干净类型展示每个公开 Option 属性。普通有界值可见，只有敏感值会脱敏。可以用 `[ModuleOptionDiagnosticsSensitive]` 标记属性；无法修改 Option 类型时，宿主可通过 `ConfigureModuleOptionDiagnostics(...).MarkSensitive(...)` 添加规则。
 
-1. **Configuration**：看 Option / Extra Option
-2. **Guide and Providers**：看 Guide 方法、必需配置、Provider 选择
+这种可见性只属于诊断边界，不会让最终 Option 重新变为可写，也不会把 Option 数据放进可移植导出。

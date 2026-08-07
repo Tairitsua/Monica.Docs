@@ -43,6 +43,6 @@ sidebar_position: 1
 
 - [快速开始](./quick-start.md)
 - [配置](./configuration.md)
-- [Guide 与需求解析器](./guide-and-providers.md)
+- [注册与需求解析器](./guide-and-providers.md)
 - [接入场景](./scenarios.md)
 - [项目单元编写](../../concepts/project-unit-authoring.md)

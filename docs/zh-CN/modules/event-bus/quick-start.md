@@ -58,5 +58,5 @@ public class UserCreatedHandler : ILocalEventHandler<UserCreatedEvent>
 ## 接下来读什么
 
 - [Configuration](./configuration.md)
-- [Guide and Providers](./guide-and-providers.md)
+- [注册扩展与 Provider](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)

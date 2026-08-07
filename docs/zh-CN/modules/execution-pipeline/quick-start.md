@@ -89,5 +89,5 @@ app.Run();
 ## 接下来读什么
 
 - [Configuration](./configuration.md) 说明描述符、事务模式与过滤规则。
-- [Guide and Providers](./guide-and-providers.md) 列出原生 Adapter、排序契约和目录 API。
+- [注册扩展与 Adapter](./guide-and-providers.md) 列出原生 Adapter、排序契约和目录 API。
 - [Scenarios](./scenarios.md) 展示按执行点筛选和自定义边界。

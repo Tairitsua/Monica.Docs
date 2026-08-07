@@ -50,4 +50,4 @@ Access tokens default to 60 minutes and refresh tokens to 120 minutes. The sourc
 
 Bearer tokens are read from the `Authorization` header by default. Browser WebSocket transports that cannot set that header may opt in with `AllowQueryStringAccessTokens("/hubs/orders")`. Scope every prefix to one mapped hub route: query-string tokens can otherwise leak through browser history, proxy logs, and server access logs. Monica does not expose an HTTP token-decoding endpoint.
 
-Use `AddCors()` and its Guide configuration only when cross-origin callers are required; prefer an explicit origin policy over permissive production defaults.
+Use `AddCors()` and its registration extensions only when cross-origin callers are required; prefer an explicit origin policy over permissive production defaults.

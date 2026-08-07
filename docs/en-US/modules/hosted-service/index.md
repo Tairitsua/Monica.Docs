@@ -36,5 +36,5 @@ The module publishes its registry snapshot during `IHostedLifecycleService.Start
 
 - [Quick Start](./quick-start.md)
 - [Configuration](./configuration.md)
-- [Guide and Runtime APIs](./guide-and-providers.md)
+- [Registration and Runtime APIs](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)

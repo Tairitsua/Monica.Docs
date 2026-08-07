@@ -1,10 +1,10 @@
 ---
-title: Guide and Providers
+title: 注册扩展与 Provider
 description: 接入 Repository DbContext，并理解 Execution Pipeline 依赖。
 sidebar_position: 4
 ---
 
-## Guide 方法
+## 注册扩展
 
 | 方法 | 启用能力 | 典型用途 |
 |---|---|---|

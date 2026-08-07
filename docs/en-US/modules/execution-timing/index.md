@@ -54,6 +54,6 @@ The module automatically adds an execution behavior for descriptors whose `IsBus
 
 - [Quick Start](./quick-start.md)
 - [Configuration](./configuration.md)
-- [Guide and Runtime APIs](./guide-and-providers.md)
+- [Registration Extensions and Runtime APIs](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
 - [Execution Pipeline](../execution-pipeline/index.md)

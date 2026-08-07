@@ -26,7 +26,7 @@ sidebar_position: 1
 - `IEventBus`, `ILocalEventBus`, and `IDistributedEventBus` define publishing and subscription boundaries.
 - `ILocalEventHandler<TEvent>` and `IDistributedEventHandler<TEvent>` define handler contracts.
 - `IEventSubscriptionRegistry` provides observable queries and cancellable mutation APIs.
-- `ModuleEventBusGuide` selects a distributed provider and registers keyed buses.
+- Registration extensions on `ModuleRegistration<ModuleEventBus, ModuleEventBusOption>` select a distributed provider and register keyed buses.
 
 Automatic discovery is enabled by default. EventBus creates discovered subscriptions as a rollback-protected batch during Generic Host startup, before provider `StartAsync` runs. Failure or cancellation removes entries already created by that batch before propagating the startup error; shutdown removes only lifecycle-owned subscription IDs in reverse order and preserves manual subscriptions.
 
@@ -36,5 +36,5 @@ Dispatch uses the exact published event type and topic. Local and distributed ha
 
 - [Quick Start](./quick-start.md)
 - [Configuration](./configuration.md)
-- [Guide and Providers](./guide-and-providers.md)
+- [Registration and Providers](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)

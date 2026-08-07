@@ -27,5 +27,5 @@ Repository DbContext 选择 `DbContextProviderType.UnitOfWork` 时，会自动�
 
 - [Quick Start](./quick-start.md)
 - [Configuration](./configuration.md)
-- [Guide and Providers](./guide-and-providers.md)
+- [注册扩展与 Provider](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)

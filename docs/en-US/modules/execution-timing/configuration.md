@@ -47,7 +47,7 @@ using var host = builder.Build();
 await host.RunAsync();
 ```
 
-Prefer the Guide methods when selecting a standard aggregation mode. Direct option assignment remains useful when configuration code sets several module properties together.
+Prefer the registration extensions when selecting a standard aggregation mode. Direct option assignment remains useful when configuration code sets several module properties together.
 
 ## Endpoint behavior
 

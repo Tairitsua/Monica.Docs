@@ -1,10 +1,10 @@
 ---
-title: Guide and Providers
-description: JobScheduler 的 Guide 方法、Provider 选择与依赖说明。
+title: 注册扩展与 Provider
+description: JobScheduler 的注册扩展、Provider 选择与依赖说明。
 sidebar_position: 4
 ---
 
-## Guide methods
+## 注册扩展
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|

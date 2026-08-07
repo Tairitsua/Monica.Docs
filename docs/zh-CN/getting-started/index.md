@@ -9,7 +9,7 @@ sidebar_position: 1
 ## 你将完成
 
 1. 安装需要的 Stable 包。
-2. 注册模块并配置 `ModuleOption` / `ModuleGuide`。
+2. 注册模块，并通过 Option 回调与链式注册扩展选择所需能力。
 3. 构建 Web 主机，再应用 Monica 中间件与端点。
 4. 从运行时界面或接口确认实际加载的模块与项目单元。
 

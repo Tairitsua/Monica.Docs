@@ -63,7 +63,7 @@ foreach (var batch in candidates.Chunk(100))
 
 ## Common mistakes
 
-- 漏掉三项必需 Guide 之一，导致模块在启动时校验失败。
+- 漏掉三项必需注册选择之一，导致模块在启动时校验失败。
 - 不同环境共用同一个 `SchedulerScopeKey`，最终把作业定义和实例混在一起。
 - 因为作业是业务执行描述，就误以为整次尝试会自动获得 UnitOfWork。
 - 在网络调用或无界扫描期间一直持有数据库锁。

@@ -58,5 +58,5 @@ public sealed class FlightOpsSkill : Skill<FlightOpsSkill>
 
 ## 接下来读什么
 
-- [Guide and Providers](./guide-and-providers.md)
+- [注册扩展与 Provider](./guide-and-providers.md)
 - [AI UI](../ai-ui/index.md)

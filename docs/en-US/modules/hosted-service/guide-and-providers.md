@@ -1,16 +1,16 @@
 ---
-title: Guide and Runtime APIs
+title: Registration and Runtime APIs
 description: Understand Hosted Service registration, instance identity, registry queries, and checkpoint selection.
 sidebar_position: 4
 ---
 
-## Guide method
+## Module registration
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|
 | `monica.AddHostedService(options => { ... })` | Registers runtime observation, the instance-aware registry, checkpoint coordination, metrics, and Generic Host lifecycle integration. | Yes | Add observable hosted services to a Generic Host or Web Host. |
 
-`ModuleHostedServiceGuide` has no provider-selection methods. The module automatically composes its Observable Instance and Execution Pipeline dependencies.
+`AddHostedService(...)` returns `ModuleRegistration<ModuleHostedService, ModuleHostedServiceOption>`. The returned registration has no provider-selection extensions; the module automatically composes its Observable Instance and Execution Pipeline dependencies.
 
 ## Instance identity
 

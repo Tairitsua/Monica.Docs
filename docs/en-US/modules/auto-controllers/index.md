@@ -57,6 +57,6 @@ Generated RPC interfaces are split by intent: `I{Domain}CommandApi` and `I{Domai
 
 - [Quick Start](./quick-start.md)
 - [Configuration](./configuration.md)
-- [Guide and Providers](./guide-and-providers.md)
+- [Registration and Providers](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
 - [Request-owned RPC](../../scenarios/request-owned-rpc.md)

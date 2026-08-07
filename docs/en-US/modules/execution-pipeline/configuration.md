@@ -4,7 +4,7 @@ description: Configure execution behavior selection, catalog metadata, and the o
 sidebar_position: 3
 ---
 
-`ModuleExecutionPipelineOption` has no public runtime settings. The host defines its behavior catalog through `ModuleExecutionPipelineGuide.AddBehavior(...)`.
+`ModuleExecutionPipelineOption` has no public runtime settings. The host defines its behavior catalog by calling `AddBehavior(...)` on the `ModuleRegistration<ModuleExecutionPipeline, ModuleExecutionPipelineOption>` returned by `AddExecutionPipeline()`.
 
 The optional `ModuleExecutionPipelineUIOption` has one setting:
 

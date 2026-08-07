@@ -29,4 +29,4 @@ Skill 的运行时启用状态不在 `ModuleSkillSystemOption` 中，而是由 [
 
 ## Required setup
 
-本模块没有必需 Guide 配置。要让 Skill 真正参与聊天，需要同时启用 `monica.AddAI()`，并配置至少一个可用聊天 Provider。
+本模块没有必需注册扩展。要让 Skill 真正参与聊天，需要同时启用 `monica.AddAI()`，并配置至少一个可用聊天 Provider。

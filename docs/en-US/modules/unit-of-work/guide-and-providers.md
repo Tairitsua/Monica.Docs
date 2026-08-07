@@ -1,10 +1,10 @@
 ---
-title: Guide and providers
+title: Registration Extensions and Providers
 description: Connect repository DbContexts and understand the execution-pipeline dependency.
 sidebar_position: 4
 ---
 
-## Guide method
+## Registration extension
 
 | Method | What it enables | Typical use |
 |---|---|---|

@@ -87,5 +87,5 @@ builder.AddMonica(monica =>
 ## 接下来读什么
 
 - [Configuration](./configuration.md)
-- [Guide and Providers](./guide-and-providers.md)
+- [注册扩展与 Provider](./guide-and-providers.md)
 - [AI UI](../ai-ui/index.md)

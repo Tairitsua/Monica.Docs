@@ -156,5 +156,5 @@ public sealed class ConfigurationCommand(ConfigurationFacade facade)
 
 - [Configuration](./configuration.md)
 - [Concepts](./concepts.md)
-- [Guide and Stores](./guide-and-providers.md)
+- [注册扩展与 Store](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)

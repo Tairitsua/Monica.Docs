@@ -1,10 +1,10 @@
 ---
-title: Guide and Stores
-description: Configuration 的 Guide 方法、存储预设、运行时来源链路、bootstrap 边界和公共 facade。
+title: 注册扩展与 Store
+description: Configuration 的注册扩展、存储预设、运行时来源链路、bootstrap 边界和公共 facade。
 sidebar_position: 5
 ---
 
-## Guide methods
+## 注册扩展
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|

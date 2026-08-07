@@ -1,10 +1,10 @@
 ---
-title: Guide and Providers
-description: MCP 模块的 Guide 方法、传输选择和依赖说明。
+title: 注册扩展与 Provider
+description: MCP 模块的注册扩展、传输选择和依赖说明。
 sidebar_position: 4
 ---
 
-## Guide methods
+## 注册扩展
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|

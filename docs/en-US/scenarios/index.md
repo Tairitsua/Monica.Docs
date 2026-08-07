@@ -7,3 +7,4 @@ sidebar_position: 1
 Scenario guides connect Monica modules across real application boundaries.
 
 - [Request-owned RPC clients and local RPC](./request-owned-rpc.md) — publish request-owned contracts and choose HTTP or in-process transport without metadata snapshots.
+- [Module diagnostics workbench](./diagnostics-and-ops.md) — inspect startup causality, module topology, type discovery, and safe option projections.

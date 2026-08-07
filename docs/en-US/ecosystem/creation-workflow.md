@@ -12,7 +12,7 @@ Decide before scaffolding:
 
 - Durable repository ID, aligned release version, publisher, and NuGet.org owner
 - Every NuGet package ID, purpose, project path, and package-to-package dependency
-- Every module key, kind, module-to-module dependency, and provider target
+- Every manifest ecosystem key, module kind, module-to-module dependency, and provider target
 - Non-web, web, provider/integration, mixed UI, or standalone UI shape
 - Whether a provider runs in-process or through a companion OCI service
 - For OCI services: registry repository, connector package, CPU/NVIDIA targets, platform, runtime stage, immutable tag suffix, provider-specific smoke commands, and managed NVIDIA runner labels
@@ -28,14 +28,14 @@ A package may contain multiple modules, and one repository may contain multiple 
 `monica.manifest.json` is authoritative for the complete release unit:
 
 - `packages[].packageDependencies` is the internal NuGet graph and uses full package IDs.
-- `packages[].modules[].dependsOn` is the Monica runtime graph and uses full module keys.
+- `packages[].modules[].dependsOn` is the manifest module graph and uses full ecosystem keys; the scaffold resolves it to concrete CLR-type dependencies.
 - Every cross-package module edge must be backed by a package edge.
 - A `kind: provider` module sets `providerFor` and also lists that target in `dependsOn`.
 - `ociImages[]` maps one image repository to its connector through `companionPackageId`; the named package owns a provider module, and CPU/NVIDIA variants are targets of that same repository.
 - Optional `releaseGates` declares the repository commands that prove meaningful CPU and NVIDIA provider inference. NVIDIA gates include shared `managedNvidiaRunnerLabels` containing `self-hosted` and `nvidia`.
 - `version` applies to every declared NuGet package and every `<version>-<tagSuffix>` image tag.
 
-Both dependency graphs must be complete and acyclic. Do not infer runtime dependencies from project references or shorten identities to repository-local names.
+Both dependency graphs must be complete and acyclic. Do not infer manifest module dependencies from project references or shorten ecosystem keys to repository-local names.
 
 ## 3. Scaffold with the skill
 
@@ -51,7 +51,7 @@ Scaffold and validate locally, but do not publish.
 
 This is a design example, not a statement that those packages or images are published. Review the generated identity manifest, package/module graphs, project references, OCI declarations, metadata, and license before accepting the scaffold. Declaring an OCI target creates the Bake contract and directory; it does not create a real provider service implementation. If any declared image lacks complete release gates, the scaffold omits the entire publish workflow rather than allowing a partial NuGet/OCI release.
 
-For each UI module, the scaffold derives a stable navigation category ID from that module's key without the final `.UI`, registers its label with `RegisterLocalizedCategory<TResource>()`, and registers its page with `RegisterLocalizedPage<TPage, TResource>()`. Keep this explicit owner-resource pattern when adding more pages; do not replace it with a central resource or translated-string grouping.
+For each UI module, the scaffold derives a stable navigation category ID from that module's manifest key without the final `.UI`, registers its label with `RegisterLocalizedCategory<TResource>()`, and registers its page with `RegisterLocalizedPage<TPage, TResource>()`. Keep this explicit owner-resource pattern when adding more pages; do not replace it with a central resource or translated-string grouping.
 
 ## 4. Implement public module contracts
 
@@ -60,7 +60,8 @@ Each module uses the current Monica registration pattern:
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using Monica.Core.Modularity.Abstractions;
-using Monica.Core.Modularity.Annotations;
+using Monica.Core.Modularity.Models;
+using Monica.Modules;
 
 // ReSharper disable once CheckNamespace
 namespace Acme.Monica.Analytics.Modules;
@@ -69,30 +70,27 @@ public static class ModuleAnalyticsBuilderExtensions
 {
     extension(IMonicaBuilder builder)
     {
-        public ModuleAnalyticsGuide AddAnalytics(
+        public ModuleRegistration<ModuleAnalytics, ModuleAnalyticsOption> AddAnalytics(
             Action<ModuleAnalyticsOption>? configure = null)
         {
-            return builder.AddModule<
-                ModuleAnalytics,
-                ModuleAnalyticsOption,
-                ModuleAnalyticsGuide>(configure);
+            return builder.AddModule<ModuleAnalytics, ModuleAnalyticsOption>(configure);
         }
     }
 }
 
-[ModuleKey("Acme.Monica.Analytics")]
-public sealed class ModuleAnalytics(ModuleAnalyticsOption option)
-    : ModuleBase<ModuleAnalytics, ModuleAnalyticsOption, ModuleAnalyticsGuide>(option)
+public sealed class ModuleAnalytics : MonicaModule<ModuleAnalyticsOption>
 {
-    public override void ConfigureServices(IServiceCollection services)
+    public override void Describe(ModuleDescriptor module)
+    {
+        module.Require<ModuleResultEnvelope, ModuleResultEnvelopeOption>();
+        module.AfterIfPresent<ModuleObjectMapping, ModuleObjectMappingOption>();
+    }
+
+    public override void ConfigureServices(ModuleContext<ModuleAnalyticsOption> context)
     {
         // Register the module's implementation boundary.
+        context.Services.AddSingleton<AnalyticsService>();
     }
-}
-
-public sealed class ModuleAnalyticsGuide
-    : ModuleGuide<ModuleAnalytics, ModuleAnalyticsOption, ModuleAnalyticsGuide>
-{
 }
 
 public sealed class ModuleAnalyticsOption : ModuleOptions<ModuleAnalytics>
@@ -100,39 +98,42 @@ public sealed class ModuleAnalyticsOption : ModuleOptions<ModuleAnalytics>
 }
 ```
 
-Add public XML documentation to module entry points, options, Guide methods, public abstractions, models, and Facades. Explain defaults, prerequisites, lifecycle, side effects, and failure behavior.
+`Describe(ModuleDescriptor)` is option-free and runs once while Monica compiles the graph. `Require<TModule, TOptions>()` includes a hard dependency; `AfterIfPresent<TModule, TOptions>()` adds ordering only when the target is already present. A fluent feature method extends `ModuleRegistration<TModule, TOptions>` so it enriches the same host-bound registration rather than introducing a separate Guide object.
+
+Add public XML documentation to module entry points, options, registration-extension methods, public abstractions, models, and Facades. Explain defaults, prerequisites, lifecycle, side effects, and failure behavior.
 
 ### Schedule only isolated CPU-bound composition work
 
-When a materialized module has synchronous CPU-bound work that can overlap later serial callbacks, prepare an immutable or exclusively module-owned input snapshot and call the protected `ScheduleCompositionWork(...)` method synchronously from that module's `ConfigureBuilder`, `ConfigureServices`, or `PostConfigureServices` callback. Choose the latest checkpoint at which the result is required:
+When a materialized module has synchronous CPU-bound work that can overlap later serial callbacks, prepare an immutable or exclusively module-owned input snapshot and call the protected `ScheduleStartupWork(...)` method synchronously from that module's `ConfigureBuilder`, `ConfigureServices`, `PostConfigureServices`, or a type-discovery commit callback declared through `discovery.Match(...)`. The `DeclareTypeDiscovery(...)` override itself only records the plan and is not a scheduling callback. Choose the latest barrier at which the result is required:
 
 ```csharp
-[ModuleKey("Acme.Monica.Analytics")]
-public sealed class ModuleAnalytics(ModuleAnalyticsOption option)
-    : ModuleBase<ModuleAnalytics, ModuleAnalyticsOption, ModuleAnalyticsGuide>(option)
+public sealed class ModuleAnalytics : MonicaModule<ModuleAnalyticsOption>
 {
-    private readonly AnalyticsExpressionCatalog _catalog = new(option);
+    private readonly AnalyticsExpressionCatalog _catalog = new();
 
-    public override void ConfigureServices(IServiceCollection services)
+    public override void ConfigureServices(ModuleContext<ModuleAnalyticsOption> context)
     {
-        services.AddSingleton(_catalog);
+        context.Services.AddSingleton(_catalog);
     }
 
-    public override void PostConfigureServices(IServiceCollection _)
+    public override void PostConfigureServices(ModuleContext<ModuleAnalyticsOption> context)
     {
-        ScheduleCompositionWork(
+        var candidate = _catalog.CreateCompilationCandidate();
+
+        ScheduleStartupWork(
             "compile-analytics-expressions",
-            _catalog.Compile,
-            ModuleCompositionWorkDeadline.BeforeServiceRegistrationCompletion);
+            candidate.Compile,
+            () => _catalog.Publish(candidate),
+            ModuleStartupWorkBarrier.BeforeServiceRegistrationCompletion);
     }
 }
 ```
 
-`BeforeServiceRegistrationCompletion` is the default and may be omitted. Use `BeforeBusinessTypeIteration` or `BeforePostConfigureServices` when a later composition stage needs the result earlier. A deadline is the latest required composition checkpoint, not a timeout.
+`BeforeServiceRegistrationCompletion` is the default and may be omitted. Use `BeforeTypeDiscovery` when discovery registration commits need the result, or `BeforePostConfigureServices` when post-configuration needs it. Work submitted inside a discovery commit cannot select `BeforeTypeDiscovery` because Monica has already crossed that barrier before invoking the commit. `BeforeHostLifecycle` lets composition finish but blocks Generic Host startup, while `NoBarrier` never blocks readiness and reports failures through diagnostics. The serial commit overload is available only through `BeforeServiceRegistrationCompletion`; later and non-blocking barriers run work without a service-registration commit. A barrier is an ordering boundary, not a timeout.
 
-The work action must be synchronous, deterministic, and isolated; Monica rejects `async`/`async void` delegates. It must not mutate the host builder, `IServiceCollection`, the module graph, a service provider, or shared static state, and it must not rely on another work item's completion order. Monica owns bounded scheduling, waits at the declared checkpoint, propagates failures before continuing, and drains every work item before `AddMonica(...)` returns. Do not add `Task.Run`, `Task.WhenAll`, or fire-and-forget work inside the module.
+The work and optional commit actions must be synchronous; Monica rejects `async`/`async void` delegates. The worker must be deterministic and isolated: it must not mutate the host builder, `IServiceCollection`, the module graph, a service provider, or shared static state, and it must not depend on another work item's completion order. Monica owns bounded scheduling, waits at each selected barrier, and propagates failures from blocking work before continuing. `NoBarrier` work remains host-owned and observable until it completes or the host is disposed. Do not add `Task.Run`, `Task.WhenAll`, or fire-and-forget work inside the module.
 
-Use `IHostedLifecycleService` or a hosted service for runtime activation, I/O, long-running work, and cleanup. `ScheduleCompositionWork(...)` does not make `ConfigureServices`, `PostConfigureServices`, or any other module callback concurrent.
+Use `IHostedLifecycleService` or a hosted service for runtime activation, I/O, long-running work, and cleanup. `ScheduleStartupWork(...)` does not make `ConfigureServices`, `PostConfigureServices`, or any other module callback concurrent.
 
 ## 5. Compose a real host
 

@@ -55,6 +55,6 @@ ExecutionPipeline 不负责发现业务服务，不负责选择远程节点，�
 
 - [Quick Start](./quick-start.md)
 - [Configuration](./configuration.md)
-- [Guide and Providers](./guide-and-providers.md)
+- [注册扩展与 Adapter](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
 - [统一执行边界](../../concepts/execution-boundaries.md)

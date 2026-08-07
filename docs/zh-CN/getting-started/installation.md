@@ -10,7 +10,7 @@ Monica 不要求你一次性安装整套框架。通常的做法是：**先安�
 
 Monica Web 主机遵循下面的三段式流程：
 
-1. 在 `builder.AddMonica(monica => { ... })` 中声明完整模块图和 Guide 选择。
+1. 在 `builder.AddMonica(monica => { ... })` 中声明完整模块图、Option 与注册扩展选择。
 2. 调用 `builder.Build()` 构建宿主。
 3. 在 `app` 阶段调用 `app.UseMonica()` / `app.MapMonica()`，让模块中间件与端点生效。
 
@@ -119,8 +119,8 @@ static void UseDevelopmentEnvironmentByDefaultForLocalDebugging()
 
 ## 什么时候需要继续往下配
 
-- 只要模块有 `ModuleOption`，你就可以在 `AddMonica(...)` 回调中的 `monica.Add*()` lambda 配置它
-- 只要模块有 `ModuleGuide`，你就可以在同一个回调中继续链式调用以启用附加能力
+- 只要模块有 Option，就可以在 `AddMonica(...)` 回调中的 `monica.Add*()` lambda 配置它
+- `Add*()` 返回的 `ModuleRegistration<,>` 可以在同一个回调中继续调用 `Use*`、`Map*` 或 `Register*` 扩展来启用附加能力
 - 只要模块存在配套 UI 模块，通常都应该把基础设施模块和 UI 模块分开理解、按需组合
 
 ## 下一步

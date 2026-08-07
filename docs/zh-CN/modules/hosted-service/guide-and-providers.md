@@ -1,16 +1,16 @@
 ---
-title: Guide 与运行时 API
+title: 注册与运行时 API
 description: 理解托管服务注册、实例身份、目录查询和检查点选择规则。
 sidebar_position: 4
 ---
 
-## Guide 方法
+## 模块注册
 
 | 方法 | 启用能力 | 必需 | 典型用途 |
 |---|---|---|---|
 | `monica.AddHostedService(options => { ... })` | 注册运行观测、实例感知目录、检查点协调、指标和 Generic Host 生命周期集成。 | 是 | 在 Generic Host 或 Web Host 中加入可观测托管服务。 |
 
-`ModuleHostedServiceGuide` 没有 Provider 选择方法。模块会自动组合 Observable Instance 与 Execution Pipeline 依赖。
+`AddHostedService(...)` 返回 `ModuleRegistration<ModuleHostedService, ModuleHostedServiceOption>`。该注册没有 Provider 选择扩展；模块会自动组合 Observable Instance 与 Execution Pipeline 依赖。
 
 ## 实例身份
 

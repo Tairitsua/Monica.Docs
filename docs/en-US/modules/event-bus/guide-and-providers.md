@@ -1,10 +1,10 @@
 ---
-title: Guide and Providers
+title: Registration Extensions and Providers
 description: Choose an EventBus provider, register keyed buses, and manage subscriptions safely.
 sidebar_position: 4
 ---
 
-## Guide methods
+## Registration extensions
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|

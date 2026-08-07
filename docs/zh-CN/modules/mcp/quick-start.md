@@ -73,5 +73,5 @@ ASP.NET Core Host 仍负责监听地址、端口和 TLS。`endpointPath` 只是�
 ## 接下来读什么
 
 - [Configuration](./configuration.md)
-- [Guide and Providers](./guide-and-providers.md)
+- [注册扩展与 Provider](./guide-and-providers.md)
 - [AI UI](../ai-ui/index.md)

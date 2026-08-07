@@ -1,10 +1,10 @@
 ---
-title: Guide and Providers
-description: AI Skill System 的 Guide 方法、依赖与扩展点。
+title: 注册扩展与 Provider
+description: AI Skill System 的注册扩展、依赖与扩展点。
 sidebar_position: 4
 ---
 
-## Guide methods
+## 注册扩展
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|

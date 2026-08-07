@@ -82,5 +82,5 @@ public sealed class KnowledgeSearchService(RAGFacade rag)
 ## 接下来读什么
 
 - [Configuration](./configuration.md)
-- [Guide and Providers](./guide-and-providers.md)
+- [注册扩展与 Provider](./guide-and-providers.md)
 - [RAG UI](../rag-ui/index.md)

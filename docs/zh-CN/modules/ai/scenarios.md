@@ -34,7 +34,7 @@ builder.AddMonica(monica =>
 
 ## 场景 3 — RAG 需要 Embedding 模型
 
-RAG 的搜索和索引依赖 Embedding 模型。你可以通过真实 Provider 暴露 `EmbeddingModelInfo`，也可以在开发环境使用 RAG Guide 的 `AddFakeEmbeddingsModel()` 快速跑通流程。
+RAG 的搜索和索引依赖 Embedding 模型。你可以通过真实 Provider 暴露 `EmbeddingModelInfo`，也可以在开发环境对 RAG 模块注册调用 `AddFakeEmbeddingsModel()` 快速跑通流程。
 
 ## Common mistakes
 

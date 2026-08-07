@@ -43,7 +43,7 @@ public sealed class OrderNumberGenerator :
 
 Use `ITransientDependency`, `IScopedDependency`, or `ISingletonDependency` to make lifetime visible on the implementation. `[ExposeServices(...)]` and `[ExposeKeyedService<T>(key)]` make exposure explicit when naming conventions are insufficient. `[Dependency]` can override lifetime and choose try-register or replacement behavior.
 
-| Option or Guide | Default | When to enable |
+| Option or registration extension | Default | When to enable |
 |---|---|---|
 | `EnableAutoRegistrationDiagnostics` | `false` | Capture a host-local snapshot of conventional registrations. |
 | `EnableAutoRegistrationLogging` | `false` | Emit a startup entry for each auto-registered type while diagnosing registration. |

@@ -1,10 +1,10 @@
 ---
 title: 核心组合
-description: 组合、校验并启动宿主拥有的 Monica 模块图。
+description: 组合、校验、观测并启动一份宿主拥有的 Monica 模块图。
 sidebar_position: 1
 ---
 
-`Monica.Core` 提供所有 Monica 应用共享的宿主边界。一次 `AddMonica(...)` 调用会为一个宿主记录模块、应用身份、类型发现范围与模块系统策略。模块图会在 `Build()` 返回 Service Provider 前完成校验与封闭。
+`Monica.Core` 提供所有 Monica 应用共享的组合边界。一次 `AddMonica(...)` 回调会为一个宿主记录应用身份、模块系统策略、类型发现范围、模块、Option、依赖关系与显式 Feature 选择。宿主构建 Service Provider 前，Monica 会完成模块图校验与封闭。
 
 ## 安装与组合
 
@@ -13,6 +13,7 @@ dotnet add package Monica.Core --prerelease
 ```
 
 ```csharp
+using Monica.Core;
 using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
 
@@ -41,39 +42,118 @@ app.MapMonica();
 app.Run();
 ```
 
-`UseMonica()` 围绕路由安装模块中间件，`MapMonica()` 映射模块拥有的端点。非 Web 宿主只调用 `AddMonica(...)`，并且只注册支持非 Web 运行的模块。
-
-组合会在宿主特定的边界完成：
-
-- 对两种宿主，Monica 都会在每个已声明的组合工作 Deadline 等待，并在 `AddMonica(...)` 返回前排空全部剩余工作项。任一工作项失败都会在 `Build()` 前中止组合。
-- Generic Host 在 `AddMonica(...)` 完成服务注册与全部调度的组合工作后结束组合，不调用 `UseMonica()` 或 `MapMonica()`。
-- Web Host 只有在同一个 `WebApplication` 实例上依次调用一次 `UseMonica()` 和一次 `MapMonica()` 后才完成组合。
-- 未完整组合的 Web Host 会在 Hosted lifecycle 服务开始运行前校验失败。
-
-调度组合工作不会改变模块回调的串行顺序。模块可以通过 `ModuleBase.ScheduleCompositionWork(...)` 启动隔离的 CPU 密集型工作，并声明 Monica 最晚必须等待该工作的组合检查点。Deadline 不是超时设置，任何工作项都不能晚于 `AddMonica(...)` 结束。这些校验使中间件与端点注册成为 Web 组合的一部分，而不是可能在运行时激活后才失败的可选工作。
-
-`Monica.Core` 还拥有 [Execution Pipeline](../execution-pipeline/index.md)。Mediator、MVC、EventBus、作业、Seeder 与 Hosted work-item 适配器通过这个共享类型化内核执行；应用类型不会仅仅因为是 ProjectUnit 就被拦截。完整边界与事务矩阵见[执行边界](../../concepts/execution-boundaries.md)。
+`UseMonica()` 应用模块中间件，`MapMonica()` 映射模块拥有的端点。Web Host 必须在同一个应用实例上按此顺序各调用一次。Generic Host 不调用这两个方法，并且只能注册无需 Web Adapter 也能工作的模块。
 
 ## 共享配置
 
 | 入口 | 用途 | 重要默认值 |
 |---|---|---|
-| `ConfigureApplication(...)` | 设置 `ProjectName`、`AppId`、`AppName`、`AppVersion` 与 `DomainName` 的回退值。 | 能够推断时，从入口程序集获取 `ProjectName` 与版本。 |
-| `ConfigureModuleSystem(...)` | 控制注册失败、摘要日志、默认 API 分组、Minimal API 默认值与可选的 Monica 专用监听器。 | 注册错误会阻止启动；除非模块主动启用，否则默认禁用 Minimal API。 |
-| `ConfigureTypeDiscovery(...)` | 增加或排除业务类型发现使用的程序集。 | 默认包含项目程序集。 |
+| `ConfigureApplication(...)` | 设置 `ProjectName`、`AppId`、`AppName`、`AppVersion` 与 `DomainName` 回退值。 | 尽可能从入口程序集推断项目名与版本。 |
+| `ConfigureModuleSystem(...)` | 控制启动调度、日志、端点默认值、诊断披露与可选性能预算。 | 注册错误阻止启动；除非模块主动启用，否则 Minimal API 默认关闭。 |
+| `ConfigureTypeDiscovery(...)` | 替换结构化类型发现使用的程序集包含/排除策略。 | 默认包含项目程序集。 |
 
-### 模块系统选项
+### 模块系统 Option
 
-| 选项 | 类型 | 默认值 | 用途与约束 |
-|---|---|---|---|
-| `MaxConcurrentCompositionWorkItems` | `int` | `Math.Max(1, Environment.ProcessorCount)` | 限制 Monica 可以并发执行的调度组合工作项数量。值必须至少为 `1`；启动阶段 CPU 或内存压力较大时可以调低。它不会让模块回调或 Generic Host 服务启动并发执行。 |
+| Option | 默认值 | 用途 |
+|---|---|---|
+| `MaxConcurrentStartupWorkItems` | `Math.Max(1, Environment.ProcessorCount)` | 限制启动工作并发度，但不会让模块回调并发执行。 |
+| `StartupPerformanceBudgets` | `null` | 为实测启动耗时增加显式告警阈值。未配置的指标没有隐含分数或阈值。 |
+| `DefaultLogLevel` | `Information` | 设置模块注册日志的默认级别。 |
+| `EnableSummaryLog` | `false` | 初始化后输出事实型组合摘要。 |
+| `DefaultApiGroupName` | `null` | 为端点模块提供 API 分组回退值。 |
+| `EnableMinimalApiByDefault` | `false` | 提供宿主默认值；单个模块 Option 仍可覆盖。 |
+| `MonicaEndpointPort` | `null` | 配置后把 Monica 自有端点限制到一个本地端口。 |
+| `AutoAddMonicaHttpListener` | `true` | 配置 Monica 端口后，为常见单进程宿主追加匹配的 HTTP Listener。 |
+| `MonicaEndpointHost` | 自动推导 | 覆盖自动追加 Listener 使用的 Host。 |
+| `OptionDiagnosticsExposureMode` | `Redacted` | 展示有界普通 Option 值并保护敏感值；`RevealSensitive` 仅允许在 Development 中使用。 |
 
-### 诊断
+各项性能预算独立且默认关闭：
 
-模块系统诊断会把串行回调耗时与调度工作分开。UI 展示每个工作项的来源阶段、Deadline、排队时间、执行时间与最终状态，并分别汇总墙钟、执行、排队和检查点等待耗时。
+```csharp
+monica.ConfigureModuleSystem(options =>
+{
+    options.StartupPerformanceBudgets = new ModuleStartupPerformanceBudgets
+    {
+        TotalComposition = TimeSpan.FromSeconds(2),
+        ServiceRegistration = TimeSpan.FromSeconds(1),
+        TypeDiscovery = TimeSpan.FromMilliseconds(500),
+        AggregateBarrierWait = TimeSpan.FromMilliseconds(250),
+        LongestModuleCallback = TimeSpan.FromMilliseconds(100),
+        LongestStartupQueue = TimeSpan.FromMilliseconds(100)
+    };
+});
+```
 
-OpenTelemetry 保持相同边界：`monica.module.init.duration` 使用 `phase` 标签报告串行回调耗时；`monica.module.composition.work.duration` 使用 `kind=wall|execution|queue|checkpoint_wait` 报告调度工作耗时。
+超过已配置预算会生成 Warning Finding，并给出 Actual、Limit 与 Utilization。没有配置预算时，Monica 只报告测量事实，不会虚构“健康分”。
 
-每个宿主 Builder 只能调用一次 `AddMonica(...)`。不要保留 Module Guide 并在回调结束后继续修改；回调完成时模块图已经封闭。
+## 不可变诊断 Facade
 
-继续阅读 [Module 模式与主机边界](../../concepts/module-pattern.md)了解生命周期、工作 Deadline 与调度组合工作的模块作者约束，阅读[执行边界](../../concepts/execution-boundaries.md)了解运行时行为组合，或阅读[快速开始](../../getting-started/index.md)创建可运行宿主。
+宿主或 UI 需要查看模块系统时，加入诊断模块：
+
+```csharp
+builder.AddMonica(monica =>
+{
+    monica.AddModuleSystem();
+});
+```
+
+在宿主/UI 边界注入 `ModuleDiagnosticsFacade`。它提供同步、只读的 `Res<T>` 方法：
+
+| 方法 | 结果 |
+|---|---|
+| `GetSnapshot()` | 版本化不可变快照，包含组合标识、修订、结果、耗时、Span、类型发现指标、模块、直接依赖边、阻塞链与结构化 Finding。 |
+| `GetAssemblyInventory()` | 单独延迟加载并缓存的扫描成功、排除、解析失败与部分类型加载清单。 |
+| `GetModuleOptions(moduleKey)` | 模块最终默认 Option 的完整公开属性目录与有界投影。 |
+| `GetModuleOptions(moduleKey, selector)` | 指定命名 Profile 的同类目录，并显式定义回退行为。 |
+| `CreateExport()` | 供客户端自行比较的可移植脱敏基线。 |
+
+Registry、Profiler 与启动调度器状态会先被一致捕获，再在短锁之外完成投影。快照按 Revision 缓存；启动进入最终状态后，重复调用会返回同一个快照实例。
+
+可移植导出绝不包含 Option 诊断、程序集路径、Stack Trace 或原始异常细节。消费方根据稳定 Finding Code 与参数负责本地化显示文本。
+
+## Option 诊断与敏感值
+
+每个公开、非索引 Option 属性都会保留名称与干净类型。普通标量、对象组与集合样本都有边界；Getter 失败或不支持的运行时形状仍以元数据存在，不会破坏整份快照。
+
+敏感值默认只显示存在性。可在 Option 类型上标记：
+
+```csharp
+using Monica.Core.Modularity.Diagnostics.Annotations;
+
+[ModuleOptionDiagnosticsSensitive]
+public string? ApiToken { get; set; }
+```
+
+宿主也可以在不修改 Option 类型的情况下增加敏感规则：
+
+```csharp
+monica.AddModuleSystem(options =>
+{
+    options.ConfigureModuleOptionDiagnostics<ModulePayments, ModulePaymentsOption>(policy =>
+        policy.MarkSensitive(static value => value.Provider.ApiSecret));
+});
+```
+
+只有专用本地调试才应把 `OptionDiagnosticsExposureMode` 设为 `RevealSensitive`。Monica 会在非 `Development` 环境拒绝该模式；可见标量仍受长度限制，导出仍完全省略 Option 数据。
+
+## 类型发现诊断
+
+模块只通过 `DeclareTypeDiscovery(...)` 声明一次结构查询。Monica 分别报告计划声明、程序集解析、类型枚举、去重查询计算与注册 Commit 五个阶段，并记录程序集、类型、排除、计划、查询、匹配、回调以及索引化 Service Writer 的 Add/Replace/Skip 数量。
+
+程序集清单只有在排查类型发现时才延迟加载。主快照保留阶段汇总与查询摘要，不会长期持有编译器的匹配数组。
+
+## OpenTelemetry 指标
+
+订阅 Meter `Monica.Core.Modularity`。最终耗时使用 Histogram，只有实时数量使用 Observable Gauge：
+
+- `monica.module.composition.duration`
+- `monica.module.service_registration.duration`
+- `monica.module.type_discovery.duration`
+- `monica.module.barrier_wait.duration`
+- `monica.module.callback.duration`
+- `monica.module.startup_work.duration`
+- `monica.module.live.count`
+
+Tag 只使用 Result、Callback Kind、Phase 与 Measurement Kind 等稳定低基数值。回调耗时与启动工作的执行/排队耗时保持独立。
+
+继续阅读[主机绑定的模块组合](../../concepts/module-pattern.md)了解模块编写与生命周期约束，或阅读[模块诊断工作台](../../scenarios/diagnostics-and-ops.md)了解交互界面与访问边界。

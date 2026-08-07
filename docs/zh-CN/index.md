@@ -51,7 +51,7 @@ app.MapMonica();
 app.Run();
 ```
 
-`AddMonica(...)` 是完整的服务组合边界：所有模块、Option、Guide 与依赖关系都属于当前宿主。Web 宿主在 `Build()` 后再调用 `UseMonica()` 和 `MapMonica()`；不存在进程级的环境注册入口。
+`AddMonica(...)` 是完整的服务组合边界：所有模块、Option、注册 Contribution 与依赖关系都属于当前宿主。Web 宿主在 `Build()` 后再调用 `UseMonica()` 和 `MapMonica()`；不存在进程级的环境注册入口。
 
 ## 文档语言
 

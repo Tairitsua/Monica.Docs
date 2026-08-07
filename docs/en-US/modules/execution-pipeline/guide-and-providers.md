@@ -1,12 +1,12 @@
 ---
-title: Guide and Adapters
+title: Registration Extensions and Adapters
 description: Register execution behaviors, query observed plans, and add the runtime catalog page.
 sidebar_position: 4
 ---
 
-The pipeline has one registration Guide and multiple subsystem-owned adapters. There is no provider selection: each subsystem describes its own entry point and invokes `IExecutionPipeline`.
+The pipeline has host-bound registration extensions and multiple subsystem-owned adapters. There is no provider selection: each subsystem describes its own entry point and invokes `IExecutionPipeline`.
 
-## Guide methods
+## Registration extensions
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|

@@ -36,5 +36,5 @@ sidebar_position: 1
 
 - [快速开始](./quick-start.md)
 - [配置](./configuration.md)
-- [Guide 与运行时 API](./guide-and-providers.md)
+- [注册与运行时 API](./guide-and-providers.md)
 - [使用场景](./scenarios.md)

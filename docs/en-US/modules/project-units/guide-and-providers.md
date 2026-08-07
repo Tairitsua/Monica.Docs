@@ -1,10 +1,10 @@
 ---
-title: Guide and Requirement Resolver
+title: Registration and Requirement Resolver
 description: Register requirement navigation while preserving unresolved IDs and catalog availability.
 sidebar_position: 4
 ---
 
-`AddProjectUnits()` returns `ModuleProjectUnitsGuide`. Its application extension point is `UseRequirementLinkResolver<TResolver>()`.
+`AddProjectUnits()` returns `ModuleRegistration<ModuleProjectUnits, ModuleProjectUnitsOption>`. Call its `UseRequirementLinkResolver<TResolver>()` registration extension to replace the built-in no-op resolver for this host.
 
 ## Implement the resolver
 

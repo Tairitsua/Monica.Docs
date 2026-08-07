@@ -34,6 +34,7 @@ Independent packages may bundle several coherent modules in one NuGet package. E
 | In-memory and distributed state contracts | [StateStore](./state-store/index.md) | `Monica.StateStore` |
 | Markdown catalogs and search | [Markdown](./markdown/index.md) | `Monica.Markdown` |
 | Blazor operational shell | [UI](./ui/index.md) | `Monica.UI` |
+| Module graph and startup diagnostics workbench | [Module diagnostics workbench](../scenarios/diagnostics-and-ops.md) | `Monica.UI` |
 | Execution-plan catalog page | [Execution Pipeline](./execution-pipeline/index.md) | `Monica.Framework.UI` |
 | Instance registration and leader election | [Service Discovery](./service-discovery/index.md) | `Monica.ServiceDiscovery` |
 | Authentication and permission bits | [Authority](./authority/index.md) | `Monica.Authority` |

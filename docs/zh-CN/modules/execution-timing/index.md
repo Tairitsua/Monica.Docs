@@ -54,6 +54,6 @@ Execution Timing 是进程内诊断能力。统计数据只属于当前宿主，
 
 - [Quick Start](./quick-start.md)
 - [Configuration](./configuration.md)
-- [Guide 与运行时 API](./guide-and-providers.md)
+- [注册扩展与运行时 API](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
 - [Execution Pipeline](../execution-pipeline/index.md)

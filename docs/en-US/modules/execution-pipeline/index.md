@@ -31,7 +31,7 @@ Mediator, EventBus, JobScheduler, AutoControllers, Seeder, hosted-service, autho
 
 | API | Purpose |
 |---|---|
-| `ModuleExecutionPipelineGuide.AddBehavior(...)` | Registers one ordered behavior implementation and optional descriptor filter. |
+| `AddBehavior(...)` on `ModuleRegistration<ModuleExecutionPipeline, ModuleExecutionPipelineOption>` | Registers one ordered behavior implementation and optional descriptor filter. |
 | `IExecutionBehavior<TInput, TResult>` | Wraps or short-circuits a typed execution. |
 | `IExecutionPipeline` | Executes a subsystem-owned terminal delegate through the applicable plan. |
 | `IExecutionPipelineCatalog` | Reads the host-local registration catalog or explicitly inspects one descriptor plan. |
@@ -60,6 +60,6 @@ The catalog separates configured intent from observed runtime truth:
 
 - [Quick Start](./quick-start.md)
 - [Configuration](./configuration.md)
-- [Guide and Adapters](./guide-and-providers.md)
+- [Registration and Adapters](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
 - [Execution boundaries](../../concepts/execution-boundaries.md)

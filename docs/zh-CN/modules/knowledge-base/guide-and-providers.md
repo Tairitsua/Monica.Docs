@@ -1,10 +1,10 @@
 ---
-title: Guide and Providers
-description: KnowledgeBase 的 Guide 方法、存储 Provider 和模块依赖。
+title: 注册扩展与 Provider
+description: KnowledgeBase 的注册扩展、存储 Provider 和模块依赖。
 sidebar_position: 4
 ---
 
-## Guide methods
+## 注册扩展
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|

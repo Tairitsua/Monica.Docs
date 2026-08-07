@@ -27,5 +27,5 @@ Repository `SaveChangesAsync()` inside an active unit of work flushes through th
 
 - [Quick start](./quick-start.md)
 - [Configuration](./configuration.md)
-- [Guide and providers](./guide-and-providers.md)
+- [Registration Extensions and Providers](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)

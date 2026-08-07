@@ -53,5 +53,5 @@ Use a `WebApplicationBuilder` instead when the application also serves HTTP. Kee
 ## Next steps
 
 - [Configuration](./configuration.md)
-- [Guide and Providers](./guide-and-providers.md)
+- [Registration Extensions and Providers](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)

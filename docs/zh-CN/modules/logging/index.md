@@ -46,4 +46,4 @@ Monica 不提供进程级 `LogManager` 或“当前 LoggerFactory”。不要赋
 
 ## HTTP 载荷日志
 
-`AddRequestResponseLoggingMiddleware(disableResponse, disableRequest)` 是可选 Guide 能力。请求与响应正文可能包含凭据、个人数据或大体积载荷；只有在明确设计脱敏与保留策略后才应启用。
+`AddRequestResponseLoggingMiddleware(disableResponse, disableRequest)` 是可选注册扩展。请求与响应正文可能包含凭据、个人数据或大体积载荷；只有在明确设计脱敏与保留策略后才应启用。

@@ -32,7 +32,7 @@ The skill asks for the publisher, repository purpose, package set, full package 
 - A schema-v2 `monica.manifest.json` describing the complete release unit
 - One or more NuGet package projects, each containing one or more coherent Monica modules
 - Explicit internal NuGet dependencies and Monica runtime dependencies using full identities
-- Module, option, Guide, and `IMonicaBuilder` registration entry points
+- Module strategy, option, `ModuleRegistration<,>` extensions, and `IMonicaBuilder` entry points
 - Infrastructure, web, provider, mixed UI, or standalone UI structure as requested
 - Optional Buildx Bake targets for one provider-service OCI repository with layered CPU/NVIDIA variants
 - Sociable tests that compose a real Monica host

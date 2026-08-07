@@ -12,7 +12,7 @@ sidebar_position: 3
 
 | 模块 | 成熟度 | 包 | 注册入口 | 相关 UI 模块 |
 |---|---|---|---|---|
-| [核心组合](./core-composition/index.md) | Stable | `Monica.Core` | `builder.AddMonica(...)` / `monica.ConfigureModuleSystem(...)` | 无 |
+| [核心组合](./core-composition/index.md) | Stable | `Monica.Core` | `builder.AddMonica(...)` / `monica.ConfigureModuleSystem(...)` | `monica.AddModuleSystemUI()` |
 | [AutoModel](./auto-model/index.md) | Stable | `Monica.AutoModel` | `monica.AddAutoModel()` | 无 |
 | [AutoControllers](./auto-controllers/index.md) | Stable | `Monica.WebApi` | `monica.AddAutoControllers(...)` | 无 |
 | [AI](./ai/index.md) | Labs | `Monica.AI` | `monica.AddAI()` | `monica.AddAIUI()` |
@@ -37,10 +37,11 @@ sidebar_position: 3
 | [Repository](./repository/index.md) | Stable | `Monica.Repository` | `monica.AddRepository()` | 无 |
 | [SignalR](./signalr/index.md) | Integrations | `Monica.SignalR` | `monica.AddSignalR()` | `monica.AddSignalRUI()` |
 | [UnitOfWork](./unit-of-work/index.md) | Stable | `Monica.Repository` | `monica.AddUnitOfWork()` | 无 |
+| [UI 与模块诊断工作台](./ui/index.md) | Stable | `Monica.UI` | `monica.AddUIShell()` / `monica.AddModuleSystemUI()` | 无 |
 
 ## 阅读建议
 
 - 先看模块 `index.md` 了解定位与公开边界
 - 再看 `quick-start.md` 跑通最小接入
-- 然后阅读 `configuration.md` 与 `guide-and-providers.md`
+- 然后阅读 `configuration.md` 与 `guide-and-providers.md` 中的注册扩展和 Provider 选择
 - 如果你在做真实业务集成，再看 `scenarios.md`

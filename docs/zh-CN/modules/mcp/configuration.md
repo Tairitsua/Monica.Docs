@@ -31,4 +31,4 @@ sidebar_position: 3
 
 ## Required setup
 
-本模块没有必需 Guide 配置。若要让本地 MCP server 通过 HTTP 暴露，需要宿主是 Web Host，且至少发现一个 `TransportKind == Http` 的可用 server。
+本模块没有必需注册扩展。若要让本地 MCP server 通过 HTTP 暴露，需要宿主是 Web Host，且至少发现一个 `TransportKind == Http` 的可用 server。

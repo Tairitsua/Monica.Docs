@@ -33,7 +33,7 @@ If the job must publish an event or call another external system, commit the dat
 
 ## Common mistakes
 
-- Omitting one of the three required Guide choices.
+- Omitting one of the three required registration choices.
 - Reusing one scheduler scope across unrelated environments.
 - Assuming a job attempt receives an automatic Unit of Work because it is a business execution descriptor.
 - Holding database locks across network calls or an unbounded scan.

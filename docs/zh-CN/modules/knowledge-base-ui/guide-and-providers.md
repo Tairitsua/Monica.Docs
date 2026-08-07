@@ -1,16 +1,16 @@
 ---
-title: Guide and Providers
-description: KnowledgeBase UI 的 Guide 方法和依赖说明。
+title: 注册与 Provider
+description: KnowledgeBase UI 的注册和依赖说明。
 sidebar_position: 4
 ---
 
-## Guide methods
+## 模块注册
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|
 | `monica.AddKnowledgeBaseUI(Action<ModuleKnowledgeBaseUIOption>?)` | 注册知识库 UI 组件和管理页面 | 否 | 需要内置知识库管理界面时。 |
 
-`ModuleKnowledgeBaseUIGuide` 当前没有额外 Guide 方法。
+`AddKnowledgeBaseUI(...)` 返回 `ModuleRegistration<ModuleKnowledgeBaseUI, ModuleKnowledgeBaseUIOption>`，当前没有其他模块专用注册扩展。
 
 ## Module dependencies
 

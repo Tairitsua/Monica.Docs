@@ -1,10 +1,10 @@
 ---
-title: Guide 与需求解析器
+title: 注册与需求解析器
 description: 注册需求导航，同时保证未解析 ID 和架构目录仍然可见。
 sidebar_position: 4
 ---
 
-`AddProjectUnits()` 返回 `ModuleProjectUnitsGuide`。应用侧扩展点是 `UseRequirementLinkResolver<TResolver>()`。
+`AddProjectUnits()` 返回 `ModuleRegistration<ModuleProjectUnits, ModuleProjectUnitsOption>`。在该注册上调用 `UseRequirementLinkResolver<TResolver>()`，可以为当前宿主替换内置的空解析器。
 
 ## 实现解析器
 

@@ -1,16 +1,16 @@
 ---
-title: Guide and Providers
-description: RAG UI 的 Guide 方法、页面职责和依赖说明。
+title: 注册与 Provider
+description: RAG UI 的注册、页面职责和依赖说明。
 sidebar_position: 4
 ---
 
-## Guide methods
+## 模块注册
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|
 | `monica.AddRAGUI(Action<ModuleRAGUIOption>?)` | 注册 RAG 管理、调试和切块器页面 | 否 | 需要内置 RAG 运维和调试 UI 时。 |
 
-`ModuleRAGUIGuide` 当前没有额外 Guide 方法。
+`AddRAGUI(...)` 返回 `ModuleRegistration<ModuleRAGUI, ModuleRAGUIOption>`，当前没有其他模块专用注册扩展。
 
 ## Page responsibilities
 

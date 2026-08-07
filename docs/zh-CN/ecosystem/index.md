@@ -32,7 +32,7 @@ Skill 会在生成文件前确认发布者、仓库用途、包集合、完整�
 - 描述完整发布单元的 schema-v2 `monica.manifest.json`
 - 一个或多个 NuGet 包项目，每个包可以包含一个或多个内聚 Monica 模块
 - 使用完整身份声明的仓库内 NuGet 依赖与 Monica 运行时依赖
-- Module、Option、Guide 与 `IMonicaBuilder` 注册入口
+- Module 策略、Option、`ModuleRegistration<,>` 扩展与 `IMonicaBuilder` 注册入口
 - 按需生成非 Web、Web、Provider/Integration、混合 UI 或独立 UI 结构
 - 可选的 Buildx Bake 目标，用于一个 Provider Service OCI 仓库的分层 CPU/NVIDIA 变体
 - 通过真实 Monica 宿主完成组合的社会性测试

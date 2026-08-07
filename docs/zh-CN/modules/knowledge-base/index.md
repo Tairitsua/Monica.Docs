@@ -32,7 +32,7 @@ sidebar_position: 1
 
 - [Quick Start](./quick-start.md)
 - [Configuration](./configuration.md)
-- [Guide and Providers](./guide-and-providers.md)
+- [注册扩展与 Provider](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
 - [KnowledgeBase UI](../knowledge-base-ui/index.md)
 - [RAG](../rag/index.md)

@@ -6,7 +6,7 @@ sidebar_position: 3
 
 ## Module options
 
-这个模块没有需要优先调整的公开 `ModuleOption` 字段；大多数使用方式集中在额外选项或 Guide 方法上。
+这个模块没有需要优先调整的公开 `ModuleOption` 字段；大多数使用方式集中在额外选项或注册扩展上。
 
 ## Required setup
 

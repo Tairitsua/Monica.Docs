@@ -1,16 +1,16 @@
 ---
-title: Guide and Stores
-description: Configuration UI 的 Guide、依赖、后端 store、source inspection 和可写 JSON source 关系。
+title: 注册与 Store
+description: Configuration UI 的注册、依赖、后端 store、source inspection 和可写 JSON source 关系。
 sidebar_position: 4
 ---
 
-## Guide methods
+## 模块注册
 
 | Method | What it enables | Required | Typical use |
 |---|---|---|---|
 | `monica.AddConfigurationUI()` | 注册配置操作台页面和页面状态服务 | 否 | 需要内置配置管理 UI 时。 |
 
-`ModuleConfigurationUIGuide` 当前没有额外 Guide 方法。
+`AddConfigurationUI()` 返回 `ModuleRegistration<ModuleConfigurationUI, ModuleConfigurationUIOption>`，当前没有其他模块专用注册扩展。
 
 ## Module dependencies
 

@@ -152,6 +152,6 @@ flowchart TB
 - [Quick Start](./quick-start.md)
 - [Concepts](./concepts.md)
 - [Configuration](./configuration.md)
-- [Guide and Stores](./guide-and-providers.md)
+- [注册扩展与 Store](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
 - [Configuration UI](../configuration-ui/index.md)

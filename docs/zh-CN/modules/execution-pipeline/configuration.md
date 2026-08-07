@@ -6,7 +6,7 @@ sidebar_position: 3
 
 ## Module options
 
-`ModuleExecutionPipelineOption` 当前没有面向应用的标量配置项。Behavior 目录由 `ModuleExecutionPipelineGuide.AddBehavior(...)` 维护，不应直接修改模块选项。
+`ModuleExecutionPipelineOption` 当前没有面向应用的标量配置项。宿主应在 `AddExecutionPipeline()` 返回的 `ModuleRegistration<ModuleExecutionPipeline, ModuleExecutionPipelineOption>` 上调用 `AddBehavior(...)` 来定义 Behavior 目录，而不应直接修改模块选项。
 
 可选的 `ModuleExecutionPipelineUIOption` 只有一个设置：
 

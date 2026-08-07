@@ -93,5 +93,5 @@ The page always shows the host's behavior registrations. Its plan list initially
 ## What to read next
 
 - [Configuration](./configuration.md) explains ordering, filtering, and lifetimes.
-- [Guide and Adapters](./guide-and-providers.md) lists the native boundaries and catalog APIs.
+- [Registration Extensions and Adapters](./guide-and-providers.md) lists the native boundaries and catalog APIs.
 - [Scenarios](./scenarios.md) covers point-specific behavior and explicit job transactions.

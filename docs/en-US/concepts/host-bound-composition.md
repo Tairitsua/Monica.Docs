@@ -1,67 +1,122 @@
 ---
-title: Host-bound composition
-description: Understand how Monica records, validates, and applies one module graph per host.
+title: Host-bound module composition
+description: Understand Monica's frozen module graph, lifecycle, option boundaries, type discovery, and startup work.
 sidebar_position: 1
 ---
 
-`builder.AddMonica(monica => ...)` owns one Monica application context. Every option, guide, dependency edge, runtime catalog, and diagnostic snapshot created during that callback belongs to the same host.
+`builder.AddMonica(monica => ...)` creates one Monica application context for one host. Module registrations, finalized options, dependency edges, type-discovery plans, startup work, runtime catalogs, and diagnostics all belong to that context. Two hosts in one process never share a mutable module registry.
 
-## Lifecycle
+## Composition lifecycle
 
-1. Your callback records requested modules and guide configuration.
-2. Modules declare their dependencies into the same graph.
-3. Monica validates required guide choices and rejects dependency cycles.
-4. The graph is ordered deterministically.
-5. Options are finalized and services are registered through serial module phases. A module may schedule isolated CPU-bound work while those serial callbacks continue.
-6. Monica waits at each composition checkpoint for work whose declared deadline has arrived. The final checkpoint drains every remaining work item before `AddMonica(...)` returns.
-7. A Generic Host completes composition when service registration and all scheduled composition work finish.
-8. A Web Host remains incomplete until `UseMonica()` applies middleware and `MapMonica()` maps endpoints.
+Monica completes service composition in a fixed order:
 
-The graph is sealed when the callback returns. A retained guide cannot mutate it afterward.
+1. The application callback records modules, option contributions, registration contributions, and host-wide policy.
+2. Each module instance runs `Describe(ModuleDescriptor)` once to declare option-free hard dependencies, optional ordering edges, and required features.
+3. Monica validates the graph, removes intentionally disabled modules and their hard dependents, rejects cycles or unsatisfied features, and produces one immutable compiled graph.
+4. Default options and named profiles are bound, finalized, and validated in dependency-first order.
+5. Every active module runs `DeclareTypeDiscovery(...)` once before Monica mutates the host. Monica discards plans with no registrations, resolves assemblies, enumerates types once, and evaluates distinct structural queries. A non-empty query remains scheduled for commit even when it matches zero types.
+6. Monica registers its core services, then `ConfigureBuilder` and `ConfigureServices` callbacks run serially in graph order. Registration extensions may contribute callbacks before or after the module callback without changing graph ownership.
+7. Monica reaches the `BeforeTypeDiscovery` startup-work barrier and commits the already compiled discovery matches serially. It then reaches `BeforePostConfigureServices`, runs `PostConfigureServices`, closes submissions, and drains `BeforeServiceRegistrationCompletion` work before `AddMonica(...)` returns.
+8. A Generic Host is composition-complete. A Web Host completes only after `UseMonica()` applies middleware and `MapMonica()` maps endpoints on the same application instance.
 
-For a Web Host, call `UseMonica()` and `MapMonica()` exactly once, in that order, on the same `WebApplication` instance. Starting the host before both calls complete fails validation before any hosted lifecycle participant runs. Generic Hosts do not call either method; their module graph must contain only modules that support non-Web operation or an explicit non-Web downgrade.
+The application callback and every `ModuleRegistration<,>` returned from it are recording surfaces, not runtime objects. Monica seals the graph when the callback finishes; do not retain a registration and mutate it later.
 
-## Scheduled composition work
+## Module shape
 
-A materialized module can call the protected `ModuleBase.ScheduleCompositionWork(string name, Action work, ModuleCompositionWorkDeadline deadline = BeforeServiceRegistrationCompletion)` method after it has prepared an immutable or exclusively module-owned input snapshot. Scheduling is valid only synchronously on that module's callback thread while its `ConfigureBuilder`, `ConfigureServices`, or `PostConfigureServices` callback is executing. Monica starts eligible work through a bounded worker pool while the serial composition thread continues with other module callbacks.
+A module has one strategy type and one startup-frozen option type:
 
-The deadline names the latest composition checkpoint at which the work must be complete; it is not a timeout:
+```csharp
+public sealed class ModuleAnalyticsOption : ModuleOptions<ModuleAnalytics>
+{
+    public bool EnableDetailedMetrics { get; set; }
+}
 
-| Deadline | Required completion checkpoint |
+public sealed class ModuleAnalytics : MonicaModule<ModuleAnalyticsOption>
+{
+    public override void Describe(ModuleDescriptor module)
+    {
+        module.Require<ModuleLogging, ModuleLoggingOption>();
+        module.AfterIfPresent<ModuleOpenTelemetry, ModuleOpenTelemetryOption>();
+    }
+
+    public override void ConfigureServices(ModuleContext<ModuleAnalyticsOption> context)
+    {
+        context.Services.AddSingleton<AnalyticsService>();
+    }
+}
+
+public static class ModuleAnalyticsBuilderExtensions
+{
+    extension(IMonicaBuilder builder)
+    {
+        public ModuleRegistration<ModuleAnalytics, ModuleAnalyticsOption> AddAnalytics(
+            Action<ModuleAnalyticsOption>? configure = null)
+        {
+            return builder.AddModule<ModuleAnalytics, ModuleAnalyticsOption>(configure);
+        }
+    }
+}
+```
+
+Use `IWebModule` when a module can contribute middleware or endpoints but remains useful in a Generic Host. Use `IWebHostRequiredModule` only when omitting those Web contributions would make the module unusable or misleading.
+
+## Dependencies, features, and registration contributions
+
+`Describe(...)` owns intrinsic graph structure:
+
+- `Require<TModule,TOptions>()` includes a hard dependency.
+- `AfterIfPresent<TModule,TOptions>()` creates ordering only when the target is already included.
+- `RequireFeature(name)` states that composition is invalid until an explicit registration path satisfies the feature.
+
+Fluent `Add*`, `Use*`, `Map*`, and `Register*` methods extend `ModuleRegistration<TModule,TOptions>`. They may include or require companion modules, configure options or named profiles, contribute lifecycle callbacks, satisfy or require a feature, and record keyed-service identities. This keeps optional capability selection explicit at the composition root without introducing a separate Guide object.
+
+Use `ModuleRegistrationOrder.BeforeModule`, `AfterModule`, or `Late` when a registration extension must place a callback around the module's own lifecycle callback. Direct service writes stay inside the owning module's `ModuleContext` or an explicit registration contribution.
+
+## Finalized option access
+
+The current module reads its own finalized options through protected `Option` or `context.Options`. Cross-module access is relationship checked:
+
+- `GetOptions<TModule,TOptions>()` or `context.Modules.Get<TModule,TOptions>()` reads a directly required module.
+- `TryGetOptions<TModule,TOptions>(out ...)` or `context.Modules.TryGet(...)` reads an active module named by `AfterIfPresent`.
+
+An undeclared read fails with the source and target module relationship instead of depending on incidental callback order. Use a module-owned abstraction or contribution API when modules need to collaborate at runtime; do not turn another module's option object into a shared mutable registry.
+
+## Centralized type discovery
+
+Override `DeclareTypeDiscovery(TypeDiscoveryPlan<TOptions> discovery)` and add structural queries with `discovery.Match(query, commit)`. Query evaluation is analysis-only. The commit receives a bounded `TypeDiscoveryContext<TOptions>`, immutable matches, and the indexed `ModuleServiceRegistrationWriter`; it does not receive the raw service collection.
+
+The diagnostics timeline records five factual system stages:
+
+1. `TypeDiscoveryPlanDeclaration`
+2. `TypeDiscoveryAssemblyResolution`
+3. `TypeDiscoveryTypeEnumeration`
+4. `TypeDiscoveryQueryEvaluation`
+5. `TypeDiscoveryRegistrationCommit`
+
+When at least one non-empty discovery plan exists, assemblies and types are enumerated once during host composition; repeated diagnostics snapshots never rescan them. Identical queries are evaluated once, and compiler-owned match references are released after registration succeeds or fails. A startup-work commit keeps its origin phase and is never reported as another discovery compilation.
+
+## Scheduled startup work
+
+`MonicaModule.ScheduleStartupWork(...)` starts isolated synchronous work on Monica's bounded scheduler. The overload with a `commit` callback performs expensive work concurrently and applies the result through a deterministic serial commit.
+
+Choose the latest barrier that still protects the first consumer:
+
+| Barrier | Contract |
 |---|---|
-| `BeforeBusinessTypeIteration` | Before Monica iterates discovered business types. |
-| `BeforePostConfigureServices` | Before any `PostConfigureServices` callback begins. |
-| `BeforeServiceRegistrationCompletion` | Before service registration completes and `AddMonica(...)` returns. This is the default. |
+| `BeforeTypeDiscovery` | Required before compiled type-discovery matches are committed to service registration. |
+| `BeforePostConfigureServices` | Required before post-service configuration starts. |
+| `BeforeServiceRegistrationCompletion` | Required before `AddMonica(...)` returns. This is the default. |
+| `BeforeHostLifecycle` | Required before any Generic Host lifecycle participant starts. |
+| `NoBarrier` | Does not delay composition or host readiness; failure is diagnostic-only, and Monica owns the work until completion or host disposal. |
 
-All scheduled work is required. Monica waits at the declared checkpoint, propagates failures before continuing, and never lets composition work outlive `AddMonica(...)`. The API does not make `ConfigureServices`, `PostConfigureServices`, or any other module callback concurrent.
+The work action must be synchronous, deterministic, CPU-bound, and isolated from the host builder, `IServiceCollection`, service providers, the module graph, and shared mutable state. Use hosted services for I/O, continuous activity, runtime activation, and cleanup.
 
-The work action must be synchronous, deterministic, CPU-bound, and isolated. Monica rejects `async`/`async void` delegates and does not flow the caller's ambient `ExecutionContext` into workers; capture required module-owned values explicitly. The action must not mutate the host builder, `IServiceCollection`, the module graph, a service provider, or shared static state, and it must not rely on another work item's completion order. Monica owns scheduling; module authors should not add `Task.Run`, `Task.WhenAll`, or fire-and-forget work.
+`MaxConcurrentStartupWorkItems` controls scheduler concurrency. A value of `1` preserves the barrier model while serializing startup work; non-blocking work cannot occupy the only lane while required submissions remain open.
 
-Use standard `IHostedLifecycleService` or hosted services for runtime activation, I/O, long-running work, and cleanup. Scheduled composition work is only for required pre-build computation, such as compiling a fully prepared module-owned mapping catalog.
+## Web completion boundary
 
-## Why the boundary matters
+Call `UseMonica()` and then `MapMonica()` exactly once on the same `WebApplication`. Missing, repeated, reversed, or cross-application calls are rejected. A Web Host that starts before composition is complete fails before hosted lifecycle participants run. Generic Hosts call neither method and may include only modules that can operate without the Web adapter.
 
-- Two hosts in one test process do not overwrite each other's module options.
-- Invalid graphs fail before an application begins serving traffic.
-- Module diagnostics describe the host you are inspecting, not a process-global approximation.
-- Coding agents have one obvious place to discover application capabilities.
+Use `MonicaTestApplicationFactory<TDiscoveryAnchor>` when a test must exercise this complete boundary, including graph validation, finalized options, type discovery, service registration, and host lifecycle.
 
-## Public module shape
-
-Every module follows the same shape:
-
-| Part | Responsibility |
-|---|---|
-| `monica.Add{Name}()` | Adds the module to the current host graph. |
-| `Module{Name}Option` | Configures host-owned behavior and defaults. |
-| `Module{Name}Guide` | Selects providers or optional capabilities. |
-| `Module{Name}` | Declares dependencies and applies lifecycle phases. |
-| `ModuleBase.ScheduleCompositionWork(...)` | Schedules required isolated CPU-bound work with an explicit composition deadline. |
-
-Provider choices remain explicit. For example, JobScheduler does not silently choose a persistence provider; the guide makes the decision visible in the composition root.
-
-## Test the same boundary
-
-`MonicaTestApplicationFactory<TDiscoveryAnchor>` creates a complete, independently owned Monica host for each application scenario. Use it when a test must prove module composition, type discovery, options, interception, persistence, or lifecycle behavior.
-
-[Read the testing guide](../guides/testing-monica-applications.md).
+Continue with [Options and registration extensions](./configuration-and-guide.md) for the public configuration surface, [Core composition](../modules/core-composition/index.md) for host policy and diagnostics, or [Testing Monica applications](../guides/testing-monica-applications.md) for host-backed test patterns.

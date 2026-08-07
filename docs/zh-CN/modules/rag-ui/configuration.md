@@ -14,4 +14,4 @@ sidebar_position: 3
 
 ## Required setup
 
-本模块没有额外 Guide 必需配置；但它依赖的 [RAG](../rag/index.md) 模块要求配置向量库。生产或集成环境应先完成 `UseVectorStore...` 和 Embedding Provider 配置。
+本模块没有额外必需注册扩展；但它依赖的 [RAG](../rag/index.md) 模块要求配置向量库。生产或集成环境应先完成 `UseVectorStore...` 和 Embedding Provider 配置。

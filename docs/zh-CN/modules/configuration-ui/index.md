@@ -48,6 +48,6 @@ UI 模块不直接操作 store。所有读取、mutation、history、rollback �
 
 - [Quick Start](./quick-start.md)
 - [Configuration](./configuration.md)
-- [Guide and Stores](./guide-and-providers.md)
+- [注册与 Store](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
 - [Configuration 核心模块](../configuration/index.md)

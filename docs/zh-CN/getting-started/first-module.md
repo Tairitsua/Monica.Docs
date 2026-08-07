@@ -35,9 +35,9 @@ app.Run();
 - `app.UseMonica()`：把 Monica 中间件接入已经构建的 Web 主机
 - `app.MapMonica()`：映射当前模块图声明的 Monica 端点
 
-## 什么时候需要 `ModuleGuide`
+## 什么时候使用注册扩展
 
-当一个模块除了“注册自己”之外，还要求你继续声明 Provider、额外服务、Hub 映射或必需配置时，就会通过 `ModuleGuide` 暴露链式 API。Guide 链必须在同一个 `AddMonica(...)` 回调里完成；回调结束后模块图会被封闭。
+当模块除了“注册自己”之外，还要求选择 Provider、增加服务、映射 Hub 或满足必需 Feature 时，会在 `ModuleRegistration<,>` 上暴露链式扩展。扩展链必须在同一个 `AddMonica(...)` 回调里完成；回调结束后 Registration 与模块图都会被封闭。
 
 典型例子：
 
@@ -48,4 +48,4 @@ app.Run();
 ## 下一步
 
 - [Module 模式](../concepts/module-pattern.md)
-- [Option 与 Guide 配置方式](../concepts/configuration-and-guide.md)
+- [Option 与注册扩展](../concepts/configuration-and-guide.md)

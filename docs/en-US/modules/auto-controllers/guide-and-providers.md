@@ -1,12 +1,12 @@
 ---
-title: Guide and Providers
+title: Registration and Providers
 description: Understand AutoControllers registration and RPC transport selection.
 sidebar_position: 4
 ---
 
-## Runtime guide
+## Module registration
 
-`ModuleAutoControllersGuide` has no additional required Guide methods. Register the module through `monica.AddAutoControllers(...)`; it brings in MVC endpoint mapping, API Explorer, ordinary controller discovery, and CRUD controller discovery.
+`monica.AddAutoControllers(...)` returns `ModuleRegistration<ModuleAutoControllers, ModuleAutoControllersOption>` and requires no additional module-specific registration extensions. It brings in MVC endpoint mapping, API Explorer, ordinary controller discovery, and CRUD controller discovery.
 
 `ModuleAutoControllers` declares an `AutoModel` dependency for conventional CRUD filtering.
 
