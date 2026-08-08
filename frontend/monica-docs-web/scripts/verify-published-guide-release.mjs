@@ -73,7 +73,8 @@ function runGuidePreview(entryPoint, contract, agent, workspace, statePath) {
     || !plan.actions.some((action) => typeof action?.diff === "string" && action.diff.length > 0)
     || plan.context?.channel !== expectedChannel
     || plan.context?.targetRelease?.id !== contract.ref
-    || plan.context?.releaseCatalogDigest !== contract.catalogDigest
+    || plan.context?.targetRelease?.catalogDigest !== contract.catalogDigest
+    || plan.preconditions?.releaseCatalogDigest !== contract.catalogDigest
   ) {
     throw new Error(`${agent} initialization preview did not select the advertised release and catalog digest.`);
   }

@@ -83,7 +83,7 @@ try {
   await verify();
 
   await assert.rejects(
-    verifyDeployedSite(baseUrl, undefined, { releaseAssetBaseUrl }),
+    verifyDeployedSite(baseUrl, "", { releaseAssetBaseUrl }),
     /MONICA_AGENT_SKILL_REF is required/u,
   );
   await assert.rejects(
