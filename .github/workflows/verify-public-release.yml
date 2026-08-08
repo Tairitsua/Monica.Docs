@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       monica_ref:
-        description: Immutable Monica release tag, for example v1.0.0-rc.9
+        description: Immutable Monica release tag in v<semver> form
         required: true
         type: string
 

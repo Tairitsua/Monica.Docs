@@ -50,7 +50,7 @@ cd Monica.Docs/deploy/public
 DOCS_COMMIT="$(git -C ../.. rev-parse HEAD)"
 MONICA_COMMIT="$(git -C ../../../MoLibrary rev-parse HEAD)"
 export MONICA_RELEASE_ID="${DOCS_COMMIT}-${MONICA_COMMIT}"
-export MONICA_AGENT_SKILL_REF=v1.0.0-rc.9
+export MONICA_AGENT_SKILL_REF="$(git -C ../../../MoLibrary describe --tags --exact-match)"
 node verify-release-context.mjs ../../..
 docker compose config --quiet
 docker compose build --pull
@@ -97,7 +97,8 @@ After deployment, run the smoke test from `frontend/monica-docs-web` with the
 exact immutable tag being promoted:
 
 ```bash
-MONICA_AGENT_SKILL_REF=v1.0.0-rc.9 npm run verify:deployed -- https://monica.dpdns.org
+MONICA_AGENT_SKILL_REF="$(git -C ../../../MoLibrary describe --tags --exact-match)" \
+  npm run verify:deployed -- https://monica.dpdns.org
 ```
 
 `MONICA_AGENT_SKILL_REF` is required. The smoke test rejects a missing,
