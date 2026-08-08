@@ -18,7 +18,7 @@ sidebar_position: 3
 | [AI](./ai/index.md) | Labs | `Monica.AI` | `monica.AddAI()` | `monica.AddAIUI()` |
 | [AI UI](./ai-ui/index.md) | Labs | `Monica.AI.UI` | `monica.AddAIUI()` | 无 |
 | [AI Skill System](./ai-skill-system/index.md) | Labs | `Monica.AI` | `monica.AddAISkillSystem()` | `monica.AddAIUI()` |
-| [Configuration](./configuration/index.md) | Stable | `Monica.Configuration` | `monica.AddConfiguration()` | `monica.AddConfigurationUI()` |
+| [Configuration](./configuration/index.md) | Stable | `Monica.Configuration` | `MonicaConfigurationInputPlan.Create(...)` + `monica.AddConfiguration(inputPlan)` | `monica.AddConfigurationUI()` |
 | [Configuration UI](./configuration-ui/index.md) | Stable | `Monica.Configuration.UI` | `monica.AddConfigurationUI()` | 无 |
 | [DataChannel](./data-channel/index.md) | Labs | `Monica.DataChannel` | `monica.AddDataChannel()` | `monica.AddDataChannelUI()` |
 | [DependencyInjection](./dependency-injection/index.md) | Stable | `Monica.DependencyInjection` | `monica.AddDependencyInjection()` | `monica.AddDependencyInjectionUI()` |

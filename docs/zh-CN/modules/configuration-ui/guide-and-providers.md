@@ -16,7 +16,7 @@ sidebar_position: 4
 
 | Dependency | Why it is used |
 |---|---|
-| `monica.AddConfiguration()` | 提供 `ConfigurationFacade`、schema、store、mutation、history、rollback 和 source inspection。 |
+| `monica.AddConfiguration(inputPlan)` | 应用已选择 store 的 `MonicaConfigurationInputPlan`，并提供 `ConfigurationFacade`、schema、mutation、history、rollback 和 source inspection。 |
 | `monica.AddLocalization()` | 注册 UI 本地化资源。 |
 | `monica.AddDiffHighlight()` | 在历史、保存预览、JSON 编辑和导入报告中生成 diff。 |
 | `monica.AddUIShell()` | 注册页面、导航和 Blazor shell。 |
@@ -25,9 +25,9 @@ sidebar_position: 4
 
 Configuration UI 不选择 store，也不直接写文件或数据库。它只调用 `ConfigurationFacade`。实际写入目标由当前 effective source 决定：
 
-- `UseFileConfigurationStore(...)`：当 Monica provider 生效时写入本地 file store。
-- `UseDbConfigurationStore(...)`：当 Monica provider 生效时写入 EF Core DB store，适合分布式。
-- `AddManagedJsonFile(...)` 或其他可解析 JSON provider：当该 JSON source 是当前生效来源且可写时，写入对应物理 JSON 文件。
+- 在 input plan 上调用 `UseFileConfigurationStore(...)`：当 Monica provider 生效时写入本地 file store。
+- 在 input plan 上调用 `UseDbConfigurationStore(...)`：当 Monica provider 生效时写入 EF Core DB store，适合分布式。
+- 在 input plan 上调用 `AddManagedJsonFile(...)`，或使用其他可解析 JSON provider：当该 JSON source 是当前生效来源且可写时，写入对应物理 JSON 文件。
 - `IConfigurationChangeNotifier`：如果宿主注册了实现，mutation 成功后会调用通知抽象。
 
 ## Source/status page

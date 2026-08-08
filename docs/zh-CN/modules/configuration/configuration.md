@@ -56,6 +56,12 @@ public sealed class DemoDocumentationPortalOptions
 | `IEnumerable<T>` / array | `List` | item 作为模板节点。带稳定 key 的 list 支持按项修改。 |
 | `string`、数值、`bool`、`enum`、`DateTime`、`TimeSpan`、`Uri` 等 | `Scalar` | 作为叶子值参与读取、修改和投影。 |
 
+### 递归与深度边界
+
+配置 schema 不支持当前遍历分支上的递归类型。直接自引用、相互引用，以及通过 nullable、list item 或 dictionary value 形成的递归都会在扫描阶段抛出 `InvalidOperationException`；异常会同时报告 logical schema path 和 CLR type chain。同一个类型可以在两个 sibling 属性中重复使用，因为它们不属于同一条 active branch。
+
+根节点 logical depth 为 `0`，最深允许 `64`；深度 `65` 会在 CLR scanning 和 schema serialization 阶段失败。Persisted compact schema JSON 的 reader/writer depth 上限为 `256`，并且会在重建 runtime schema 前完成结构和 logical depth 校验。
+
 ## OptionSetting
 
 `[OptionSetting]` 只承载 Monica 的管理元数据，不替代 DataAnnotations。
@@ -128,8 +134,10 @@ UI 会对 `TimeSpan`、`DateTime`、数值、enum/allowed values、regex、range
 
 运行时修改围绕一份完整 JSON document 工作。每个 `DefinitionKey` 对应一个 Monica-managed current effective value：
 
-- File mode：`effective/{DefinitionKey}.json`。
+- File mode：`effective/{IDENTITY}.json`，版本与原始 key metadata 位于 `effective/.metadata/{IDENTITY}.metadata.json`。
 - DB mode：effective value table 中的一行 JSON document。
+
+`{IDENTITY}` 由 `ConfigurationDefinitionIdentity.Compute(DefinitionKey)` 计算，是对 invariant-uppercase key 的 UTF-8 内容生成的 64 位大写 SHA-256 十六进制值。Definition metadata 使用 `metadata/definitions/{IDENTITY}.json`。大小写变体共享同一 physical identity，metadata 中的原始 key 必须与文件名 identity 匹配；旧版按原始 `DefinitionKey` 命名的 file store 必须在升级前迁移或重建，Monica 不会自动迁移。
 
 修改 scalar、object、dictionary item、keyed list item 或整个复杂节点时，Monica 会按 `LogicalPath` patch 这份 JSON document，然后提升 document version 并写入 history。
 

@@ -17,10 +17,13 @@ sidebar_position: 1
 ## 示例
 
 ```csharp
+using Monica.Configuration.Bootstrap;
 using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
+var configurationInputPlan = MonicaConfigurationInputPlan.Create(inputs => inputs
+    .UseFileConfigurationStore());
 
 builder.AddMonica(monica =>
 {
@@ -29,7 +32,7 @@ builder.AddMonica(monica =>
     monica.AddEventBus()
         .UseNoOpDistributedEventBus();
 
-    monica.AddConfiguration();
+    monica.AddConfiguration(configurationInputPlan);
 
     monica.AddAutoControllers(
         crudOptionAction: o =>

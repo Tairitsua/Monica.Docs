@@ -30,7 +30,7 @@ sidebar_position: 1
 | 核心包 | `Monica.Configuration` |
 | EF Core 存储包 | `Monica.Configuration.EfCore` |
 | UI 包 | `Monica.Configuration.UI` |
-| 核心注册入口 | `monica.AddConfiguration()` |
+| 核心注册入口 | `MonicaConfigurationInputPlan.Create(...)` + `monica.AddConfiguration(inputPlan)` |
 | UI 注册入口 | [`monica.AddConfigurationUI()`](../configuration-ui/index.md) |
 
 ## 最小注册
@@ -38,47 +38,56 @@ sidebar_position: 1
 单体或本地模式：
 
 ```csharp
+var configurationInputPlan = MonicaConfigurationInputPlan.Create(inputs => inputs
+    .UseFileConfigurationStore());
+
 builder.AddMonica(monica =>
 {
-    monica.AddConfiguration()
-        .UseFileConfigurationStore();
+    monica.AddConfiguration(configurationInputPlan);
 });
 ```
 
 分布式模式：
 
 ```csharp
+var configurationStoreConnectionString =
+    builder.Configuration.GetConnectionString("Configuration")
+    ?? throw new InvalidOperationException("Missing Configuration connection string.");
+var configurationInputPlan = MonicaConfigurationInputPlan.Create(inputs => inputs
+    .UseDbConfigurationStore(options =>
+        options.UseSqlite(configurationStoreConnectionString)));
+
 builder.AddMonica(monica =>
 {
-    monica.AddConfiguration()
-        .UseDbConfigurationStore((serviceProvider, options) =>
-        {
-            options.UseSqlite(builder.Configuration.GetConnectionString("Configuration"));
-        });
+    monica.AddConfiguration(configurationInputPlan);
 });
 ```
 
 需要把某个 JSON 文件作为高优先级可管理来源时：
 
 ```csharp
+var configurationInputPlan = MonicaConfigurationInputPlan.Create(inputs => inputs
+    .UseDbConfigurationStore(options => options.UseSqlite(configurationStoreConnectionString))
+    .AddManagedJsonFile(
+        "docs-external-settings.json",
+        optional: false,
+        reloadOnChange: true,
+        options =>
+        {
+            options.DisplayName = "Docs External Demo Settings";
+            options.Description = "通过 Monica.Configuration 注册的外部 JSON 来源。";
+            options.IsWritable = true;
+        }));
+
 builder.AddMonica(monica =>
 {
-    monica.AddConfiguration()
-        .UseDbConfigurationStore((_, options) => options.UseSqlite(configurationStoreConnectionString))
-        .AddManagedJsonFile(
-            "docs-external-settings.json",
-            optional: false,
-            reloadOnChange: true,
-            options =>
-            {
-                options.DisplayName = "Docs External Demo Settings";
-                options.Description = "通过 Monica.Configuration 注册的外部 JSON 来源。";
-                options.IsWritable = true;
-            });
+    monica.AddConfiguration(configurationInputPlan);
 });
 ```
 
-`AddManagedJsonFile(...)` 背后调用 Microsoft `AddJsonFile(...)`，并记录 Monica UI 需要的 display name、path、optional、reloadOnChange、writable 和 description。它默认追加在 Monica effective provider 之后，因此优先级高于 Monica store；如果宿主后续再追加其他 provider，后追加的 provider 仍可覆盖它。
+`MonicaConfigurationInputPlan` 会一次性冻结 store、section-path convention 和有序 managed JSON sources，再由 `AddConfiguration(inputPlan)` 投影到运行时模块图。`AddManagedJsonFile(...)` 会记录 Monica UI 需要的 display name、path、optional、reloadOnChange、writable 和 description。它默认追加在 Monica effective provider 之后，因此优先级高于 Monica store；如果宿主后续再追加其他 provider，后追加的 provider 仍可覆盖它。
+
+当某个 Monica-managed Option 必须在模块图组合前驱动宿主拓扑时，可由同一个 plan 调用 `BuildBootstrapConfiguration(...)` 和 `LoadEffectiveOptionsSnapshot[Async](...)`。该 API 只返回 point-in-time 启动观察：缺失 document 使用内存 seed，不发布 metadata，也不创建文件或数据库行；真正的持久化 seed 由后续 runtime activation 完成。详见 [Scenarios](./scenarios.md)。
 
 ## 稳定定义身份与生命周期
 
@@ -127,10 +136,12 @@ flowchart TB
 
 ## 公开使用面
 
-- `monica.AddConfiguration()`：注册 schema 扫描、Options 绑定、mutation、history、rollback、source inspection 和 facade。
-- `UseFileConfigurationStore(...)`：单体/本地 file store preset。
-- `UseDbConfigurationStore(...)`：分布式 EF Core DB store preset。
-- `AddManagedJsonFile(...)`：追加一个 Monica 可识别的 JSON configuration source，可用于覆盖 Monica effective values。
+- `MonicaConfigurationInputPlan.Create(...)`：一次声明 store、section-path convention 和有序 managed JSON sources。
+- `monica.AddConfiguration(inputPlan)`：把同一份 plan 应用于 schema 扫描、Options 绑定、runtime provider、mutation、history、rollback、source inspection 和 facade。
+- `UseFileConfigurationStore(...)`：在 input plan 上选择单体/本地 file store preset。
+- `UseDbConfigurationStore(...)`：在 input plan 上选择分布式 EF Core DB store preset。
+- `AddManagedJsonFile(...)`：在 input plan 上追加一个 Monica 可识别的 JSON configuration source，可用于覆盖 Monica effective values。
+- `LoadEffectiveOptionsSnapshot[Async](...)`：在运行时激活前只读加载一批 point-in-time Options。
 - `ConfigurationAttribute`：把一个 Options 类型声明为 Monica 管理的配置定义。
 - `OptionSettingAttribute`：给配置属性添加展示名、说明、敏感值、重载行为和列表项稳定 key。
 - `ConfigurationFacade`：UI、Minimal API 或应用层使用的配置管理入口，返回 `Res<T>`。

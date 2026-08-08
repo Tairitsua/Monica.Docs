@@ -13,10 +13,12 @@ sidebar_position: 5
 开发环境通常这样注册：
 
 ```csharp
+var configurationInputPlan = MonicaConfigurationInputPlan.Create(inputs => inputs
+    .UseFileConfigurationStore());
+
 builder.AddMonica(monica =>
 {
-    monica.AddConfiguration()
-        .UseFileConfigurationStore();
+    monica.AddConfiguration(configurationInputPlan);
     monica.AddConfigurationUI();
 });
 ```
@@ -26,19 +28,21 @@ File store 会在本地生成 effective JSON document，适合观察复杂对象
 ## 场景 3 — 现场交付 JSON 覆盖文件
 
 ```csharp
+var configurationInputPlan = MonicaConfigurationInputPlan.Create(inputs => inputs
+    .UseFileConfigurationStore()
+    .AddManagedJsonFile(
+        "operator-settings.json",
+        optional: true,
+        reloadOnChange: true,
+        options =>
+        {
+            options.DisplayName = "Operator Settings";
+            options.IsWritable = true;
+        }));
+
 builder.AddMonica(monica =>
 {
-    monica.AddConfiguration()
-        .UseFileConfigurationStore()
-        .AddManagedJsonFile(
-            "operator-settings.json",
-            optional: true,
-            reloadOnChange: true,
-            options =>
-            {
-                options.DisplayName = "Operator Settings";
-                options.IsWritable = true;
-            });
+    monica.AddConfiguration(configurationInputPlan);
     monica.AddConfigurationUI();
 });
 ```
@@ -116,7 +120,7 @@ UI 会用 schema 解析 JSON，跳过未变化值，报告未知字段和验证�
 
 ## Common mistakes
 
-- 以为 UI 会自动选择存储。核心模块必须显式配置 `UseFileConfigurationStore(...)` 或 `UseDbConfigurationStore(...)`。
+- 以为 UI 会自动选择存储。宿主必须在 `MonicaConfigurationInputPlan` 上显式选择 `UseFileConfigurationStore(...)` 或 `UseDbConfigurationStore(...)`，再调用 `monica.AddConfiguration(inputPlan)`。
 - 以为配置状态页永远编辑 Monica store。页面编辑的是当前生效且可写的目标 source。
 - 以为修改后所有值都能热更新。`RequiresRestart` 和 `StaticAfterStartup` 节点会提示需要重启。
 - 以为敏感值能在 UI 中完整查看。敏感值默认按 display-safe 方式处理。

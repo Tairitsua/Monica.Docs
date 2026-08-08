@@ -4,6 +4,7 @@ using Domains.Documentation.Providers;
 using Domains.Documentation.Utilities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Monica.Configuration.Bootstrap;
 using Monica.Configuration.EfCore.DbContext;
 using Monica.Core;
 using Monica.Core.Modularity.Extensions;
@@ -24,6 +25,18 @@ var documentationApiOptions = builder.Configuration
 var docsBasePath = UtilsDocumentationPathResolver.ResolveDocsBasePath(
     builder.Environment,
     documentationApiOptions);
+var configurationInputPlan = MonicaConfigurationInputPlan.Create(inputs => inputs
+    .UseDbConfigurationStore(options => options.UseSqlite(configurationStoreConnectionString))
+    .AddManagedJsonFile(
+        managedSettingsPath,
+        optional: false,
+        reloadOnChange: true,
+        options =>
+        {
+            options.DisplayName = "Docs External Demo Settings";
+            options.Description = "Operator-managed JSON file registered through Monica.Configuration for source-chain and source-editing demos.";
+            options.IsWritable = true;
+        }));
 
 builder.AddMonica(monica =>
 {
@@ -38,18 +51,7 @@ builder.AddMonica(monica =>
     });
 
     monica.AddResultEnvelope().UseResultFieldNames(options => options.Status = "code");
-    monica.AddConfiguration()
-        .UseDbConfigurationStore((_, options) => options.UseSqlite(configurationStoreConnectionString))
-        .AddManagedJsonFile(
-            managedSettingsPath,
-            optional: false,
-            reloadOnChange: true,
-            options =>
-            {
-                options.DisplayName = "Docs External Demo Settings";
-                options.Description = "Operator-managed JSON file registered through Monica.Configuration for source-chain and source-editing demos.";
-                options.IsWritable = true;
-            });
+    monica.AddConfiguration(configurationInputPlan);
     monica.AddConfigurationUI();
     monica.AddEventBus().UseNoOpDistributedEventBus();
     monica.AddWebApi();

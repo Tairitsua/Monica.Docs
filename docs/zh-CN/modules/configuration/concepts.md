@@ -34,7 +34,7 @@ flowchart TB
 
 `ConfigurationDefinition` 是一个配置聚合根，通常对应一个 Options class。拥有该 CLR 类型的服务启动时通过反射扫描 schema，并把 metadata 发布到所选 store。
 
-`DefinitionKey` 是跨服务、历史、mutation、文件名和 UI 使用的稳定身份。不要只用类短名；推荐使用类似 `docs.portal.demo`、`mail.sender` 这种全局唯一且不容易随命名空间变化的 key。
+`DefinitionKey` 是跨服务、历史、mutation 和 UI 使用的稳定业务身份。不要只用类短名；推荐使用类似 `docs.portal.demo`、`mail.sender` 这种全局唯一且不容易随命名空间变化的 key。File store 会从该 key 计算固定 identity 文件名，而不会把原始 key 直接拼入路径。
 
 发布到 metadata store 的 definition 是 portable 管理 schema，不依赖 owner service 的 assembly identity。owner service 会保留本地运行时需要的 CLR type identity，同时发布 `typeName` 风格的类型名、schema JSON 和 CLR 默认值 JSON。非 owner service 只要连接同一组 metadata / effective value / history store，就能读取 schema、校验 mutation，并修改共享 Monica effective document；它不需要持有对应 CLR options 类型。
 
@@ -44,7 +44,8 @@ flowchart TB
 
 | Store | 作用 |
 |---|---|
-| `IConfigurationEffectiveValueStore` | 保存 Monica 管理的当前 effective JSON document。每个 `DefinitionKey` 对应一份完整 JSON document。 |
+| `IConfigurationEffectiveValueReader` | 只读读取 Monica 管理的当前 effective JSON document；startup snapshot 只依赖该边界。 |
+| `IConfigurationEffectiveValueStore` | 继承 reader，并负责创建和保存 effective JSON document。每个 `DefinitionKey` 对应一份完整 JSON document。 |
 | `IConfigurationMetadataStore` | 保存发布后的 definition metadata 和 schema。 |
 | `IConfigurationHistoryStore` | 保存 mutation group 和每次 mutation 的审计记录。 |
 
@@ -87,6 +88,8 @@ flowchart LR
 
 `OptionSettingAttribute` 只描述 Monica 管理元数据，例如展示名、说明、敏感值、生效策略和列表项 key。校验规则优先复用 DataAnnotations，避免为配置系统再引入一套新的验证 attribute。
 
+配置 schema 必须是有限树。直接或相互自引用，以及通过 nullable、list item 或 dictionary value 形成的当前分支递归都会在扫描阶段失败，并报告 logical path 与 CLR type chain；同一个类型在两个 sibling 分支中复用仍然合法。根节点 logical depth 为 `0`，最深允许 `64`，compact persisted schema JSON 的 parser/writer depth 上限为 `256`。持久化 schema 会先完成结构和 logical depth 校验，再重建 runtime definition。
+
 ## LogicalPath 与 IConfiguration path
 
 `LogicalPath` 是配置管理使用的结构化路径。它由 segment 组成，不是业务代码应手写拼接的字符串。
@@ -107,10 +110,14 @@ flowchart LR
 每个配置定义在 Monica store 中最终只保存一份 effective JSON document：
 
 ```text
-effective/{DefinitionKey}.json
+metadata/definitions/{IDENTITY}.json
+effective/{IDENTITY}.json
+effective/.metadata/{IDENTITY}.metadata.json
 ```
 
-或 DB 中的一行 document。修改叶子节点时，Monica 会 patch 这份 JSON 文档中的目标位置，而不是维护一组内部来源优先级 override。
+`{IDENTITY}` 是对 invariant-uppercase `DefinitionKey` 的 UTF-8 内容计算得到的 64 位大写 SHA-256 十六进制值。大小写变体因此定位到同一组物理文件；definition metadata 和 effective metadata sidecar 会保留原始 key，并验证它与文件名 identity 一致。effective JSON 仍是独立、可人工编辑的文件。旧版按原始 key 命名的布局会在首次 store access 时被拒绝，必须先迁移或重建；Monica 不自动迁移或删除旧文件。
+
+DB mode 则在 effective value table 中保存一行 document。修改叶子节点时，Monica 会 patch 这份 JSON 文档中的目标位置，而不是维护一组内部来源优先级 override。
 
 首次创建 effective document 时，owner service 会使用本地 CLR 默认值和当前 `IConfiguration` 叠加生成 seed。非 owner service 无法实例化 owner 的 CLR options 类型时，会使用 metadata store 中的 owner-published default JSON，再叠加当前进程本地 `IConfiguration` 中可读到的值。因此 owner 和 non-owner 的第一次 Monica effective store mutation 使用同一套 schema 与默认值语义。
 
@@ -130,9 +137,11 @@ flowchart LR
 
 ## 启动参数与运行期 Options
 
-模块图组合发生在应用构建前。连接配置 store、初始化日志或注册外部基础设施所需的参数直接来自 `builder.Configuration`，因为它们必须先于 Monica-managed provider 可用。
+模块图组合发生在应用构建前。连接配置 store、完成数据库 migration、初始化日志等“读取 store 本身所需”的参数必须直接来自 `builder.Configuration`，因为它们先于 Monica-managed provider 可用。
 
-应用构建完成后，业务服务通过 `IOptions<T>`、`IOptionsSnapshot<T>` 或 `IOptionsMonitor<T>` 消费 `[Configuration]` 类型。不要为了让组合代码读取托管配置而提前构建临时容器；启动期输入与运行期托管配置应保持清晰的生命周期边界。
+如果某个已管理 Option 必须在这时驱动宿主拓扑，同一份 `MonicaConfigurationInputPlan` 可以通过 `BuildBootstrapConfiguration(...)` 和 `LoadEffectiveOptionsSnapshot[Async](...)` 返回一次 point-in-time 观察。它只读一次有序 batch，按 host configuration → stored Monica document 或内存 seed → managed JSON 的优先级绑定值，不发布 definition，也不持久化缺失 document。reader、取消、JSON、projection 或 binding failure 都会终止启动，只有 document 缺失才使用 seed。
+
+该快照与稍后的 runtime configuration 之间没有一致性屏障；store edit、purge 或 runtime activation 生成不同 seed 后，值可以不同。拓扑字段应声明 `StaticAfterStartup` 或 `RequiresRestart`。应用构建完成后，业务服务仍通过 `IOptions<T>`、`IOptionsSnapshot<T>` 或 `IOptionsMonitor<T>` 消费 `[Configuration]` 类型，而不是提前构建临时 DI 容器。
 
 ## List 的稳定身份
 

@@ -25,7 +25,7 @@ UI 的核心原则是：**页面展示的是当前运行时真正生效的值；
 |---|---|
 | 包 | `Monica.Configuration.UI` |
 | 注册入口 | `monica.AddConfigurationUI()` |
-| 相关基础模块 | [`monica.AddConfiguration()`](../configuration/index.md) |
+| 相关基础模块 | [`MonicaConfigurationInputPlan` + `monica.AddConfiguration(inputPlan)`](../configuration/index.md) |
 
 ## 页面
 

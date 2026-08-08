@@ -13,15 +13,17 @@ dotnet add package Monica.Configuration.UI
 ## 最小注册
 
 ```csharp
+using Monica.Configuration.Bootstrap;
 using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
+var configurationInputPlan = MonicaConfigurationInputPlan.Create(inputs => inputs
+    .UseFileConfigurationStore());
 
 builder.AddMonica(monica =>
 {
-    monica.AddConfiguration()
-        .UseFileConfigurationStore();
+    monica.AddConfiguration(configurationInputPlan);
     monica.AddConfigurationUI();
 });
 
@@ -31,7 +33,7 @@ app.MapMonica();
 app.Run();
 ```
 
-`monica.AddConfigurationUI()` 会自动声明对 `monica.AddConfiguration()`、Localization、Diff Highlight 和 Shell UI 的依赖。核心配置模块仍然需要显式选择 file 或 DB store。
+`monica.AddConfigurationUI()` 会自动声明对 Configuration、Localization、Diff Highlight 和 Shell UI 的依赖。宿主仍需用 `MonicaConfigurationInputPlan` 显式选择 file 或 DB store，并调用 `monica.AddConfiguration(inputPlan)` 应用它。
 
 ## 第一次打开页面
 
@@ -54,20 +56,22 @@ app.Run();
 ## 注册一个 UI 可识别的 JSON source
 
 ```csharp
+var configurationInputPlan = MonicaConfigurationInputPlan.Create(inputs => inputs
+    .UseFileConfigurationStore()
+    .AddManagedJsonFile(
+        "operator-settings.json",
+        optional: true,
+        reloadOnChange: true,
+        options =>
+        {
+            options.DisplayName = "Operator Settings";
+            options.Description = "现场维护的 JSON 覆盖文件。";
+            options.IsWritable = true;
+        }));
+
 builder.AddMonica(monica =>
 {
-    monica.AddConfiguration()
-        .UseFileConfigurationStore()
-        .AddManagedJsonFile(
-            "operator-settings.json",
-            optional: true,
-            reloadOnChange: true,
-            options =>
-            {
-                options.DisplayName = "Operator Settings";
-                options.Description = "现场维护的 JSON 覆盖文件。";
-                options.IsWritable = true;
-            });
+    monica.AddConfiguration(configurationInputPlan);
     monica.AddConfigurationUI();
 });
 ```

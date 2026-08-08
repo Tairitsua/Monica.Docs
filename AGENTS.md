@@ -47,7 +47,7 @@ Key facts for navigation:
 - Keep domain-owned application units in `Application/HandlersCommand`, `Application/HandlersQuery`, `Application/HandlersEvent`, and `Application/BackgroundWorkers`.
 - Keep repository implementations in `Repository/`, and keep pure helper code in `Utilities/` with `Utils*` names when adding new utility helpers.
 - Keep cross-domain collaboration pointed at `src/Shared/Platform.Protocol/PublishedLanguages` or other protocol-level contracts. Do not reference another domain's internal implementation directly.
-- Host composition must use `builder.Configuration` for values needed before `Build()`. Consume Monica-managed `Configuration` ProjectUnit values through typed `IOptions<T>` or `IOptionsSnapshot<T>` at runtime; there is no ambient or instant-registration phase.
+- Host composition must use `builder.Configuration` for prerequisites needed to reach the Configuration store, such as its connection string and migrations. When a Monica-managed option must drive topology before `Build()`, reuse one `MonicaConfigurationInputPlan` and load a read-only point-in-time snapshot with `BuildBootstrapConfiguration(...)` plus `LoadEffectiveOptionsSnapshot[Async](...)`; the snapshot does not persist missing documents or guarantee equality with later runtime values. Consume ordinary managed values through typed `IOptions<T>` or `IOptionsSnapshot<T>` at runtime; there is no ambient or instant-registration phase.
 
 ## Build and Run
 

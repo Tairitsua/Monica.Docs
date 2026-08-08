@@ -28,16 +28,18 @@ dotnet add package Monica.Configuration.UI
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Options;
 using Monica.Configuration.Annotations;
+using Monica.Configuration.Bootstrap;
 using Monica.Configuration.Models;
 using Monica.Core.Modularity.Extensions;
 using Monica.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
+var configurationInputPlan = MonicaConfigurationInputPlan.Create(inputs => inputs
+    .UseFileConfigurationStore());
 
 builder.AddMonica(monica =>
 {
-    monica.AddConfiguration()
-        .UseFileConfigurationStore();
+    monica.AddConfiguration(configurationInputPlan);
     monica.AddConfigurationUI();
 });
 
@@ -77,9 +79,9 @@ public sealed class HomeService(IOptionsSnapshot<DemoAppOptions> options)
 }
 ```
 
-`monica.AddConfiguration()` 会在 Monica 扫描业务类型时找到 `[Configuration]` 类型，生成 schema，并注册对应的 Options 绑定。运行期消费配置时仍然使用 Microsoft Options Pattern。
+`monica.AddConfiguration(configurationInputPlan)` 会在 Monica 扫描业务类型时找到 `[Configuration]` 类型，生成 schema，并注册对应的 Options 绑定。运行期消费配置时仍然使用 Microsoft Options Pattern。
 
-`UseFileConfigurationStore()` 是单体和本地模式的最小 store preset。第一次启动时，Monica 会为每个 `DefinitionKey` 创建一份 effective JSON document：优先从宿主当前 `IConfiguration` 的 section seed，缺失时回退到 CLR 默认值。
+`UseFileConfigurationStore()` 是单体和本地模式的最小 store preset。运行时激活第一次发现某个 `DefinitionKey` 时，Monica 会创建一份 effective JSON document：优先从宿主当前 `IConfiguration` 的 section seed，缺失时回退到 CLR 默认值。单独调用 `LoadEffectiveOptionsSnapshot[Async](...)` 只会在内存中补齐缺失 seed，不会提前创建 document。
 
 ## 用宿主配置做首次 seed
 
@@ -102,24 +104,26 @@ public sealed class HomeService(IOptionsSnapshot<DemoAppOptions> options)
 当某些值必须继续由 JSON 文件管理时，可以把文件注册成 Monica 可识别的 runtime source：
 
 ```csharp
+var configurationInputPlan = MonicaConfigurationInputPlan.Create(inputs => inputs
+    .UseFileConfigurationStore()
+    .AddManagedJsonFile(
+        "operator-settings.json",
+        optional: true,
+        reloadOnChange: true,
+        options =>
+        {
+            options.DisplayName = "Operator Settings";
+            options.Description = "现场交付时允许操作员维护的 JSON 文件。";
+            options.IsWritable = true;
+        }));
+
 builder.AddMonica(monica =>
 {
-    monica.AddConfiguration()
-        .UseFileConfigurationStore()
-        .AddManagedJsonFile(
-            "operator-settings.json",
-            optional: true,
-            reloadOnChange: true,
-            options =>
-            {
-                options.DisplayName = "Operator Settings";
-                options.Description = "现场交付时允许操作员维护的 JSON 文件。";
-                options.IsWritable = true;
-            });
+    monica.AddConfiguration(configurationInputPlan);
 });
 ```
 
-这个文件会追加在 Monica effective provider 之后。也就是说，如果 `operator-settings.json` 提供了 `Demo:App:AppName`，运行时真正绑定到 `IOptions<DemoAppOptions>` 的值会来自这个 JSON 文件。UI 会在 source chain 中标记它是当前生效来源；如果它可写，用户修改该配置项时会写回这个 JSON 文件并记录历史。
+这个文件会追加在 Monica effective provider 之后。也就是说，如果 `operator-settings.json` 提供了 `Demo:App:AppName`，运行时真正绑定到 `IOptions<DemoAppOptions>` 的值会来自这个 JSON 文件。UI 会在 source chain 中标记它是当前生效来源；如果它可写，用户修改该配置项时会写回这个 JSON 文件并记录历史。这里声明的 `reloadOnChange: true` 只用于长生命周期 runtime provider；短生命周期 bootstrap 和 startup snapshot provider 不会监听文件变化。
 
 ## 第一个运行时修改
 
