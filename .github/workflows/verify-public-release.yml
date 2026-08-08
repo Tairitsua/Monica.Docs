@@ -1,0 +1,131 @@
+name: Verify public release
+
+on:
+  workflow_dispatch:
+    inputs:
+      monica_ref:
+        description: Immutable Monica release tag, for example v1.0.0-rc.9
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  MONICA_AGENT_SKILL_REF: ${{ inputs.monica_ref }}
+  MONICA_PUBLIC_RELEASE_BUILD: 1
+  MONICA_RELEASE_SMOKE_CONTAINER: 1
+  PYTHONDONTWRITEBYTECODE: 1
+
+jobs:
+  verify:
+    name: Verify ${{ inputs.monica_ref }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Monica.Docs
+        uses: actions/checkout@v6
+        with:
+          path: Monica.Docs
+
+      - name: Checkout the immutable Monica release
+        uses: actions/checkout@v6
+        with:
+          repository: Tairitsua/Monica
+          ref: ${{ inputs.monica_ref }}
+          fetch-depth: 0
+          path: MoLibrary
+
+      - name: Resolve exact release source identity
+        shell: bash
+        run: |
+          DOCS_COMMIT="$(git -C Monica.Docs rev-parse HEAD)"
+          MONICA_COMMIT="$(git -C MoLibrary rev-parse HEAD)"
+          TAG_COMMIT="$(git -C MoLibrary rev-parse "refs/tags/${MONICA_AGENT_SKILL_REF}^{commit}")"
+          test "${MONICA_COMMIT}" = "${TAG_COMMIT}"
+          echo "MONICA_RELEASE_ID=${DOCS_COMMIT}-${MONICA_COMMIT}" >> "${GITHUB_ENV}"
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: |
+            Monica.Docs/Monica.Docs.slnx
+            MoLibrary/Directory.Build.props
+            MoLibrary/Monica.slnx
+            MoLibrary/tests/Directory.Packages.props
+            **/*.csproj
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Monica.Docs/frontend/monica-docs-web/package-lock.json
+
+      - name: Verify pristine composite release context
+        run: node Monica.Docs/deploy/public/verify-release-context.mjs .
+
+      - name: Build Monica.Docs against the tagged Monica source
+        run: |
+          dotnet restore Monica.Docs/Monica.Docs.slnx
+          dotnet build Monica.Docs/Monica.Docs.slnx --configuration Release --no-restore -m -warnaserror
+
+      - name: Install frontend dependencies
+        working-directory: Monica.Docs/frontend/monica-docs-web
+        run: npm ci
+
+      - name: Install browser
+        working-directory: Monica.Docs/frontend/monica-docs-web
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify published release bytes and frontend
+        working-directory: Monica.Docs/frontend/monica-docs-web
+        run: |
+          npm run check
+          npm run verify:guide-release:production
+          npm run verify:manual-dotnet
+          npm run test:e2e
+
+      - name: Build and probe the release containers
+        working-directory: Monica.Docs/deploy/public
+        env:
+          MONICA_DOCS_SITE_ADDRESS: http://monica.dpdns.org
+          MONICA_DOCS_DEMO_SITE_ADDRESS: http://demo.monica.dpdns.org
+        run: |
+          docker compose config --quiet
+          docker compose build --pull
+          docker compose up --detach --remove-orphans --wait --wait-timeout 180
+          curl --fail --silent --show-error --header "Host: monica.dpdns.org" http://127.0.0.1/healthz
+          curl --fail --silent --show-error --header "Host: monica.dpdns.org" http://127.0.0.1/
+          curl --fail --silent --show-error --header "Host: demo.monica.dpdns.org" http://127.0.0.1/healthz
+
+      - name: Capture container diagnostics
+        if: failure()
+        continue-on-error: true
+        working-directory: Monica.Docs/deploy/public
+        env:
+          MONICA_DOCS_SITE_ADDRESS: http://monica.dpdns.org
+          MONICA_DOCS_DEMO_SITE_ADDRESS: http://demo.monica.dpdns.org
+        run: |
+          docker compose ps --all
+          docker compose logs --no-color
+
+      - name: Tear down release containers
+        if: always()
+        continue-on-error: true
+        working-directory: Monica.Docs/deploy/public
+        env:
+          MONICA_DOCS_SITE_ADDRESS: http://monica.dpdns.org
+          MONICA_DOCS_DEMO_SITE_ADDRESS: http://demo.monica.dpdns.org
+        run: docker compose down --volumes --remove-orphans
+
+      - name: Upload browser diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: public-release-browser-diagnostics
+          path: Monica.Docs/frontend/monica-docs-web/.tmp/playwright-results
+          if-no-files-found: ignore

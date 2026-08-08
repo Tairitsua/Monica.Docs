@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { createServer } from "node:http";
 
 import { verifyDeployedSite } from "./verify-deployed-site.mjs";
@@ -8,8 +9,19 @@ Allow: /
 Content-Signal: search=yes, ai-input=yes, ai-train=no, use=reference
 `;
 const releaseTag = "v1.2.3-rc.4";
-const home = `<html><body>skills@1.5.21 add Monica.Templates@1.0.0-rc.8 /tree/${releaseTag}/skills/monica-guide</body></html>`;
-const docs = "<html><body>Monica.Templates@1.0.0-rc.8</body></html>";
+const releaseVersion = releaseTag.slice(1);
+const skillsCli = { package: "skills", version: "1.5.21" };
+const publishedCatalog = `${JSON.stringify({
+  schemaVersion: 1,
+  distribution: {
+    repository: "Tairitsua/Monica",
+    skillsCli,
+  },
+}, null, 2)}\n`;
+const publishedCatalogDigest = `sha256:${createHash("sha256").update(publishedCatalog).digest("hex")}`;
+let catalogResponseBody = publishedCatalog;
+const home = `<html><body>${skillsCli.package}@${skillsCli.version} add Monica.Templates@${releaseVersion} /tree/${releaseTag}/skills/monica-guide</body></html>`;
+const docs = `<html><body>Monica.Templates@${releaseVersion}</body></html>`;
 const pages = new Map([
   ["/", home],
   ["/docs/getting-started", docs],
@@ -22,6 +34,26 @@ const pages = new Map([
 let robots = goodRobots;
 const server = createServer((request, response) => {
   const path = new URL(request.url ?? "/", "http://localhost").pathname;
+  if (path === "/release/agent-skill-catalog.json") {
+    response.writeHead(200, { "content-type": "application/json" });
+    response.end(catalogResponseBody);
+    return;
+  }
+  if (path === "/release/agent-skill-manifest.json") {
+    const releaseAssetBaseUrl = `http://${request.headers.host}/release`;
+    response.writeHead(200, { "content-type": "application/json" });
+    response.end(JSON.stringify({
+      schemaVersion: 2,
+      tag: releaseTag,
+      monicaVersion: releaseVersion,
+      catalogUrl: `${releaseAssetBaseUrl}/agent-skill-catalog.json`,
+      catalogDigest: publishedCatalogDigest,
+      files: {
+        ".monica/agent-skill-catalog.json": publishedCatalogDigest,
+      },
+    }));
+    return;
+  }
   if (path === "/robots.txt") {
     response.writeHead(200, { "content-type": "text/plain" });
     response.end(robots);
@@ -41,21 +73,58 @@ try {
   const address = server.address();
   assert(address && typeof address === "object");
   const baseUrl = `http://127.0.0.1:${address.port}`;
+  const releaseAssetBaseUrl = `${baseUrl}/release`;
+  const verify = (expectedRef = releaseTag) => verifyDeployedSite(
+    baseUrl,
+    expectedRef,
+    { releaseAssetBaseUrl },
+  );
 
-  await verifyDeployedSite(baseUrl, releaseTag);
+  await verify();
 
   await assert.rejects(
-    verifyDeployedSite(baseUrl, undefined),
+    verifyDeployedSite(baseUrl, undefined, { releaseAssetBaseUrl }),
     /MONICA_AGENT_SKILL_REF is required/u,
   );
   await assert.rejects(
-    verifyDeployedSite(baseUrl, "dev"),
+    verifyDeployedSite(baseUrl, "dev", { releaseAssetBaseUrl }),
     /must be an immutable Monica release tag/u,
   );
   await assert.rejects(
-    verifyDeployedSite(baseUrl, "v1.2.4"),
-    /does not advertise v1\.2\.4/u,
+    verifyDeployedSite(baseUrl, "v01.2.3", { releaseAssetBaseUrl }),
+    /must be an immutable Monica release tag/u,
   );
+  await assert.rejects(
+    verifyDeployedSite(baseUrl, "v1.2.3-..", { releaseAssetBaseUrl }),
+    /must be an immutable Monica release tag/u,
+  );
+  await assert.rejects(
+    verify("v1.2.4"),
+    /does not bind the catalog bytes for v1\.2\.4/u,
+  );
+
+  catalogResponseBody = publishedCatalog.replace(skillsCli.version, "9.9.9");
+  await assert.rejects(verify(), /does not bind the catalog bytes/u);
+  catalogResponseBody = publishedCatalog;
+
+  const originalHome = pages.get("/");
+  pages.set("/", originalHome.replace(`Monica.Templates@${releaseVersion}`, "Monica.Templates@9.9.9"));
+  await assert.rejects(
+    verify(),
+    /exact Monica\.Templates package specifier/u,
+  );
+  pages.set("/", originalHome.replace(`${skillsCli.package}@${skillsCli.version}`, "skills@9.9.9"));
+  await assert.rejects(
+    verify(),
+    /exact catalog-pinned skills CLI package specifier/u,
+  );
+  pages.set("/", originalHome.replace(`${skillsCli.package}@${skillsCli.version}`, `evil${skillsCli.package}@${skillsCli.version}`));
+  await assert.rejects(verify(), /exact catalog-pinned skills CLI package specifier/u);
+  pages.set("/", `${originalHome} ${skillsCli.package}@latest`);
+  await assert.rejects(verify(), /unexpected catalog-pinned skills CLI package specifier skills@latest/u);
+  pages.set("/", `${originalHome} Monica.Templates@latest`);
+  await assert.rejects(verify(), /unexpected Monica\.Templates package specifier Monica\.Templates@latest/u);
+  pages.set("/", originalHome);
 
   const originalAgentSetup = pages.get("/docs/getting-started/agent-setup");
   pages.set(
@@ -63,7 +132,7 @@ try {
     '<html><a href="/cdn-cgi/l/email-protection">rewritten</a></html>',
   );
   await assert.rejects(
-    verifyDeployedSite(baseUrl, releaseTag),
+    verify(),
     /transformed executable content on \/docs\/getting-started\/agent-setup/u,
   );
   pages.set("/docs/getting-started/agent-setup", originalAgentSetup);
@@ -72,9 +141,26 @@ try {
 Disallow: /
 Content-Signal: search=yes, ai-input=yes, ai-train=no, use=reference
 `;
-  await assert.rejects(verifyDeployedSite(baseUrl, releaseTag), /still blocks gptbot/u);
+  await assert.rejects(verify(), /still blocks gptbot/u);
 
-  console.log("Validated multi-route edge transformation and wildcard crawler-policy failures.");
+  robots = `User-agent: GPTBot
+User-agent: ExampleBot
+Disallow: /*
+
+${goodRobots}`;
+  await assert.rejects(verify(), /still blocks gptbot/u);
+
+  robots = `${goodRobots}Content-Signal: ai-input=no, ai-train=yes\n`;
+  await assert.rejects(
+    verify(),
+    /contradictory Content-Signal ai-input=no/u,
+  );
+  robots = `${goodRobots}Content-Signal: ai-input = no\n`;
+  await assert.rejects(verify(), /contradictory Content-Signal ai-input=no/u);
+  robots = `${goodRobots}Content-Signal: ai-input == no\n`;
+  await assert.rejects(verify(), /malformed Content-Signal ai-input == no/u);
+
+  console.log("Validated release-bound packages, edge transformations, and crawler-policy failures.");
 } finally {
   await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
 }

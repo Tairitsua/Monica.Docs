@@ -8,7 +8,7 @@
 	}
 }
 
-monica.dpdns.org {
+{$MONICA_DOCS_SITE_ADDRESS:https://monica.dpdns.org} {
 	encode zstd gzip
 	import security_headers
 
@@ -22,7 +22,7 @@ monica.dpdns.org {
 	}
 }
 
-demo.monica.dpdns.org {
+{$MONICA_DOCS_DEMO_SITE_ADDRESS:https://demo.monica.dpdns.org} {
 	encode zstd gzip
 	import security_headers
 

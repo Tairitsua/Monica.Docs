@@ -1,9 +1,0 @@
-.git
-**/.git
-**/bin
-**/obj
-**/node_modules
-**/.next
-**/.playwright-cli
-**/.task-plans
-.tmp

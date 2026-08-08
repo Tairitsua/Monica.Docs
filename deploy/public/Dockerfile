@@ -21,22 +21,34 @@ RUN dotnet publish src/AppHost/Monica.Docs.Demo/Monica.Docs.Demo.csproj \
     --no-restore \
     -p:EnableSourceControlManagerQueries=false
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS api
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS dotnet-runtime
+USER root
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
+FROM dotnet-runtime AS api
 WORKDIR /app
 ENV ASPNETCORE_URLS=http://0.0.0.0:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 COPY --from=api-build /app/publish ./
+COPY --from=dotnet-build /src/Monica.Docs/docs /docs
 USER $APP_UID
 EXPOSE 8080
+HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=6 \
+  CMD curl --fail --silent --show-error http://127.0.0.1:8080/healthz || exit 1
 ENTRYPOINT ["dotnet", "Monica.Docs.Api.dll"]
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS demo
+FROM dotnet-runtime AS demo
 WORKDIR /app
 ENV ASPNETCORE_URLS=http://0.0.0.0:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 COPY --from=demo-build /app/publish ./
+COPY --from=dotnet-build /src/Monica.Docs/docs /docs
 USER $APP_UID
 EXPOSE 8080
+HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=6 \
+  CMD curl --fail --silent --show-error http://127.0.0.1:8080/healthz || exit 1
 ENTRYPOINT ["/bin/sh", "-c", "rm -f /app/state/monica-configuration.sqlite* && cp /app/docs-external-settings.json /app/state/docs-external-settings.json && exec dotnet Monica.Docs.Demo.dll"]
 
 FROM node:22-alpine AS web-build
@@ -80,4 +92,12 @@ COPY --from=web-build /src/MoLibrary/.monica/agent-skill-catalog.json ./agent-sk
 COPY --from=web-build /src/MoLibrary/skills/monica-guide/assets/bootstrap-prompts.json ./bootstrap-prompts.json
 USER node
 EXPOSE 3000
+HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=6 \
+  CMD wget --quiet --spider http://127.0.0.1:3000/ || exit 1
 CMD ["npm", "run", "start"]
+
+FROM caddy:2 AS proxy
+COPY Monica.Docs/deploy/public/Caddyfile /etc/caddy/Caddyfile
+RUN caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=6 \
+  CMD wget --quiet --spider http://127.0.0.1:2019/config/ || exit 1
