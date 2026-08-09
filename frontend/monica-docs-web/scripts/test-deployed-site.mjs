@@ -21,12 +21,18 @@ const publishedCatalog = `${JSON.stringify({
 const publishedCatalogDigest = `sha256:${createHash("sha256").update(publishedCatalog).digest("hex")}`;
 let catalogResponseBody = publishedCatalog;
 const home = `<html><body>${skillsCli.package}@${skillsCli.version} add Monica.Templates@${releaseVersion} /tree/${releaseTag}/skills/monica-guide</body></html>`;
-const docs = `<html><body>Monica.Templates@${releaseVersion}</body></html>`;
+const zhHome = `<html lang="zh-CN"><body>${skillsCli.package}@${skillsCli.version} add Monica.Templates@${releaseVersion} /tree/${releaseTag}/skills/monica-guide</body></html>`;
+const serializedTemplateCommand = String.raw`Monica.Templates@${releaseVersion}\\ndotnet new monica-api`;
+const docs = String.raw`<html><body>
+  <code>Monica.Templates@${releaseVersion}</code>
+  <script>${serializedTemplateCommand}</script>
+</body></html>`;
 const pages = new Map([
   ["/", home],
+  ["/zh-CN", zhHome],
   ["/docs/getting-started", docs],
   ["/docs/getting-started/agent-setup", "<html><body>Agent setup</body></html>"],
-  ["/zh-CN/docs/getting-started", docs],
+  ["/zh-CN/docs/getting-started", "<html><body>快速开始</body></html>"],
   ["/zh-CN/docs/getting-started/agent-setup", "<html><body>Agent 设置</body></html>"],
   ["/reference", "<html><body>Reference</body></html>"],
 ]);
@@ -125,6 +131,31 @@ try {
   pages.set("/", `${originalHome} Monica.Templates@latest`);
   await assert.rejects(verify(), /unexpected Monica\.Templates package specifier Monica\.Templates@latest/u);
   pages.set("/", originalHome);
+
+  const originalZhHome = pages.get("/zh-CN");
+  pages.set(
+    "/zh-CN",
+    originalZhHome.replace(`Monica.Templates@${releaseVersion}`, "Monica.Templates@9.9.9"),
+  );
+  await assert.rejects(
+    verify(),
+    /\/zh-CN does not preserve the exact Monica\.Templates package specifier/u,
+  );
+  pages.set("/zh-CN", originalZhHome);
+
+  const originalDocs = pages.get("/docs/getting-started");
+  pages.set(
+    "/docs/getting-started",
+    originalDocs.replace(
+      serializedTemplateCommand,
+      String.raw`Monica.Templates@9.9.9\\ndotnet new monica-api`,
+    ),
+  );
+  await assert.rejects(
+    verify(),
+    /unexpected Monica\.Templates package specifier Monica\.Templates@9\.9\.9/u,
+  );
+  pages.set("/docs/getting-started", originalDocs);
 
   const originalAgentSetup = pages.get("/docs/getting-started/agent-setup");
   pages.set(

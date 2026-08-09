@@ -4,6 +4,7 @@ import { pathToFileURL } from "node:url";
 const DEFAULT_PUBLIC_URL = "https://monica.dpdns.org";
 const HTML_ROUTES = [
   "/",
+  "/zh-CN",
   "/docs/getting-started",
   "/docs/getting-started/agent-setup",
   "/zh-CN/docs/getting-started",
@@ -56,7 +57,6 @@ export async function verifyDeployedSite(
   if (!robotsResponse.ok) throw new Error(`robots.txt returned ${robotsResponse.status}.`);
 
   const pages = Object.fromEntries(htmlResponses);
-  const html = pages["/"];
   const robots = await robotsResponse.text();
   const expectedVersion = expectedRef.slice(1);
   const expectedTemplatePackage = `Monica.Templates@${expectedVersion}`;
@@ -68,15 +68,20 @@ export async function verifyDeployedSite(
       }
     }
   }
-  assertExactPackageSpec(html, expectedSkillsCli.package, expectedSkillsCliPackage, "catalog-pinned skills CLI", "/");
-  assertExactPackageSpec(html, "Monica.Templates", expectedTemplatePackage, "Monica.Templates", "/");
-  for (const route of ["/docs/getting-started", "/zh-CN/docs/getting-started"]) {
+  for (const route of ["/", "/zh-CN"]) {
+    assertExactPackageSpec(pages[route], expectedSkillsCli.package, expectedSkillsCliPackage, "catalog-pinned skills CLI", route);
     assertExactPackageSpec(pages[route], "Monica.Templates", expectedTemplatePackage, "Monica.Templates", route);
+    if (!pages[route].includes(`/tree/${expectedRef}/skills/monica-guide`)) {
+      throw new Error(`The deployed homepage ${route} does not advertise ${expectedRef}.`);
+    }
   }
-
-  if (!html.includes(`/tree/${expectedRef}/skills/monica-guide`)) {
-    throw new Error(`The deployed homepage does not advertise ${expectedRef}.`);
-  }
+  assertExactPackageSpec(
+    pages["/docs/getting-started"],
+    "Monica.Templates",
+    expectedTemplatePackage,
+    "Monica.Templates",
+    "/docs/getting-started",
+  );
   const robotsGroups = parseRobotsGroups(robots);
   verifyContentSignals(robotsGroups);
   for (const crawler of ["gptbot", "claudebot", "chatgpt-user", "claude-user"]) {
@@ -140,7 +145,7 @@ export async function loadPublishedSkillsCli(expectedRef, options = {}) {
 function assertExactPackageSpec(content, packageName, expected, label, route) {
   const escapedPackageName = packageName.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
   const pattern = new RegExp(
-    `(?<![\\p{L}\\p{N}_.-])${escapedPackageName}@[^\\s<>"'&()\\[\\]{},;:]+`,
+    `(?<![\\p{L}\\p{N}_.-])${escapedPackageName}@[^\\s\\\\<>"'&()\\[\\]{},;:]+`,
     "gu",
   );
   const matches = [...content.matchAll(pattern)].map((match) => match[0]);
