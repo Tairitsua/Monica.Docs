@@ -44,7 +44,7 @@
   },
   "overrides": {
     "next": {
-      "postcss": "8.5.25",
+      "postcss": "8.5.26",
       "sharp": "0.35.3"
     }
   }
