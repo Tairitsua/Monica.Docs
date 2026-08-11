@@ -10,7 +10,7 @@ sidebar_position: 5
 
 ## 场景 2 — 共享一个诊断策略
 
-内部运维宿主可以让 Module System、Health Check 与 Seeder 页面复用同一个命名策略。仍需显式配置每个页面；启用一个页面不会隐式授权其他页面。
+内部运维宿主可以通过 `ModuleShellUIOption.OperationalPageAccess.AuthorizationPolicy` 配置一次策略。Module System、Health Check、Seeder 与受保护的 Provider Option 诊断都会继承它；只有某个页面需要不同策略时才配置 `AuthorizationPolicyOverride`。
 
 ## 场景 3 — 临时故障时保留证据
 
@@ -22,7 +22,8 @@ sidebar_position: 5
 
 ## Common mistakes
 
-- 未注册授权策略就把 Dashboard 暴露到非 Development 环境。
+- 在生产可达宿主上启用运维 Debug 模式，却仍假设认证会保护 Dashboard。
+- 只配置策略名，却没有注册并满足对应的 ASP.NET Core 策略。
 - 误以为 Dashboard 授权也会保护 `/health` 或 `/alive`。
 - 把页面当成持久事故历史。
 - 期待 UI 自动注册应用专用检查。

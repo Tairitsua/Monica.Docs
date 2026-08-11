@@ -10,7 +10,7 @@ Open `/health-checks`, inspect the readiness banner, then filter by the `ready` 
 
 ## Scenario 2 — Share one diagnostics policy
 
-An internal operations host can use the same named policy for Module System, Health Check, and Seeder pages. Configure each page explicitly; one page's enablement never authorizes another page implicitly.
+An internal operations host can configure one policy through `ModuleShellUIOption.OperationalPageAccess.AuthorizationPolicy`. Module System, Health Check, Seeder, and protected provider-option diagnostics inherit it. Configure `AuthorizationPolicyOverride` only when one page needs a different policy.
 
 ## Scenario 3 — Preserve evidence during a temporary outage
 
@@ -22,7 +22,8 @@ Use the anonymous probe endpoints for orchestrator decisions and export health s
 
 ## Common mistakes
 
-- Exposing the dashboard outside Development without a registered authorization policy.
+- Enabling operational Debug mode on a production-reachable host and assuming authentication still protects the dashboard.
+- Configuring a policy name without registering and satisfying the matching ASP.NET Core policy.
 - Assuming dashboard authorization also protects `/health` or `/alive`.
 - Treating the page as durable incident history.
 - Expecting the UI to register application-specific checks.

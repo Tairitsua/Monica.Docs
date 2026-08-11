@@ -16,7 +16,7 @@ The full-width page contains:
 
 The page polls once per second while the run is `Waiting`, `Running`, or `Aborting`, then stops in a terminal state. Manual refresh remains available. Concurrent refreshes join one request, stale snapshots remain visible after a failure, authorization is rechecked before every facade call, and page disposal cancels and drains owned work.
 
-The dashboard is available by default in Development. Outside Development it requires explicit enablement and a valid named authorization policy.
+The dashboard is available by default in Development. Outside Development it inherits `ModuleShellUIOption.OperationalPageAccess.AuthorizationPolicy`; `ModuleSeederUIOption.AuthorizationPolicyOverride` can replace that policy for this page. Global operational Debug mode bypasses both policies in every environment.
 
 ## Next steps
 

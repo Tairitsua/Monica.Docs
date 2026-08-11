@@ -27,6 +27,7 @@ sidebar_position: 5
 ## Common mistakes
 
 - 寻找重新运行按钮；页面刻意只读。
+- 在生产可达宿主上启用运维 Debug 模式，却仍假设页面策略覆盖会生效。
 - 把 `CompletedWithFailures` 当成固定就绪状态；Required 与 Optional 结果不同。
 - 出现刷新 Warning 后仍把旧快照当成当前状态。
 - 期待上一进程的尝试继续保留。

@@ -4,7 +4,7 @@ description: 组合模块诊断、当前宿主健康与 Seeder 运行证据，�
 sidebar_position: 2
 ---
 
-Monica 会把运维证据与展示层分开。Health Check 与 Seeder 运行时应在所有环境注册；交互页面优先面向 Development，并拥有独立授权边界。
+Monica 会把运维证据与展示层分开。Health Check 与 Seeder 运行时应在所有环境注册；交互页面优先面向 Development，共享一个 Shell 级授权边界，并允许页面单独覆盖。
 
 ## 组合运行时证据与页面
 
@@ -137,7 +137,7 @@ builder.AddMonica(monica =>
 
 ## 生产环境访问
 
-非 Development 环境中，每个页面默认关闭。应分别显式启用所需页面，并提供有效的命名宿主授权策略。可以共享一个策略，但启用状态仍按页面配置：
+非 Development 环境中，受保护运维功能只有在能够评估有效的命名宿主策略时才会放行，否则 Fail Closed。公共策略只需在 Shell 配置一次：
 
 ```csharp
 builder.Services.AddAuthorization(options =>
@@ -148,24 +148,29 @@ builder.Services.AddAuthorization(options =>
 
 builder.AddMonica(monica =>
 {
-    monica.AddModuleSystemUI(options =>
+    monica.AddUIShell(options =>
     {
-        options.EnableOutsideDevelopment = true;
-        options.AuthorizationPolicy = "SystemDiagnostics";
+        options.OperationalPageAccess.AuthorizationPolicy = "SystemDiagnostics";
     });
-    monica.AddHealthCheckUI(options =>
-    {
-        options.EnableOutsideDevelopment = true;
-        options.AuthorizationPolicy = "SystemDiagnostics";
-    });
-    monica.AddSeederUI(options =>
-    {
-        options.EnableOutsideDevelopment = true;
-        options.AuthorizationPolicy = "SystemDiagnostics";
-    });
+    monica.AddModuleSystemUI();
+    monica.AddHealthCheckUI();
+    monica.AddSeederUI();
 });
 ```
 
-每个页面都会在 Facade 边界前重新检查访问权限。策略缺失、无法解析或当前用户不满足时，导航入口会隐藏，也不会请求受保护诊断。仍应配合认证、HTTPS、网络隔离与最小权限授权；即使凭据类 Value 与 Stack Trace 不会暴露，拓扑、组件名、耗时和有界错误仍属于敏感运维信息。
+Module System、Health Check、Seeder 与受保护的 Provider Option 诊断都会继承 Shell 策略。只有某个页面需要不同策略时才在对应模块 Option 设置 `AuthorizationPolicyOverride`；空白覆盖仍继承全局值。
+
+对于明确隔离的诊断宿主，也可以让 Shell 绕过授权：
+
+```csharp
+monica.AddUIShell(options =>
+{
+    options.OperationalPageAccess.DebugMode = true;
+});
+```
+
+Debug 模式在所有环境都优先于全局策略和页面覆盖，并且 Monica 会记录启动 Warning。它与控制 Blazor、SignalR 详细错误的 `ModuleShellUIOption.EnableDebug` 相互独立。除非宿主已被刻意隔离且明确接受信息披露风险，否则不要在生产可达宿主上启用授权绕过。
+
+每个页面仍会在 Facade 边界前重新检查访问权限。Debug 模式关闭时，策略缺失、授权服务缺失、策略未注册、评估异常或当前用户未通过都会隐藏受保护导航，也不会请求诊断。仍应配合认证、HTTPS、网络隔离与最小权限授权；即使凭据类 Value 与 Stack Trace 不会暴露，拓扑、组件名、耗时和有界错误仍属于敏感运维信息。
 
 需要编程访问时，继续阅读[核心组合诊断](../modules/core-composition/index.md#不可变诊断-facade)、[Health Check 诊断](../modules/health-check/guide-and-providers.md#查询当前宿主)与 [Seeder 诊断](../modules/seeder/guide-and-providers.md#查询诊断)。

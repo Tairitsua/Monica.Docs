@@ -17,7 +17,7 @@ sidebar_position: 1
 
 ## 访问契约
 
-Dashboard 在 Development 中默认可用。非 Development 环境默认关闭，只有宿主显式启用并提供有效的命名授权策略后才可访问。策略缺失、未注册或未通过时，导航和 Facade 访问都会被阻止。
+Dashboard 在 Development 中默认可用。非 Development 环境会继承 `ModuleShellUIOption.OperationalPageAccess.AuthorizationPolicy`；`ModuleHealthCheckUIOption.AuthorizationPolicyOverride` 可以只为本页面替换该策略。有效策略缺失、未注册或未通过时，导航和 Facade 访问都会被阻止。全局运维 Debug 模式会在所有环境绕过二者。
 
 ## 接下来阅读
 

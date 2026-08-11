@@ -17,7 +17,7 @@ The page refreshes every ten seconds and supports manual refresh. Concurrent ref
 
 ## Access contract
 
-The dashboard is available by default in Development. Outside Development it remains disabled unless the host both enables it and supplies a valid named authorization policy. A missing, unregistered, or denied policy prevents navigation and facade access.
+The dashboard is available by default in Development. Outside Development it inherits `ModuleShellUIOption.OperationalPageAccess.AuthorizationPolicy`; `ModuleHealthCheckUIOption.AuthorizationPolicyOverride` can replace that policy for this page. A missing, unregistered, or denied effective policy prevents navigation and facade access. Global operational Debug mode bypasses both policies in every environment.
 
 ## Next steps
 

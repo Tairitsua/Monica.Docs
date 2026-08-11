@@ -4,7 +4,7 @@ description: Compose module diagnostics, current-host health, and Seeder run evi
 sidebar_position: 2
 ---
 
-Monica separates operational evidence from its presentation. Health Check and Seeder runtime registration belongs in every environment; the interactive pages are Development-first and have an independent authorization boundary.
+Monica separates operational evidence from its presentation. Health Check and Seeder runtime registration belongs in every environment; the interactive pages are Development-first and share one shell-level authorization boundary with optional page overrides.
 
 ## Compose runtime evidence and pages
 
@@ -137,7 +137,7 @@ Exports omit:
 
 ## Production access
 
-Outside Development, every page is disabled by default. Enable each required page explicitly and give it a valid named host authorization policy. One policy may be shared, but enablement remains per page:
+Outside Development, protected operational surfaces fail closed unless they can evaluate an effective named host authorization policy. Configure the common policy once on the shell:
 
 ```csharp
 builder.Services.AddAuthorization(options =>
@@ -148,24 +148,29 @@ builder.Services.AddAuthorization(options =>
 
 builder.AddMonica(monica =>
 {
-    monica.AddModuleSystemUI(options =>
+    monica.AddUIShell(options =>
     {
-        options.EnableOutsideDevelopment = true;
-        options.AuthorizationPolicy = "SystemDiagnostics";
+        options.OperationalPageAccess.AuthorizationPolicy = "SystemDiagnostics";
     });
-    monica.AddHealthCheckUI(options =>
-    {
-        options.EnableOutsideDevelopment = true;
-        options.AuthorizationPolicy = "SystemDiagnostics";
-    });
-    monica.AddSeederUI(options =>
-    {
-        options.EnableOutsideDevelopment = true;
-        options.AuthorizationPolicy = "SystemDiagnostics";
-    });
+    monica.AddModuleSystemUI();
+    monica.AddHealthCheckUI();
+    monica.AddSeederUI();
 });
 ```
 
-Every page rechecks access before its facade boundary. If the policy is missing, cannot be resolved, or the current user fails it, navigation is hidden and protected diagnostics are not requested. Keep authentication, HTTPS, network isolation, and least-privilege authorization in place; topology, component names, timing, and bounded errors remain operationally sensitive even when credential-like values and stack traces are withheld.
+Module System, Health Check, Seeder, and protected provider-option diagnostics inherit the shell policy. Set `AuthorizationPolicyOverride` on one page's module options only when it needs a different policy; blank overrides continue to inherit the global value.
+
+For an explicitly isolated diagnostic host, the shell can instead bypass authorization:
+
+```csharp
+monica.AddUIShell(options =>
+{
+    options.OperationalPageAccess.DebugMode = true;
+});
+```
+
+Debug mode wins over every global policy and page override in every environment, and Monica emits a startup warning. It is independent from `ModuleShellUIOption.EnableDebug`, which controls detailed Blazor and SignalR errors. Do not enable the authorization bypass on a production-reachable host unless the host is deliberately isolated and the disclosure risk is accepted.
+
+Every page still rechecks access before its facade boundary. When Debug mode is off, a missing policy, missing authorization service, unknown policy, exception, or denied user hides protected navigation and prevents the diagnostics request. Keep authentication, HTTPS, network isolation, and least-privilege authorization in place; topology, component names, timing, and bounded errors remain operationally sensitive even when credential-like values and stack traces are withheld.
 
 For programmatic access, continue with [Core composition diagnostics](../modules/core-composition/index.md#immutable-diagnostics-facade), [Health Check diagnostics](../modules/health-check/guide-and-providers.md#query-the-current-host), and [Seeder diagnostics](../modules/seeder/guide-and-providers.md#query-diagnostics).

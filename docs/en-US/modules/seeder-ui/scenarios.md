@@ -27,6 +27,7 @@ An `Aborting` or `Aborted` run is unhealthy regardless of the trigger's critical
 ## Common mistakes
 
 - Looking for a rerun button; the page is intentionally read-only.
+- Enabling operational Debug mode on a production-reachable host and assuming a page override still applies.
 - Treating `CompletedWithFailures` as one fixed readiness state; required and optional outcomes differ.
 - Assuming a stale snapshot is current after a refresh warning.
 - Expecting attempts from a previous process to remain available.

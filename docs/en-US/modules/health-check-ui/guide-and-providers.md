@@ -29,12 +29,11 @@ builder.Services.AddAuthorization(options =>
 builder.AddMonica(monica =>
 {
     monica.AddHealthCheck();
-    monica.AddUIShell();
-    monica.AddHealthCheckUI(options =>
+    monica.AddUIShell(options =>
     {
-        options.EnableOutsideDevelopment = true;
-        options.AuthorizationPolicy = "SystemDiagnostics";
+        options.OperationalPageAccess.AuthorizationPolicy = "SystemDiagnostics";
     });
+    monica.AddHealthCheckUI();
 });
 
 var app = builder.Build();
@@ -43,4 +42,15 @@ app.MapMonica();
 app.Run();
 ```
 
+The shell policy is inherited by Module System, Health Check, Seeder, and other diagnostics that adopt Monica's operational access contract. Override only this page when it needs a different policy:
+
+```csharp
+monica.AddHealthCheckUI(options =>
+{
+    options.AuthorizationPolicyOverride = "HealthDiagnostics";
+});
+```
+
 The policy protects the dashboard, not the platform probes. Keep authentication middleware, HTTPS, network isolation, and least-privilege policy requirements in place. Health descriptions and bounded error messages may still reveal internal component names even though credential-like data is redacted.
+
+For a deliberately isolated diagnostic host, `options.OperationalPageAccess.DebugMode = true` bypasses every inherited and page-specific policy in every environment. It is not the same as `ModuleShellUIOption.EnableDebug`, and Monica logs a startup warning when the authorization bypass is active.

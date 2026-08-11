@@ -16,7 +16,7 @@ sidebar_position: 1
 
 运行状态为 `Waiting`、`Running` 或 `Aborting` 时，页面每秒 Poll；到达终态后停止。仍可手动刷新。并发刷新会合并为一个请求，失败时旧快照继续显示，每次 Facade 调用前重新检查授权，页面释放时取消并等待自身工作结束。
 
-Dashboard 在 Development 中默认可用。非 Development 环境需要显式启用并提供有效的命名授权策略。
+Dashboard 在 Development 中默认可用。非 Development 环境会继承 `ModuleShellUIOption.OperationalPageAccess.AuthorizationPolicy`；`ModuleSeederUIOption.AuthorizationPolicyOverride` 可以只为本页面替换该策略。全局运维 Debug 模式会在所有环境绕过二者。
 
 ## 接下来阅读
 

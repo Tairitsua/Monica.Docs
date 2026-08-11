@@ -4,22 +4,24 @@ description: Configure dashboard exposure, polling, stale evidence, and current-
 sidebar_position: 3
 ---
 
-## Module options
+## Access options
 
-| Property | Default | Purpose |
-|---|---:|---|
-| `EnableOutsideDevelopment` | `false` | Allows the page to be considered outside Development. |
-| `AuthorizationPolicy` | `null` | Names the host policy evaluated for the current Blazor circuit outside Development. |
+| Property | Type | Default | Required | Purpose |
+|---|---|---:|---:|---|
+| `ModuleShellUIOption.OperationalPageAccess.AuthorizationPolicy` | `string?` | `null` | No | Sets the policy inherited by Monica operational pages outside Development. |
+| `ModuleShellUIOption.OperationalPageAccess.DebugMode` | `bool` | `false` | No | Bypasses operational-page authorization in every environment. |
+| `ModuleSeederUIOption.AuthorizationPolicyOverride` | `string?` | `null` | No | Replaces the global policy for `/seeders`; blank values inherit the global policy. |
 
-Setting `EnableOutsideDevelopment` without a non-empty policy name fails module validation in every environment. Outside Development, the named policy must also be registered and satisfied by the current user.
+Access uses this precedence: global Debug mode, Development access, the page override, and then the global policy. Outside Development, a missing effective policy, missing authorization service, unknown policy, exception, or denied user fails closed before the facade is invoked.
 
-| Environment | Enable flag | Valid policy | Result |
-|---|---:|---:|---|
-| Development | `false` (default) | Not required | Available. |
-| Development | `true` | Non-empty name required for validation | Available; policy enforcement begins outside Development. |
-| Non-Development | `false` | Any | Disabled. |
-| Non-Development | `true` | Missing or denied | Access denied; facade is not invoked. |
-| Non-Development | `true` | Registered and satisfied | Available. |
+| Environment | Debug mode | Effective policy | Result |
+|---|---:|---|---|
+| Development | `false` | Any | Available without policy evaluation. |
+| Any | `true` | Ignored | Available without policy evaluation. |
+| Non-Development | `false` | Missing, unknown, or denied | Access denied; facade is not invoked. |
+| Non-Development | `false` | Registered and satisfied | Available. |
+
+`OperationalPageAccess.DebugMode` is independent from `ModuleShellUIOption.EnableDebug`. The former bypasses authorization; the latter exposes detailed Blazor and SignalR errors. Keep both disabled on production-reachable hosts unless the host is intentionally isolated and the disclosure risk is accepted.
 
 ## Session behavior
 
