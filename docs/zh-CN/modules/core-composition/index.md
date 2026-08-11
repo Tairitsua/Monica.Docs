@@ -156,4 +156,4 @@ monica.AddModuleSystem(options =>
 
 Tag 只使用 Result、Callback Kind、Phase 与 Measurement Kind 等稳定低基数值。回调耗时与启动工作的执行/排队耗时保持独立。
 
-继续阅读[主机绑定的模块组合](../../concepts/module-pattern.md)了解模块编写与生命周期约束，或阅读[模块诊断工作台](../../scenarios/diagnostics-and-ops.md)了解交互界面与访问边界。
+继续阅读[主机绑定的模块组合](../../concepts/module-pattern.md)了解模块编写与生命周期约束，或阅读[诊断与运维页面](../../scenarios/diagnostics-and-ops.md)了解交互界面与访问边界。

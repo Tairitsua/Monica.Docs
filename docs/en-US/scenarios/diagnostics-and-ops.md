@@ -1,12 +1,12 @@
 ---
-title: Module diagnostics workbench
-description: Inspect startup causality, module topology, type discovery, and bounded option diagnostics safely.
+title: Diagnostics and operations surfaces
+description: Compose module diagnostics, current-host health, and Seeder run evidence with explicit access boundaries.
 sidebar_position: 2
 ---
 
-`Monica.UI` includes a read-only module diagnostics workbench at `/module-system-dashboard`. It is an observability surface for the immutable diagnostics snapshot; it does not enable, disable, or reconfigure modules at runtime.
+Monica separates operational evidence from its presentation. Health Check and Seeder runtime registration belongs in every environment; the interactive pages are Development-first and have an independent authorization boundary.
 
-## Register the workbench
+## Compose runtime evidence and pages
 
 ```csharp
 using Monica.Core.Modularity.Extensions;
@@ -16,8 +16,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddMonica(monica =>
 {
+    // Runtime contracts: keep these outside Development/Aspire-only conditions.
+    monica.AddHealthCheck();
+    monica.AddSeeder();
+
+    // Presentation contracts: expose only where operators should have access.
     monica.AddUIShell();
     monica.AddModuleSystemUI();
+    monica.AddHealthCheckUI();
+    monica.AddSeederUI();
 });
 
 var app = builder.Build();
@@ -26,7 +33,33 @@ app.MapMonica();
 app.Run();
 ```
 
-`AddModuleSystemUI()` requires the Core diagnostics module, localization, and the shared UI shell through the module graph. In Development, the workbench is available automatically.
+The three pages are read-only and available automatically in Development:
+
+| Surface | Route | Evidence | Refresh behavior |
+|---|---|---|---|
+| Module System | `/module-system-dashboard` | Immutable composition, topology, discovery, timing, and bounded options. | Every second while composition is live, then stops. |
+| Health Check | `/health-checks` | Newly executed, sanitized health snapshot for the current host. | Every ten seconds plus manual refresh. |
+| Seeder | `/seeders` | Current process's one-run graph, policy, timing, attempts, and failures. | Every second while waiting, running, or aborting, then stops. |
+
+The platform probes `/health` and `/alive` are separate anonymous runtime endpoints. Disabling or protecting the Health Check page does not remove or secure those probes.
+
+## Health Check operations
+
+`AddHealthCheck()` maps readiness and liveness in every web environment. Register application checks with `AddMonicaReadinessCheck<T>()` or `AddMonicaLivenessCheck<T>()`; do not make production readiness depend on a Development-only `AddServiceDefaults()` call. The dashboard shows readiness, aggregate counts, search, status/tag filters, durations, bounded data, and bounded errors. It represents only the host serving the current Blazor circuit and creates no durable history.
+
+See [Health Check](../modules/health-check/index.md) for probe semantics and [Health Check UI](../modules/health-check-ui/index.md) for dashboard behavior.
+
+## Seeder operations
+
+`AddSeeder()` discovers and validates the graph, starts it after `ApplicationStarted`, and contributes `monica.seeder` to readiness. Independent nodes are concurrent by default. `ContinueAndRecord` blocks only the failed dependency chain and preserves independent work; `FailFast` activates after retries are exhausted, cancels and drains the run, leaves the host alive, and keeps readiness unhealthy.
+
+The dashboard shows effective module configuration, run progress, policy origins, dependencies, attempt history, and bounded failure evidence. It is intentionally read-only and current-process only.
+
+See [Seeder](../modules/seeder/index.md) for scheduling policy and [Seeder UI](../modules/seeder-ui/index.md) for the page contract.
+
+## Module System workbench
+
+`AddModuleSystemUI()` requires Core diagnostics, localization, and the shared UI shell through the module graph. It observes the immutable diagnostics snapshot and cannot enable, disable, or reconfigure modules at runtime.
 
 ## Sections
 
@@ -104,12 +137,12 @@ Exports omit:
 
 ## Production access
 
-Outside Development, the secure default is disabled. Enablement requires both an explicit flag and a non-empty host authorization policy:
+Outside Development, every page is disabled by default. Enable each required page explicitly and give it a valid named host authorization policy. One policy may be shared, but enablement remains per page:
 
 ```csharp
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("ModuleDiagnostics", policy =>
+    options.AddPolicy("SystemDiagnostics", policy =>
         policy.RequireRole("Operations"));
 });
 
@@ -118,11 +151,21 @@ builder.AddMonica(monica =>
     monica.AddModuleSystemUI(options =>
     {
         options.EnableOutsideDevelopment = true;
-        options.AuthorizationPolicy = "ModuleDiagnostics";
+        options.AuthorizationPolicy = "SystemDiagnostics";
+    });
+    monica.AddHealthCheckUI(options =>
+    {
+        options.EnableOutsideDevelopment = true;
+        options.AuthorizationPolicy = "SystemDiagnostics";
+    });
+    monica.AddSeederUI(options =>
+    {
+        options.EnableOutsideDevelopment = true;
+        options.AuthorizationPolicy = "SystemDiagnostics";
     });
 });
 ```
 
-If the policy is missing, cannot be resolved, or the current user fails it, the navigation entry is hidden and the diagnostics facade is not invoked by the page. Keep authentication, HTTPS, network isolation, and least-privilege authorization in place; the workbench can reveal internal topology and operational timing even when sensitive option values remain redacted.
+Every page rechecks access before its facade boundary. If the policy is missing, cannot be resolved, or the current user fails it, navigation is hidden and protected diagnostics are not requested. Keep authentication, HTTPS, network isolation, and least-privilege authorization in place; topology, component names, timing, and bounded errors remain operationally sensitive even when credential-like values and stack traces are withheld.
 
-For programmatic access and metrics, continue with [Core composition diagnostics](../modules/core-composition/index.md#immutable-diagnostics-facade).
+For programmatic access, continue with [Core composition diagnostics](../modules/core-composition/index.md#immutable-diagnostics-facade), [Health Check diagnostics](../modules/health-check/guide-and-providers.md#query-the-current-host), and [Seeder diagnostics](../modules/seeder/guide-and-providers.md#query-diagnostics).

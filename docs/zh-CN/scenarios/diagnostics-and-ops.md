@@ -1,12 +1,12 @@
 ---
-title: 模块诊断工作台
-description: 安全查看启动因果、模块拓扑、类型发现与有界 Option 诊断。
+title: 诊断与运维页面
+description: 组合模块诊断、当前宿主健康与 Seeder 运行证据，并明确访问边界。
 sidebar_position: 2
 ---
 
-`Monica.UI` 在 `/module-system-dashboard` 提供只读模块诊断工作台。它只消费不可变诊断快照，不会在运行时启用、禁用或重新配置模块。
+Monica 会把运维证据与展示层分开。Health Check 与 Seeder 运行时应在所有环境注册；交互页面优先面向 Development，并拥有独立授权边界。
 
-## 注册工作台
+## 组合运行时证据与页面
 
 ```csharp
 using Monica.Core.Modularity.Extensions;
@@ -16,8 +16,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddMonica(monica =>
 {
+    // 运行时契约：不要放入仅 Development/Aspire 执行的条件中。
+    monica.AddHealthCheck();
+    monica.AddSeeder();
+
+    // 展示契约：只在运维人员应访问的宿主中暴露。
     monica.AddUIShell();
     monica.AddModuleSystemUI();
+    monica.AddHealthCheckUI();
+    monica.AddSeederUI();
 });
 
 var app = builder.Build();
@@ -26,7 +33,33 @@ app.MapMonica();
 app.Run();
 ```
 
-`AddModuleSystemUI()` 会通过模块图硬依赖 Core 诊断模块、本地化模块与共享 UI Shell。在 Development 环境中，工作台自动可用。
+三个页面都只读，并且在 Development 中默认可用：
+
+| 页面 | Route | 证据 | 刷新行为 |
+|---|---|---|---|
+| Module System | `/module-system-dashboard` | 不可变组合、拓扑、发现、耗时与有界 Option。 | 组合进行中每秒刷新，完成后停止。 |
+| Health Check | `/health-checks` | 当前宿主新执行的脱敏健康快照。 | 每 10 秒刷新，并支持手动刷新。 |
+| Seeder | `/seeders` | 当前进程的一次性依赖图、策略、耗时、尝试与失败。 | Waiting、Running 或 Aborting 时每秒刷新，之后停止。 |
+
+平台探针 `/health` 与 `/alive` 是独立的匿名运行时端点。关闭或保护 Health Check 页面不会移除或保护这些探针。
+
+## Health Check 运维
+
+`AddHealthCheck()` 会在所有 Web 环境映射就绪与存活端点。应用检查应通过 `AddMonicaReadinessCheck<T>()` 或 `AddMonicaLivenessCheck<T>()` 注册；不要让生产就绪依赖仅 Development 调用的 `AddServiceDefaults()`。Dashboard 展示就绪、聚合计数、搜索、状态/标签筛选、耗时、有界 Data 与有界错误。它只表示承载当前 Blazor Circuit 的宿主，不会创建持久历史。
+
+探针语义见 [Health Check](../modules/health-check/index.md)，页面行为见 [Health Check UI](../modules/health-check-ui/index.md)。
+
+## Seeder 运维
+
+`AddSeeder()` 会发现并校验依赖图，在 `ApplicationStarted` 后启动，并把 `monica.seeder` 加入就绪检查。独立节点默认并发。`ContinueAndRecord` 只阻塞失败依赖链并保留独立工作；`FailFast` 在 Retry 用尽后激活，取消并等待本轮运行，让宿主继续存活但就绪状态保持 Unhealthy。
+
+Dashboard 展示有效模块配置、运行进度、策略来源、依赖、尝试历史和有界失败证据。页面刻意只读，数据也只属于当前进程。
+
+调度策略见 [Seeder](../modules/seeder/index.md)，页面契约见 [Seeder UI](../modules/seeder-ui/index.md)。
+
+## Module System 工作台
+
+`AddModuleSystemUI()` 会通过模块图依赖 Core 诊断、Localization 与共享 UI Shell。它观察不可变诊断快照，不能在运行时启用、禁用或重新配置模块。
 
 ## 五个分区
 
@@ -104,12 +137,12 @@ builder.AddMonica(monica =>
 
 ## 生产环境访问
 
-非 Development 环境默认关闭。必须同时显式启用并提供非空的宿主授权策略：
+非 Development 环境中，每个页面默认关闭。应分别显式启用所需页面，并提供有效的命名宿主授权策略。可以共享一个策略，但启用状态仍按页面配置：
 
 ```csharp
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("ModuleDiagnostics", policy =>
+    options.AddPolicy("SystemDiagnostics", policy =>
         policy.RequireRole("Operations"));
 });
 
@@ -118,11 +151,21 @@ builder.AddMonica(monica =>
     monica.AddModuleSystemUI(options =>
     {
         options.EnableOutsideDevelopment = true;
-        options.AuthorizationPolicy = "ModuleDiagnostics";
+        options.AuthorizationPolicy = "SystemDiagnostics";
+    });
+    monica.AddHealthCheckUI(options =>
+    {
+        options.EnableOutsideDevelopment = true;
+        options.AuthorizationPolicy = "SystemDiagnostics";
+    });
+    monica.AddSeederUI(options =>
+    {
+        options.EnableOutsideDevelopment = true;
+        options.AuthorizationPolicy = "SystemDiagnostics";
     });
 });
 ```
 
-策略缺失、无法解析或当前用户不满足策略时，导航入口会隐藏，页面也不会调用诊断 Facade。仍应配合认证、HTTPS、网络隔离与最小权限授权；即使敏感 Option 保持脱敏，工作台仍会披露内部拓扑与运行耗时。
+每个页面都会在 Facade 边界前重新检查访问权限。策略缺失、无法解析或当前用户不满足时，导航入口会隐藏，也不会请求受保护诊断。仍应配合认证、HTTPS、网络隔离与最小权限授权；即使凭据类 Value 与 Stack Trace 不会暴露，拓扑、组件名、耗时和有界错误仍属于敏感运维信息。
 
-需要编程访问与指标时，继续阅读[核心组合诊断](../modules/core-composition/index.md#不可变诊断-facade)。
+需要编程访问时，继续阅读[核心组合诊断](../modules/core-composition/index.md#不可变诊断-facade)、[Health Check 诊断](../modules/health-check/guide-and-providers.md#查询当前宿主)与 [Seeder 诊断](../modules/seeder/guide-and-providers.md#查询诊断)。

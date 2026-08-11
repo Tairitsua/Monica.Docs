@@ -31,10 +31,14 @@ Independent packages may bundle several coherent modules in one NuGet package. E
 |---|---|---|
 | Metrics and exporters | [OpenTelemetry](./open-telemetry/index.md) | `Monica.OpenTelemetry` |
 | Host-local structured logging | [Logging](./logging/index.md) | `Monica.Logging` |
+| Liveness, readiness, and sanitized host diagnostics | [Health Check](./health-check/index.md) | `Monica.HealthCheck` |
+| Health operations dashboard | [Health Check UI](./health-check-ui/index.md) | `Monica.HealthCheck.UI` |
+| Dependency-aware startup data initialization | [Seeder](./seeder/index.md) | `Monica.Framework` |
+| Seeder run operations dashboard | [Seeder UI](./seeder-ui/index.md) | `Monica.Framework.UI` |
 | In-memory and distributed state contracts | [StateStore](./state-store/index.md) | `Monica.StateStore` |
 | Markdown catalogs and search | [Markdown](./markdown/index.md) | `Monica.Markdown` |
 | Blazor operational shell | [UI](./ui/index.md) | `Monica.UI` |
-| Module graph and startup diagnostics workbench | [Module diagnostics workbench](../scenarios/diagnostics-and-ops.md) | `Monica.UI` |
+| Module graph, health, and startup operations | [Diagnostics and operations surfaces](../scenarios/diagnostics-and-ops.md) | Multiple Stable packages |
 | Execution-plan catalog page | [Execution Pipeline](./execution-pipeline/index.md) | `Monica.Framework.UI` |
 | Instance registration and leader election | [Service Discovery](./service-discovery/index.md) | `Monica.ServiceDiscovery` |
 | Authentication and permission bits | [Authority](./authority/index.md) | `Monica.Authority` |

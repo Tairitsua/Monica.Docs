@@ -8,7 +8,7 @@ sidebar_position: 1
 
 | 层级 | 承诺 | 代表能力 |
 |---|---|---|
-| **Stable** | Monica 1.0 受支持的应用路径 | Core、ProjectUnits、WebApi、Configuration、Repository、JobScheduler、OpenTelemetry、Testing、UI |
+| **Stable** | Monica 1.0 受支持的应用路径 | Core、ProjectUnits、WebApi、Configuration、Repository、Health Check、Seeder、JobScheduler、OpenTelemetry、Testing、UI |
 | **Integrations** | 围绕外部 Provider 边界的版本化适配器 | EF Core、Kafka、Redis/StackExchange、Dapr、SignalR |
 | **Labs** | 在晋级前保持快速演进的能力 | AI/RAG/MCP、DataChannel、DevOps 与 Profiling、Office、Experimental |
 

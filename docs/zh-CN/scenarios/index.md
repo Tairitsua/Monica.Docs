@@ -10,4 +10,4 @@ sidebar_position: 4
 
 - [构建最小 Monica API 主机](./minimal-api-host.md)
 - [请求拥有的 RPC 客户端与 Local RPC](./request-owned-rpc.md)
-- [组合调试与管理能力](./diagnostics-and-ops.md)
+- [诊断与运维页面](./diagnostics-and-ops.md) — 查看启动因果、当前宿主健康、Seeder 进度与安全运维证据。

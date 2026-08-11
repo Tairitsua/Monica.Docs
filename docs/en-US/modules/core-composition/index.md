@@ -156,4 +156,4 @@ Subscribe to meter `Monica.Core.Modularity`. Terminal durations are histograms; 
 
 Tags use stable low-cardinality values such as result, callback kind, phase, and measurement kind. Callback duration and startup-work execution/queue duration remain distinct.
 
-Continue with [Host-bound module composition](../../concepts/host-bound-composition.md) for module authoring and lifecycle constraints, or [Module diagnostics workbench](../../scenarios/diagnostics-and-ops.md) for the interactive UI and access boundary.
+Continue with [Host-bound module composition](../../concepts/host-bound-composition.md) for module authoring and lifecycle constraints, or [diagnostics and operations surfaces](../../scenarios/diagnostics-and-ops.md) for the interactive UI and access boundaries.

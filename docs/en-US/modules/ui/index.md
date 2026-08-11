@@ -57,10 +57,21 @@ monica.AddModuleSystemUI(options =>
 });
 ```
 
-The host must register that policy through ASP.NET Core authorization. A missing policy or unauthorized user cannot invoke the page's diagnostics facade and does not see its navigation item. See [Module diagnostics workbench](../../scenarios/diagnostics-and-ops.md) for safe option disclosure, sensitive debug mode, assembly analysis, and baseline comparison.
+The host must register that policy through ASP.NET Core authorization. A missing policy or unauthorized user cannot invoke the page's diagnostics facade and does not see its navigation item. See [Diagnostics and operations surfaces](../../scenarios/diagnostics-and-ops.md) for safe option disclosure, sensitive debug mode, assembly analysis, and baseline comparison.
+
+## Health and Seeder operations pages
+
+The shared shell also hosts independently packaged, read-only operational pages:
+
+| Page | Route | Package | Data lifetime |
+|---|---|---|---|
+| [Health Check UI](../health-check-ui/index.md) | `/health-checks` | `Monica.HealthCheck.UI` | Newly executed, sanitized snapshot for the current host. |
+| [Seeder UI](../seeder-ui/index.md) | `/seeders` | `Monica.Framework.UI` | The current process's one-run Seeder diagnostics. |
+
+Both pages are Development-first and require explicit enablement plus a valid named authorization policy outside Development. Their runtime modules remain independent: register Health Check probes and Seeder readiness in every environment even when the pages are disabled. See [Diagnostics and operations surfaces](../../scenarios/diagnostics-and-ops.md) for a unified composition.
 
 Navigation is composed incrementally by installed modules during startup. Every localized page declares its owning resource through `RegisterLocalizedPage<TPage, TResource>()`; the shell owns only a small shared category taxonomy such as Monitor or Configuration. Independent packages register their own stable category ID and localized label with `RegisterLocalizedCategory<TResource>()`. The registry groups by ID, orders categories numerically, and freezes before routing, so changing culture cannot split, merge, or reorder category identity.
 
 `EnableDebug` follows the build configuration: enabled in DEBUG builds and disabled otherwise. Keep detailed Blazor and SignalR errors disabled in production because they can expose implementation details.
 
-Operational UI packages—such as `Monica.Configuration.UI`, `Monica.Repository.UI`, `Monica.JobScheduler.UI`, and `Monica.OpenTelemetry.UI`—are separate Stable packages. Add only the pages an operator should see, and protect the shell with the host's authentication and network policy.
+Operational UI packages—such as `Monica.HealthCheck.UI`, `Monica.Framework.UI`, `Monica.Configuration.UI`, `Monica.Repository.UI`, `Monica.JobScheduler.UI`, and `Monica.OpenTelemetry.UI`—are separate Stable packages. Add only the pages an operator should see, and protect the shell with the host's authentication and network policy.

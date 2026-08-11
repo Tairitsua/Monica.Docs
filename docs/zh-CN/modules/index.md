@@ -26,6 +26,8 @@ sidebar_position: 3
 | [Execution Pipeline](./execution-pipeline/index.md) | Stable | `Monica.Core` | `monica.AddExecutionPipeline()` | `monica.AddExecutionPipelineUI()`（`Monica.Framework.UI`） |
 | [Execution Timing](./execution-timing/index.md) | Labs | `Monica.Profiling` | `monica.AddExecutionTiming()` | `monica.AddExecutionTimingUI()` |
 | [Hosted Service](./hosted-service/index.md) | Stable | `Monica.Core` | `monica.AddHostedService()` | 无 |
+| [Health Check](./health-check/index.md) | Stable | `Monica.HealthCheck` | `monica.AddHealthCheck()` | `monica.AddHealthCheckUI()` |
+| [Health Check UI](./health-check-ui/index.md) | Stable | `Monica.HealthCheck.UI` | `monica.AddHealthCheckUI()` | 无 |
 | [JobScheduler](./job-scheduler/index.md) | Stable | `Monica.JobScheduler` | `monica.AddJobScheduler()` | `monica.AddJobSchedulerUI()` |
 | [Logging](./logging/index.md) | Stable | `Monica.Logging` | `monica.AddLogging()` | `monica.AddLoggingUI()` |
 | [KnowledgeBase](./knowledge-base/index.md) | Labs | `Monica.AI` | `monica.AddKnowledgeBase()` | `monica.AddKnowledgeBaseUI()` |
@@ -35,6 +37,8 @@ sidebar_position: 3
 | [RAG](./rag/index.md) | Labs | `Monica.AI` | `monica.AddRAG()` | `monica.AddRAGUI()` |
 | [RAG UI](./rag-ui/index.md) | Labs | `Monica.AI.UI` | `monica.AddRAGUI()` | 无 |
 | [Repository](./repository/index.md) | Stable | `Monica.Repository` | `monica.AddRepository()` | 无 |
+| [Seeder](./seeder/index.md) | Stable | `Monica.Framework` | `monica.AddSeeder()` | `monica.AddSeederUI()` |
+| [Seeder UI](./seeder-ui/index.md) | Stable | `Monica.Framework.UI` | `monica.AddSeederUI()` | 无 |
 | [SignalR](./signalr/index.md) | Integrations | `Monica.SignalR` | `monica.AddSignalR()` | `monica.AddSignalRUI()` |
 | [UnitOfWork](./unit-of-work/index.md) | Stable | `Monica.Repository` | `monica.AddUnitOfWork()` | 无 |
 | [UI 与模块诊断工作台](./ui/index.md) | Stable | `Monica.UI` | `monica.AddUIShell()` / `monica.AddModuleSystemUI()` | 无 |
