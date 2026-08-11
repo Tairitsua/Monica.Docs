@@ -7,44 +7,44 @@ const catalog = JSON.parse(
 ) as { distribution: { skillsCli: { package: string; version: string } } };
 const cliReference = `${catalog.distribution.skillsCli.package}@${catalog.distribution.skillsCli.version} add`;
 
-test("guides Codex and Claude Code users by goal without exposing the full prompt first", async ({ page }) => {
+test("installs one universal Guide before asking for a repository or profile", async ({ page }) => {
   await page.goto("/");
 
   const agentMode = page.getByRole("tab", { name: "Agent setup" });
   await expect(agentMode).toHaveAttribute("aria-selected", "true");
   await expect(page.getByText("Before you start", { exact: true })).toBeVisible();
   await expect(page.getByText("Paste the copied instruction into agent chat—not into a terminal.")).toBeVisible();
-  await expect(page.getByRole("tab", { name: "Codex" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByText("You do not need a repository yet.", { exact: false })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Copy Monica Guide instruction" })).toHaveCount(1);
+  await expect(page.locator(".starter-next-steps")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Copy request" })).toHaveCount(0);
+  await expect(page.getByRole("tab", { name: "Codex" })).toHaveCount(0);
+  await expect(page.getByRole("tab", { name: "Claude Code" })).toHaveCount(0);
+  await expect(page.getByRole("radio")).toHaveCount(0);
+  await expect(page.getByLabel("Release-verified hosts").getByRole("listitem")).toHaveText([
+    "Codex",
+    "Claude Code",
+  ]);
+  await expect(page.getByText("Bind Monica and Monica.Docs source globally, separately or together")).toBeVisible();
 
-  const applicationGoal = page.getByRole("radio", { name: /A Monica application/u });
-  await expect(applicationGoal).toBeChecked();
-  await expect(page.getByRole("button", { name: "Copy application setup instruction" })).toBeVisible();
-  const fullPrompt = page.locator("details.full-prompt-details").filter({ hasText: "View the full instruction" }).first();
+  const fullPrompt = page.locator("details.full-prompt-details");
   await expect(fullPrompt).not.toHaveAttribute("open", "");
   await fullPrompt.getByText("View the full instruction", { exact: true }).click();
-  await expect(fullPrompt).toContainText(cliReference);
-  await expect(fullPrompt).toContainText("--profile application");
-  await expect(fullPrompt).toContainText("--release-tag");
-  await expect(fullPrompt).toContainText("releaseCatalogDigest");
+  await expect(fullPrompt).toContainText("https://github.com/Tairitsua/Monica/tree/");
+  await expect(fullPrompt).toContainText("skills/monica-guide");
+  await expect(fullPrompt).not.toContainText("--profile");
+  await expect(fullPrompt).not.toContainText("--agent");
+  await expect(fullPrompt).not.toContainText("releaseCatalogDigest");
   await expect(fullPrompt).not.toContainText("--apply");
 
-  await page.getByRole("radio", { name: /A Monica extension/u }).check();
-  await expect(page.getByRole("button", { name: "Copy extension setup instruction" })).toBeVisible();
-  await expect(fullPrompt).toContainText("--profile extension-author");
-  await expect(page.getByRole("tabpanel", { name: "Codex" }).getByText("Exact read-only Monica source is required")).toBeVisible();
-
-  await page.getByRole("tab", { name: "Claude Code" }).click();
-  const claudePanel = page.getByRole("tabpanel", { name: "Claude Code" });
-  await expect(claudePanel).toContainText("Claude Code");
-  const claudePrompt = claudePanel.locator("details.full-prompt-details");
-  await claudePrompt.getByText("View the full instruction", { exact: true }).click();
-  await expect(claudePrompt).toContainText("--agent claude-code");
-
-  const fallback = claudePanel.locator("details.generic-fallback");
+  const fallback = page.locator("details.generic-fallback");
   await expect(fallback).not.toHaveAttribute("open", "");
-  await fallback.getByText("Generic npx skills fallback", { exact: true }).click();
-  await expect(fallback).toContainText("--agent codex --agent claude-code");
-  await expect(fallback).toContainText("--profile extension-author");
+  await fallback.getByText("Interactive npx skills fallback", { exact: true }).click();
+  await expect(fallback).toContainText(cliReference);
+  await expect(fallback).toContainText("-g -s monica-guide");
+  await expect(fallback).toContainText("ls -g --json");
+  await expect(fallback).not.toContainText("-a codex");
+  await expect(fallback).not.toContainText("-a claude-code");
 });
 
 test("keeps Manual .NET as a complete first-class path", async ({ page }) => {
@@ -70,17 +70,14 @@ test("supports keyboard tab navigation and successful clipboard feedback", async
   await page.getByRole("tab", { name: "Manual .NET" }).press("Home");
   await expect(agentMode).toBeFocused();
 
-  const codex = page.getByRole("tab", { name: "Codex" });
-  await codex.focus();
-  await codex.press("End");
-  await expect(page.getByRole("tab", { name: "Claude Code" })).toBeFocused();
-
-  await page.getByRole("tab", { name: "Codex" }).click();
-  await page.getByRole("button", { name: "Copy application setup instruction" }).click();
+  await page.getByRole("button", { name: "Copy Monica Guide instruction" }).click();
   await expect(page.getByRole("status")).toHaveText("Copied to clipboard");
   const clipboard = await page.evaluate(() => navigator.clipboard.readText());
   expect(clipboard).toContain("monica-guide");
-  expect(clipboard).toContain("--profile application");
+  expect(clipboard).toContain("https://github.com/Tairitsua/Monica/tree/");
+  expect(clipboard).not.toContain("--profile");
+  expect(clipboard).not.toContain("--agent");
+  expect(clipboard).not.toMatch(/\binit\s/u);
   expect(clipboard).not.toContain("{{MONICA_IMMUTABLE_REF}}");
   expect(clipboard).not.toContain("{{MONICA_CATALOG_DIGEST}}");
 });
@@ -94,12 +91,13 @@ test("makes clipboard failure recoverable without losing the instruction", async
   });
   await page.goto("/");
 
-  await page.getByRole("button", { name: "Copy application setup instruction" }).click();
+  await page.getByRole("button", { name: "Copy Monica Guide instruction" }).click();
   const alert = page.locator(".copy-fallback");
   await expect(alert).toContainText("Clipboard access failed");
   const fallback = alert.getByRole("textbox", { name: "Select and copy this instruction manually" });
   await expect(fallback).toBeFocused();
-  await expect(fallback).toHaveValue(/--profile application/u);
+  await expect(fallback).toHaveValue(/skills\/monica-guide/u);
+  await expect(fallback).not.toHaveValue(/--profile/u);
   const selection = await fallback.evaluate((element) => {
     const textarea = element as HTMLTextAreaElement;
     return [textarea.selectionStart, textarea.selectionEnd, textarea.value.length];
@@ -110,16 +108,19 @@ test("makes clipboard failure recoverable without losing the instruction", async
 test("keeps bilingual Guide onboarding and fallback documentation aligned", async ({ page }) => {
   await page.goto("/docs/getting-started/agent-setup");
   await expect(page.getByRole("heading", { name: "Agent setup", level: 1 })).toHaveCount(1);
+  await expect(page.getByRole("heading", { name: "Install before choosing a repository", level: 2 })).toBeVisible();
+  await expect(page.getByText("Monica and Monica.Docs bindings live in global user state", { exact: false })).toBeVisible();
 
   await page.goto("/zh-CN");
   await expect(page.getByRole("tab", { name: "Agent 设置" })).toHaveAttribute("aria-selected", "true");
-  await expect(page.getByRole("radio", { name: /Monica 应用/u })).toBeChecked();
-  await page.getByRole("radio", { name: /Monica 扩展/u }).check();
-  await expect(page.getByRole("button", { name: "复制扩展设置指令" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "复制 Monica Guide 指令" })).toBeVisible();
+  await expect(page.getByRole("radio")).toHaveCount(0);
+  await expect(page.getByText("全局绑定 Monica 与 Monica.Docs 源码，可单独或同时绑定")).toBeVisible();
   await expect(page.getByRole("link", { name: "打开完整快速开始" })).toHaveAttribute("href", "/zh-CN/docs/getting-started/agent-setup");
 
   await page.goto("/zh-CN/docs/getting-started/agent-setup");
   await expect(page.getByRole("heading", { name: "Agent 设置", level: 1 })).toHaveCount(1);
+  await expect(page.getByRole("heading", { name: "选定仓库之前就可以安装", level: 2 })).toBeVisible();
 });
 
 test("uses six primary sections and remains contained with reduced motion", async ({ page }) => {

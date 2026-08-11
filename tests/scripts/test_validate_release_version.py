@@ -382,26 +382,22 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
         cli_package = "skills"
         cli_version = "9.8.7"
         reference = f"npx --yes {cli_package}@{cli_version}"
-        prompts = {
-            host: {
-                "goals": {
-                    goal: {
-                        "prompt": (
-                            f"{reference} add https://example/"
-                            "{{MONICA_IMMUTABLE_REF}}; verify "
-                            "{{MONICA_CATALOG_DIGEST}}; init --release-tag "
-                            f"{{{{MONICA_IMMUTABLE_REF}}}} --profile "
-                            f"{VALIDATOR.PROMPT_PROFILES[goal]} --json "
-                            f"{' '.join(VALIDATOR.PROMPT_AGENT_FLAGS[host])}"
-                        )
-                    }
-                    for goal in VALIDATOR.PROMPT_GOALS
-                }
-            }
-            for host in VALIDATOR.PROMPT_HOSTS
-        }
         immutable_skill_url_template = (
             "https://github.com/Tairitsua/Monica/tree/{tag}/skills/{skill}"
+        )
+        immutable_skill_url = (
+            "https://github.com/Tairitsua/Monica/tree/"
+            "{{MONICA_IMMUTABLE_REF}}/skills/monica-guide"
+        )
+        prompt = (
+            "Install only monica-guide globally from the immutable Agent Skill at "
+            f"{immutable_skill_url}. This changes user-level Agent Skills. Verify "
+            "that this host actually discovers monica-guide, and restart it only if "
+            "discovery fails. Invoke $monica-guide to explain the Monica toolbox, "
+            "current global status, and source bindings, then ask what I want to do. "
+            "Do not initialize a repository, choose a profile, install downstream "
+            "skills, change source bindings or files, or mutate remote state before "
+            "I choose an intent and approve the preview."
         )
         catalog_path = Path(self.temporary_directory.name) / "catalog.json"
         prompt_path = Path(self.temporary_directory.name) / "prompts.json"
@@ -424,7 +420,7 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
         prompt_path.write_text(
             json.dumps(
                 {
-                    "schemaVersion": 2,
+                    "schemaVersion": 3,
                     "repository": "Tairitsua/Monica",
                     "skill": "monica-guide",
                     "immutableRef": "{{MONICA_IMMUTABLE_REF}}",
@@ -433,18 +429,16 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
                         "skillsCli": {"package": cli_package, "version": cli_version},
                         "immutableSkillUrlTemplate": immutable_skill_url_template,
                     },
-                    "hosts": {
-                        host: {
-                            "agentTargets": VALIDATOR.PROMPT_AGENT_TARGETS[host]
-                        }
-                        for host in VALIDATOR.PROMPT_HOSTS
-                    },
-                    "goals": {
-                        goal: {"profile": VALIDATOR.PROMPT_PROFILES[goal]}
-                        for goal in VALIDATOR.PROMPT_GOALS
+                    "verifiedAgentTargets": VALIDATOR.VERIFIED_AGENT_TARGETS,
+                    "fallback": {
+                        "installCommand": (
+                            f"{reference} add {immutable_skill_url} "
+                            "-g -s monica-guide"
+                        ),
+                        "verifyCommand": f"{reference} ls -g --json",
                     },
                     "locales": {
-                        locale: {"hosts": prompts}
+                        locale: {"prompt": prompt}
                         for locale in VALIDATOR.PROMPT_LOCALES
                     },
                 }

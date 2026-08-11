@@ -6,6 +6,8 @@ sidebar_position: 1
 
 这一组页面带你完成一个明确、可验证的 Monica 主机组合。你将只安装应用真正需要的包，并把所有模块放在同一个 `builder.AddMonica(...)` 边界中。
 
+如果想让编码 Agent 协助，可先安装 [Monica Guide 工具箱](./agent-setup.md)。现在不需要仓库或 Profile；Guide 会先解释能力，在你选择前不安装开发 Skill，也不修改工作区。
+
 ## 你将完成
 
 1. 安装需要的 Stable 包。

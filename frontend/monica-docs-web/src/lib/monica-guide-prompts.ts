@@ -1,10 +1,5 @@
-export type MonicaGuideHost = "codex" | "claude-code" | "generic";
-export type MonicaGuideGoal = "application" | "extension";
-
-type PromptMatrix = Record<MonicaGuideHost, Record<MonicaGuideGoal, string>>;
-
 type MonicaGuidePrompts = {
-  schemaVersion: 2;
+  schemaVersion: 3;
   repository: "Tairitsua/Monica";
   skill: "monica-guide";
   ref: string;
@@ -15,11 +10,14 @@ type MonicaGuidePrompts = {
     version: string;
   };
   immutableSkillUrlTemplate: string;
-  hosts: Record<MonicaGuideHost, { agentTargets: string[] }>;
-  goals: Record<MonicaGuideGoal, { profile: "application" | "extension-author" }>;
+  verifiedAgentTargets: readonly ["codex", "claude-code"];
+  fallback: {
+    installCommand: string;
+    verifyCommand: string;
+  };
   locales: {
-    en: PromptMatrix;
-    "zh-CN": PromptMatrix;
+    en: string;
+    "zh-CN": string;
   };
 };
 

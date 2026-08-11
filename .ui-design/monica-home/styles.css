@@ -13,7 +13,7 @@
     --clay: #d86145;
     --rule: rgba(22, 23, 19, 0.22);
     --dark-rule: rgba(255, 255, 255, 0.16);
-    --shell: min(1380px, calc(100vw - 64px));
+    --shell: min(1600px, calc(100vw - 64px));
     --font-display: "Bricolage Grotesque", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", sans-serif;
     --font-mono: "IBM Plex Mono", monospace;
@@ -465,7 +465,7 @@ svg {
 .hero {
     position: relative;
     display: grid;
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     min-height: calc(100vh - 76px);
     padding-top: 96px;
     padding-bottom: 86px;
@@ -2432,6 +2432,24 @@ svg {
 
 /* Responsive */
 
+@media (max-width: 1279px) {
+    .hero {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .hero-line {
+        white-space: normal;
+    }
+
+    .trace-wrap {
+        margin: 84px 34px 0 90px;
+    }
+
+    .trace-offset-label {
+        display: none;
+    }
+}
+
 @media (max-width: 1180px) {
     :root {
         --shell: min(100% - 40px, 1120px);
@@ -2444,7 +2462,6 @@ svg {
     }
 
     .hero {
-        grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
         padding-top: 68px;
     }
 
@@ -2536,7 +2553,6 @@ svg {
     }
 
     .hero {
-        grid-template-columns: 1fr;
         min-height: auto;
         padding-top: 56px;
     }
@@ -2547,14 +2563,6 @@ svg {
 
     .hero-title {
         font-size: clamp(66px, 12.5vw, 100px);
-    }
-
-    .trace-wrap {
-        margin: 84px 34px 0 90px;
-    }
-
-    .trace-offset-label {
-        right: -104px;
     }
 
     .section {
@@ -2735,10 +2743,6 @@ svg {
         line-height: 0.86;
     }
 
-    .hero-line {
-        white-space: normal;
-    }
-
     .hero-description {
         margin-top: 32px;
         font-size: 16px;
@@ -2779,10 +2783,6 @@ svg {
     .trace-wrap::before {
         right: 9px;
         height: 80px;
-    }
-
-    .trace-offset-label {
-        display: none;
     }
 
     .trace-panel {

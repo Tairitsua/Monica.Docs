@@ -1,6 +1,6 @@
 ---
 title: Build a third-party Monica repository
-description: Use the Monica development skill to create publish-ready independent packages and companion provider images.
+description: Use Monica Guide to select and install the extension-author workflow for publish-ready independent packages and companion provider images.
 sidebar_position: 1
 ---
 
@@ -8,11 +8,11 @@ The Monica third-party ecosystem lets an individual or organization publish inde
 
 ## Start with the skill
 
-Use the [Agent setup guide](../getting-started/agent-setup.md) and initialize this repository with the `extension-author` profile. `monica-guide` installs the catalog-selected framework, architecture, development, third-party, and testing skill closure from the same immutable Monica release; it also binds the exact read-only Monica source required for extension work.
+Install the [Monica Guide toolbox](../getting-started/agent-setup.md), then ask it to inspect this repository and explain the extension workflow. When you choose `extension-author`, Guide previews the catalog-selected framework, architecture, development, third-party, and testing skill closure from the same immutable Monica release. It can reuse or preview a global exact Monica source binding without coupling that binding to this workspace.
 
 ```text
-$monica-guide Initialize this repository with the extension-author profile.
-Preview the skill, source, and instruction changes before applying anything.
+Use Monica Guide to inspect this repository and recommend the extension-author setup.
+Preview all skill, source-binding, and instruction changes before applying anything.
 ```
 
 After initialization is applied, invoke the focused development skill for the repository design:

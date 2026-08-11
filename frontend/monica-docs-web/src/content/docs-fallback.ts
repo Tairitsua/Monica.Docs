@@ -57,39 +57,41 @@ Continue with [Architecture](architecture.md?from=starter#host-owned-composition
     {
       slug: "getting-started/agent-setup",
       title: "Agent setup",
-      description: "Set up Codex or Claude Code for a Monica repository, preview the changes, and begin development safely.",
+      description: "Install Monica Guide in any Agent Skills-compatible coding agent, explore its toolbox, and choose a development path when you are ready.",
       tags: ["agent", "Codex", "Claude Code", "monica-guide"],
       headings: [
-        { id: "before-you-start", title: "Before you start", level: 2 },
-        { id: "choose-your-goal", title: "Choose your goal", level: 2 },
-        { id: "review-the-preview", title: "Review the preview", level: 2 },
-        { id: "apply-the-unchanged-plan", title: "Apply the unchanged plan", level: 2 },
-        { id: "start-development", title: "Start development", level: 2 },
+        { id: "install-before-choosing-a-repository", title: "Install before choosing a repository", level: 2 },
+        { id: "what-guide-can-do", title: "What Guide can do", level: 2 },
+        { id: "what-a-source-binding-looks-like", title: "What a source binding looks like", level: 2 },
+        { id: "choose-a-workspace-profile-later", title: "Choose a workspace profile later", level: 2 },
+        { id: "review-changes-before-apply", title: "Review changes before apply", level: 2 },
+        { id: "try-the-toolbox", title: "Try the toolbox", level: 2 },
       ],
-      markdown: `**monica-guide** prepares a coding agent to work in a Monica repository. It installs the development guidance for your goal, checks the repository, and previews setup before changing files. It is not a runtime package and does not edit business code during initialization.
+      markdown: `**monica-guide** is Monica's global toolbox for coding agents. Install it while you are still exploring Monica, before you have a repository or know which development path you need.
 
-## Before you start
+## Install before choosing a repository
 
-Open Codex or Claude Code at the target repository root. Choose the host and goal in the [Agent setup starter](/#start), then paste the generated instruction into agent chat—not a terminal. Guide is normally installed once per user account and initialized once per repository.
+Copy the one universal instruction from the [Agent setup starter](/#start) and paste it into any Agent Skills-compatible coding agent. It installs only Guide globally from an immutable Monica Git URL, verifies discovery, and does not require a repository or profile. Codex and Claude Code are release-verified hosts, not the only allowed agents.
 
-## Choose your goal
+## What Guide can do
 
-- **Build a Monica application** when the repository consumes Monica packages.
-- **Build an extension** for an independent module, provider, UI package, or companion image.
+Guide can explain Monica, inspect global skill health, show source bindings, initialize a workspace later, diagnose or update skills, and route contributions safely. Installation alone does not select a profile, install downstream skills, bind source, or modify files.
 
-Guide explains its repository recommendation, but ambiguous repositories remain your decision. Contributor flows live in [Guide operations and safety](guide-operations.md#contributor-repositories).
+## What a source binding looks like
 
-## Review the preview
+Monica and Monica.Docs bindings live in global user state and can be managed independently or together. Status shows each repository, exact ref and commit, local path, provenance, and compatibility findings so any workspace can reuse the verified source.
 
-The instruction installs Guide from an immutable Monica tag, verifies discovery, initializes the selected goal without \`--apply\`, and reports the release, actions, files, diff, blockers, and \`planDigest\`. It does not authorize commits, pushes, issues, pull requests, or other remote changes.
+## Choose a workspace profile later
 
-## Apply the unchanged plan
+Application, extension-author, framework-contributor, and docs-contributor are optional initialization presets. Guide explains its recommendation, but new, mixed, and ambiguous workspaces remain your decision.
 
-After approval, Guide requires \`--apply\` and the exact \`--plan-digest\`. It refuses an apply after repository or plan drift. Run \`doctor\` after apply and start a new agent run when managed instructions changed.
+## Review changes before apply
 
-## Start development
+Every later mutation reports actions, files, blockers, and a \`planDigest\`. Apply requires the unchanged digest and never authorizes remote Git actions. Run \`doctor\` after workspace changes.
 
-Ask the agent to explain the repository architecture and identify where the next feature belongs before editing. For channels, updates, state, source, and recovery, continue to [Guide operations and safety](guide-operations.md).`,
+## Try the toolbox
+
+Ask Guide to explain its toolbox, show the active global release and bindings, or preview binding exact Monica and Monica.Docs source. For channels, updates, state, source, and recovery, continue to [Guide operations and safety](guide-operations.md).`,
     },
     {
       slug: "getting-started/guide-operations",
@@ -105,7 +107,7 @@ Ask the agent to explain the repository architecture and identify where the next
         { id: "managed-instructions-and-state", title: "Managed instructions and state", level: 2 },
         { id: "contributor-repositories", title: "Contributor repositories", level: 2 },
       ],
-      markdown: `Use this page after the first [Agent setup](agent-setup.md), when maintaining an existing setup, or when working in a Monica contributor repository.
+      markdown: `Use this page after installing the [Monica Guide toolbox](agent-setup.md), when maintaining global bindings or an existing workspace, or when working in a Monica contributor repository.
 
 ## Three version axes
 
@@ -113,7 +115,7 @@ Ask the agent to explain the repository architecture and identify where the next
 - The **skill-bundle release** is one tested set published with an immutable Monica release.
 - A **per-skill revision** advances during a release only when that skill's authoritative digest changed.
 
-Ordinary CI validates contracts and revision accounting. Only Monica's release workflow publishes immutable assets, advances revisions, or moves \`stable\` and \`preview\` pointers after smoke tests pass.
+Ordinary CI validates contracts and revision accounting. Only Monica's release workflow publishes immutable assets, advances revisions, or moves \`stable\` and \`preview\` pointers after immutable-source, installation, and discovery smoke tests pass.
 
 ## Channels and exact releases
 
@@ -121,7 +123,9 @@ Stable and preview resolve to immutable tags. An explicit release tag selects th
 
 ## Status, doctor, and update
 
-Use \`status\` for current bindings and \`doctor\` for actionable checks; both support \`--json\`. \`update\` previews changed revisions and reinstalls only changed or unhealthy Monica skills. A targeted update still requires a coherent dependency closure.
+Use \`status\` without a workspace for the active global release, installed skills, and every Monica or Monica.Docs source binding. Add a workspace for profile, compatibility, capability, and managed-instruction checks. \`doctor\` provides actionable global or workspace checks; both support \`--json\`.
+
+Any Guide output that includes source bindings or local paths—including \`overview\`, \`source list\`, \`source resolve\`, \`status\`, and \`doctor\` JSON—may contain private absolute paths. Keep it local; do not commit or share it by default.
 
 ## Plan digests and protected apply
 
@@ -129,15 +133,15 @@ Every mutating intent previews actions and diffs. Apply requires \`--apply --pla
 
 ## Source binding
 
-Required source is bound to a verified ref, commit, provenance, access mode, and local path through the stable \`inspect-dependency-source resolve --json\` contract. Mixed versions and unavailable exact artifacts fail closed.
+Monica and Monica.Docs source bindings are global user resources keyed by canonical repository. They can be managed independently or together and record a verified ref, commit, provenance, and local path. Profiles can recommend source but do not own the binding. For ordinary lookup, \`source resolve\` still returns a usable dirty or version-mismatched path with prominent warnings. Only exact-parity operations—profile prerequisites, offline or source-channel installation, and exact dependency claims—block on those findings.
 
 ## Managed instructions and state
 
-Guide manages only its marked root \`AGENTS.md\` block and can maintain a minimal \`CLAUDE.md\` import. Repository choices live in \`.monica/guide.json\`; global release, local source paths, preferences, and observations remain in user state.
+Guide manages only its marked root \`AGENTS.md\` block and can maintain a minimal \`CLAUDE.md\` import. Repository choices live in \`.monica/guide.json\`; the global release, repository-keyed source bindings, preferences, and observations remain in user state. \`forget\` removes only workspace-owned Guide configuration, preferences, and managed-instruction ownership; it never removes global Monica or Monica.Docs source bindings.
 
 ## Contributor repositories
 
-Framework and docs profiles require their canonical writable repositories and the documented source access. Remote Issues, pull requests, branches, and pushes always need current-session approval. Suspected vulnerabilities must use a private route.`,
+Framework and docs profiles require their canonical writable repositories. Docs work can reuse a global exact Monica binding. Even when a binding points to a writable checkout, Guide treats it as lookup-only; cross-repository edits require separate, explicit current-session authorization. Remote Issues, pull requests, branches, and pushes always need current-session approval. Suspected vulnerabilities must use a private route.`,
     },
     {
       slug: "architecture",
@@ -233,39 +237,41 @@ dotnet run
     {
       slug: "getting-started/agent-setup",
       title: "Agent 设置",
-      description: "为 Monica 仓库设置 Codex 或 Claude Code，预览变更，并安全开始开发。",
+      description: "在任意兼容 Agent Skills 的编码 Agent 中安装 Monica Guide，了解工具箱，并在准备好后选择开发路线。",
       tags: ["Agent", "Codex", "Claude Code", "monica-guide"],
       headings: [
-        { id: "开始前", title: "开始前", level: 2 },
-        { id: "选择开发目标", title: "选择开发目标", level: 2 },
-        { id: "审核预览", title: "审核预览", level: 2 },
-        { id: "应用未变化的计划", title: "应用未变化的计划", level: 2 },
-        { id: "开始开发", title: "开始开发", level: 2 },
+        { id: "选定仓库之前就可以安装", title: "选定仓库之前就可以安装", level: 2 },
+        { id: "guide-可以做什么", title: "Guide 可以做什么", level: 2 },
+        { id: "源码绑定会如何呈现", title: "源码绑定会如何呈现", level: 2 },
+        { id: "稍后再选择工作区-profile", title: "稍后再选择工作区 Profile", level: 2 },
+        { id: "应用前审核变更", title: "应用前审核变更", level: 2 },
+        { id: "试试这个工具箱", title: "试试这个工具箱", level: 2 },
       ],
-      markdown: `**monica-guide** 用来让编码 Agent 为 Monica 仓库做好开发准备。它会按目标安装开发指导、检查仓库，并在修改文件前预览设置方案。它不是运行时包，也不会在初始化期间修改业务代码。
+      markdown: `**monica-guide** 是面向编码 Agent 的 Monica 全局工具箱。即使还没有仓库，或尚未选择开发路线，也可以先安装它。
 
-## 开始前
+## 选定仓库之前就可以安装
 
-在目标仓库根目录打开 Codex 或 Claude Code。前往首页的 [Agent 设置起步区](/zh-CN/#start)选择宿主与目标，再把生成的指令粘贴到 Agent 对话框，而不是终端。通常每个用户只需安装一次 Guide，每个仓库只需初始化一次。
+从 [Agent 设置起步区](/zh-CN/#start)复制唯一的通用指令，再粘贴到任意兼容 Agent Skills 的编码 Agent。它会从不可变 Monica Git URL 只安装 Guide，验证发现能力，不要求仓库或 Profile。Codex 与 Claude Code 是发布验证过的宿主，但不是唯一可用选项。
 
-## 选择开发目标
+## Guide 可以做什么
 
-- **开发 Monica 应用**：仓库通过 Monica 包实现应用。
-- **开发扩展**：创建独立模块、Provider、UI 包或配套镜像。
+Guide 可以解释 Monica、检查全局 Skill 健康状态、显示源码绑定、稍后初始化工作区、诊断或更新 Skill，并安全路由贡献。仅安装 Guide 不会选择 Profile、安装下游 Skill、绑定源码或修改文件。
 
-Guide 会解释仓库建议，但模糊仓库仍由你决定。贡献者流程位于 [Guide 运维与安全](guide-operations.md#贡献者仓库)。
+## 源码绑定会如何呈现
 
-## 审核预览
+Monica 与 Monica.Docs 绑定保存在全局用户状态中，可以分别管理或同时绑定。Status 会显示每个仓库、精确 ref 与 commit、本地路径、来源和兼容性检查结果，让任何工作区重用已验证源码。
 
-指令会从不可变 Monica tag 安装 Guide、验证发现能力、不带 \`--apply\` 初始化目标，并报告发布版本、操作、文件、Diff、阻塞项与 \`planDigest\`。它不会授权 Commit、Push、Issue、Pull Request 或其他远程变更。
+## 稍后再选择工作区 Profile
 
-## 应用未变化的计划
+Application、extension-author、framework-contributor 与 docs-contributor 是可选的初始化预设。Guide 会解释建议，但新建、混合或模糊工作区仍由你决定。
 
-批准后，Guide 要求同时提供 \`--apply\` 与精确的 \`--plan-digest\`。仓库或计划漂移后会拒绝执行。应用完成后运行 \`doctor\`；托管指令变化后开始一次新的 Agent 运行。
+## 应用前审核变更
 
-## 开始开发
+后续每个修改都会报告操作、文件、阻塞项与 \`planDigest\`。应用时需要未变化的 Digest，也不会授权远程 Git 操作。工作区变更后运行 \`doctor\`。
 
-可以先让 Agent 解释仓库架构，并在修改前指出下一个功能应该放在哪里。如需了解通道、更新、状态、源码与恢复，请继续阅读 [Guide 运维与安全](guide-operations.md)。`,
+## 试试这个工具箱
+
+可让 Guide 解释工具箱、显示当前全局发布版本与绑定，或预览绑定精确 Monica 与 Monica.Docs 源码。如需了解通道、更新、状态、源码与恢复，请继续阅读 [Guide 运维与安全](guide-operations.md)。`,
     },
     {
       slug: "getting-started/guide-operations",
@@ -281,7 +287,7 @@ Guide 会解释仓库建议，但模糊仓库仍由你决定。贡献者流程�
         { id: "托管指令与状态", title: "托管指令与状态", level: 2 },
         { id: "贡献者仓库", title: "贡献者仓库", level: 2 },
       ],
-      markdown: `完成首次 [Agent 设置](agent-setup.md)后、维护已有设置时，或在 Monica 贡献仓库中工作时，请使用本页。
+      markdown: `安装 [Monica Guide 工具箱](agent-setup.md)后、维护全局绑定或现有工作区时，或在 Monica 贡献仓库中工作时，请使用本页。
 
 ## 三类版本身份
 
@@ -289,7 +295,7 @@ Guide 会解释仓库建议，但模糊仓库仍由你决定。贡献者流程�
 - **Skill Bundle 发布版本**是随不可变 Monica 版本发布的一组共同测试资产。
 - **单个 Skill Revision**仅在发布时该 Skill 的权威 Digest 发生变化后递增。
 
-日常 CI 只验证契约与 Revision 记账。只有 Monica Release Workflow 会在 Smoke Test 通过后发布不可变资产、递增 Revision 或移动 \`stable\` 与 \`preview\` 指针。
+日常 CI 只验证契约与 Revision 记账。只有 Monica Release Workflow 会在不可变源、安装与发现 Smoke Test 通过后发布不可变资产、递增 Revision 或移动 \`stable\` 与 \`preview\` 指针。
 
 ## 通道与精确发布版本
 
@@ -297,7 +303,9 @@ Stable 与 Preview 解析到不可变 tag。显式 release tag 选择精确发�
 
 ## Status、Doctor 与 Update
 
-使用 \`status\` 查看当前绑定，使用 \`doctor\` 获取可执行检查；两者都支持 \`--json\`。\`update\` 会预览变化的 Revision，并只重新安装已变化或不健康的 Monica Skill。定向更新仍必须形成一致的依赖闭包。
+不带工作区使用 \`status\` 查看激活的全局发布版本、已安装 Skill，以及所有 Monica 或 Monica.Docs 源码绑定；添加工作区后再检查 Profile、兼容性、能力与托管指令。\`doctor\` 可提供全局或工作区检查，两者都支持 \`--json\`。
+
+任何包含源码绑定或本地路径的 Guide 输出——包括 \`overview\`、\`source list\`、\`source resolve\`、\`status\` 与 \`doctor\` JSON——都可能含有私有的绝对路径。请将其保留在本机，默认不要提交或分享。
 
 ## Plan Digest 与受保护执行
 
@@ -305,15 +313,15 @@ Stable 与 Preview 解析到不可变 tag。显式 release tag 选择精确发�
 
 ## 源码绑定
 
-必须使用的源码通过稳定的 \`inspect-dependency-source resolve --json\` 契约绑定到经过验证的 ref、commit、来源、访问模式与本地路径。混合版本与不可用的精确产物会 Fail closed。
+Monica 与 Monica.Docs 源码绑定是以规范仓库为键的全局用户资源，可以分别管理或同时绑定，并记录经验证的 ref、commit、来源与本地路径。Profile 可以推荐源码，但不拥有绑定。对于普通查找，\`source resolve\` 即使遇到 Dirty 或版本不匹配的路径也会返回，并显示醒目警告。只有要求精确一致的操作——Profile 前置条件、离线或 Source Channel 安装，以及精确依赖声明——才会因这些检查结果而阻塞。
 
 ## 托管指令与状态
 
-Guide 只管理根 \`AGENTS.md\` 中自己的标记区块，并可维护最小 \`CLAUDE.md\` import。仓库选择保存在 \`.monica/guide.json\`；全局发布版本、本地源码路径、偏好与观察记录保留在用户状态中。
+Guide 只管理根 \`AGENTS.md\` 中自己的标记区块，并可维护最小 \`CLAUDE.md\` import。仓库选择保存在 \`.monica/guide.json\`；全局发布版本、以仓库为键的源码绑定、偏好与观察记录保留在用户状态中。\`forget\` 只移除工作区自有的 Guide 配置、偏好与托管指令所有权，绝不会移除 Monica 或 Monica.Docs 的全局源码绑定。
 
 ## 贡献者仓库
 
-框架与文档 Profile 要求对应的规范可写仓库以及文档规定的源码访问模式。远程 Issue、Pull Request、分支与 Push 始终需要当前会话授权。疑似漏洞必须走私密渠道。`,
+框架与文档 Profile 要求对应的规范可写仓库。文档工作可重用全局精确 Monica 绑定。即使绑定指向可写 Checkout，Guide 也只将其用于查找；跨仓库编辑必须在当前会话中获得单独、明确的授权。远程 Issue、Pull Request、分支与 Push 始终需要当前会话授权。疑似漏洞必须走私密渠道。`,
     },
     {
       slug: "architecture",

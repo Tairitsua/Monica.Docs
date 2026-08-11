@@ -10,20 +10,10 @@ const IMMUTABLE_RELEASE_TAG = /^v(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(
 const FULL_COMMIT_SHA = /^[0-9a-f]{40}$/u;
 const SEMANTIC_VERSION = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/u;
 const LOCALES = ["en-US", "zh-CN"];
-const HOSTS = ["codex", "claude-code", "generic"];
-const GOALS = ["application", "extension"];
-const EXPECTED_AGENT_TARGETS = {
-  codex: ["codex"],
-  "claude-code": ["claude-code"],
-  generic: ["codex", "claude-code"],
-};
-const EXPECTED_PROFILES = {
-  application: "application",
-  extension: "extension-author",
-};
+const VERIFIED_AGENT_TARGETS = ["codex", "claude-code"];
 
 /**
- * Read Monica's canonical schema-v2 prompt manifest and render it for one immutable release.
+ * Read Monica's canonical schema-v3 prompt manifest and render it for one immutable release.
  *
  * @param {{projectDirectory: string, publicReleaseBuild?: boolean}} options
  */
@@ -52,14 +42,12 @@ export function loadMonicaGuidePrompts({ projectDirectory, publicReleaseBuild = 
     throw new Error("MONICA_AGENT_SKILL_REF is required for a public release build.");
   }
   if (publicReleaseBuild && !IMMUTABLE_RELEASE_TAG.test(configuredRef)) {
-    throw new Error("Public release builds require a v<semver> Monica tag that passed install-and-initialization smoke testing.");
+    throw new Error("Public release builds require a v<semver> Monica tag that passed immutable-source, installation, and discovery smoke testing.");
   }
 
   const immutableRef = configuredRef || LOCAL_DEVELOPMENT_REF;
   const render = (prompt) => {
-    const rendered = prompt
-      .replaceAll(IMMUTABLE_REF_TOKEN, immutableRef)
-      .replaceAll(CATALOG_DIGEST_TOKEN, catalogDigest);
+    const rendered = prompt.replaceAll(IMMUTABLE_REF_TOKEN, immutableRef);
     const unresolvedToken = rendered.match(UNRESOLVED_TEMPLATE_TOKEN)?.[0];
     if (unresolvedToken) {
       throw new Error(`A Monica Guide bootstrap prompt contains unresolved template token ${unresolvedToken}.`);
@@ -76,20 +64,16 @@ export function loadMonicaGuidePrompts({ projectDirectory, publicReleaseBuild = 
     isLocalDevelopment: !configuredRef,
     skillsCli: guideDistribution.skillsCli,
     immutableSkillUrlTemplate: guideDistribution.immutableSkillUrlTemplate,
-    hosts: payload.hosts,
-    goals: payload.goals,
+    verifiedAgentTargets: payload.verifiedAgentTargets,
+    fallback: {
+      installCommand: render(payload.fallback.installCommand),
+      verifyCommand: render(payload.fallback.verifyCommand),
+    },
     locales: {
-      en: renderLocale(payload.locales["en-US"], render),
-      "zh-CN": renderLocale(payload.locales["zh-CN"], render),
+      en: render(payload.locales["en-US"].prompt),
+      "zh-CN": render(payload.locales["zh-CN"].prompt),
     },
   };
-}
-
-function renderLocale(locale, render) {
-  return Object.fromEntries(HOSTS.map((host) => [
-    host,
-    Object.fromEntries(GOALS.map((goal) => [goal, render(locale.hosts[host].goals[goal].prompt)])),
-  ]));
 }
 
 function validateCatalog(catalog, catalogPath) {
@@ -128,7 +112,7 @@ function validateAsset(payload, assetPath, catalogDistribution) {
     throw new Error(`Expected an object in ${assetPath}.`);
   }
   if (
-    payload.schemaVersion !== 2
+    payload.schemaVersion !== 3
     || payload.repository !== "Tairitsua/Monica"
     || payload.skill !== "monica-guide"
     || payload.immutableRef !== IMMUTABLE_REF_TOKEN
@@ -140,39 +124,53 @@ function validateAsset(payload, assetPath, catalogDistribution) {
     throw new Error(`Unexpected Monica Guide bootstrap prompt contract in ${assetPath}.`);
   }
 
-  for (const host of HOSTS) {
-    const targets = payload.hosts?.[host]?.agentTargets;
-    if (!Array.isArray(targets) || JSON.stringify(targets) !== JSON.stringify(EXPECTED_AGENT_TARGETS[host])) {
-      throw new Error(`Invalid ${host} agent targets in ${assetPath}.`);
-    }
-  }
-  for (const goal of GOALS) {
-    if (payload.goals?.[goal]?.profile !== EXPECTED_PROFILES[goal]) {
-      throw new Error(`Invalid ${goal} profile mapping in ${assetPath}.`);
-    }
+  if (
+    !Array.isArray(payload.verifiedAgentTargets)
+    || payload.verifiedAgentTargets.length !== VERIFIED_AGENT_TARGETS.length
+    || payload.verifiedAgentTargets.some((target, index) => target !== VERIFIED_AGENT_TARGETS[index])
+  ) {
+    throw new Error(`Invalid verified agent targets in ${assetPath}.`);
   }
 
   const cliReference = `npx --yes ${catalogDistribution.skillsCli.package}@${catalogDistribution.skillsCli.version}`;
+  const immutableSkillUrl = "https://github.com/Tairitsua/Monica/tree/{{MONICA_IMMUTABLE_REF}}/skills/monica-guide";
+  if (
+    payload.fallback?.installCommand !== `${cliReference} add ${immutableSkillUrl} -g -s monica-guide`
+    || payload.fallback?.verifyCommand !== `${cliReference} ls -g --json`
+  ) {
+    throw new Error(`Invalid interactive fallback commands in ${assetPath}.`);
+  }
+
+  if (
+    !payload.locales
+    || typeof payload.locales !== "object"
+    || Array.isArray(payload.locales)
+    || Object.keys(payload.locales).length !== LOCALES.length
+    || LOCALES.some((locale) => !Object.hasOwn(payload.locales, locale))
+  ) {
+    throw new Error(`Invalid prompt locales in ${assetPath}.`);
+  }
+
   for (const locale of LOCALES) {
-    for (const host of HOSTS) {
-      for (const goal of GOALS) {
-        const prompt = payload.locales?.[locale]?.hosts?.[host]?.goals?.[goal]?.prompt;
-        const requiredTargets = EXPECTED_AGENT_TARGETS[host];
-        if (
-          typeof prompt !== "string"
-          || !prompt.trim()
-          || !prompt.includes(IMMUTABLE_REF_TOKEN)
-          || !prompt.includes(CATALOG_DIGEST_TOKEN)
-          || !prompt.includes(`--release-tag ${IMMUTABLE_REF_TOKEN}`)
-          || !prompt.includes(`--profile ${EXPECTED_PROFILES[goal]}`)
-          || !prompt.includes(cliReference)
-          || !prompt.includes("--json")
-          || prompt.includes("--apply")
-          || requiredTargets.some((target) => !prompt.includes(`--agent ${target}`))
-        ) {
-          throw new Error(`Invalid ${locale}.${host}.${goal} prompt in ${assetPath}.`);
-        }
-      }
+    const localized = payload.locales[locale];
+    const prompt = localized?.prompt;
+    const installationScope = locale === "en-US"
+      ? ["After that installation, these restrictions apply", "make any other file changes"]
+      : ["完成这次安装后", "以下限制适用：不要初始化仓库", "修改其他文件"];
+    if (
+      !localized
+      || typeof localized !== "object"
+      || Array.isArray(localized)
+      || Object.keys(localized).length !== 1
+      || !Object.hasOwn(localized, "prompt")
+      || typeof prompt !== "string"
+      || !prompt.trim()
+      || !prompt.includes(immutableSkillUrl)
+      || prompt.includes(CATALOG_DIGEST_TOKEN)
+      || /(?:^|\s)(?:init|--workspace|--profile|--agent|--apply)(?:\s|$)/u.test(prompt)
+      || installationScope.some((fragment) => !prompt.includes(fragment))
+    ) {
+      throw new Error(`Invalid universal ${locale} prompt in ${assetPath}.`);
     }
   }
 }

@@ -1,6 +1,6 @@
 ---
 title: 创建第三方 Monica 仓库
-description: 使用 Monica 开发 Skill 创建可发布的独立包与配套 Provider 镜像。
+description: 使用 Monica Guide 选择并安装 extension-author 工作流，创建可发布的独立包与配套 Provider 镜像。
 sidebar_position: 1
 ---
 
@@ -8,11 +8,11 @@ Monica 第三方生态允许个人或组织独立发布模块，同时让仓库�
 
 ## 从 Skill 开始
 
-先按照 [Agent 设置指南](../getting-started/agent-setup.md)，使用 `extension-author` Profile 初始化当前仓库。`monica-guide` 会从同一个不可变 Monica 发布版本安装 catalog 选定的框架、架构、开发、第三方与测试 Skill 闭包，并绑定扩展开发所需的精确只读 Monica 源码。
+先安装 [Monica Guide 工具箱](../getting-started/agent-setup.md)，再让它检查当前仓库并解释扩展开发流程。当你选择 `extension-author` 后，Guide 会预览从同一个不可变 Monica 发布版本选定的框架、架构、开发、第三方与测试 Skill 闭包。它可重用或预览 Monica 精确源码的全局绑定，而不会把绑定归属当前工作区。
 
 ```text
-$monica-guide 使用 extension-author Profile 初始化这个仓库。
-在应用前预览所有 Skill、源码与指令变更。
+使用 Monica Guide 检查这个仓库，并建议 extension-author 设置。
+在应用前预览所有 Skill、源码绑定与指令变更。
 ```
 
 应用初始化后，再调用聚焦于仓库设计的开发 Skill：

@@ -36,38 +36,24 @@ type HomeCopy = {
     modes: readonly [string, string];
     beforeTitle: string;
     beforeItems: readonly [string, string, string, string];
-    agentLabel: string;
-    agents: readonly [string, string];
-    goalLabel: string;
-    goals: readonly [
-      { title: string; body: string; action: string; badge: string },
-      { title: string; body: string; action: string; badge: string },
-    ];
-    verifyTitle: string;
-    verifyDescription: string;
-    verifyCommon: readonly [string, string, string, string];
-    verifyByGoal: {
-      application: readonly [string, string];
-      extension: readonly [string, string];
-    };
+    promptAction: string;
+    promptContext: string;
+    verifiedLabel: string;
+    verifiedDescription: string;
+    capabilitiesTitle: string;
+    capabilitiesDescription: string;
+    capabilities: readonly [string, string, string, string, string];
     fullPrompt: string;
     manualLabel: string;
     manualTabs: readonly [string, string];
     genericFallback: string;
+    genericFallbackDescription: string;
     localDevelopment: string;
     windowKicker: string;
     copy: string;
     copied: string;
     copyFailed: string;
     selectManually: string;
-    afterTitle: string;
-    afterDescription: string;
-    tasks: readonly [
-      { title: string; prompt: string },
-      { title: string; prompt: string },
-      { title: string; prompt: string },
-    ];
-    copyTask: string;
   };
   how: {
     folio: string;
@@ -177,69 +163,46 @@ export const homeCopy: Record<Locale, HomeCopy> = {
       folio: "Agent-first quick start",
       title: "Start with an agent or stay fully manual.",
       description:
-        "Monica Guide prepares your coding agent for this repository. It is setup tooling, not an application dependency, and it always previews repository changes before applying them.",
+        "Monica Guide is a global toolbox for exploring, configuring, and diagnosing Monica. Install it before you choose a repository or development path, then let Guide explain the available next steps.",
       steps: [
-        { title: "Choose", body: "Select your host and development goal" },
-        { title: "Paste", body: "Send the generated instruction in agent chat" },
-        { title: "Review", body: "Approve the Guide dry-run before changes" },
+        { title: "Copy", body: "Copy one universal Guide instruction" },
+        { title: "Install", body: "Let your agent install and discover Guide" },
+        { title: "Choose", body: "Review the toolbox, then choose what comes next" },
       ],
       quickStart: "Open the full quick start",
       modeLabel: "Quick start mode",
       modes: ["Agent setup", "Manual .NET"],
       beforeTitle: "Before you start",
       beforeItems: [
-        "Open Codex or Claude Code at the root of the repository you want to work on.",
+        "Use any coding agent that supports Agent Skills. You do not need a repository yet.",
         "Paste the copied instruction into agent chat—not into a terminal.",
-        "Guide is normally installed once per machine and initialized once per repository.",
-        "A different repository release may require an explicit switch of the one active global Monica skill release.",
+        "The instruction installs only Monica Guide globally from an immutable Monica release.",
+        "Guide explains its toolbox and waits before initializing, binding source, or changing files.",
       ],
-      agentLabel: "Coding agent",
-      agents: ["Codex", "Claude Code"],
-      goalLabel: "What do you want to build?",
-      goals: [
-        {
-          title: "A Monica application",
-          body: "Create or extend a service or modular application using Monica's application conventions.",
-          action: "Copy application setup instruction",
-          badge: "Recommended",
-        },
-        {
-          title: "A Monica extension",
-          body: "Build a reusable Monica module or provider package against an exact framework source.",
-          action: "Copy extension setup instruction",
-          badge: "Source required",
-        },
+      promptAction: "Copy Monica Guide instruction",
+      promptContext: "One prompt · no repository or profile required",
+      verifiedLabel: "Release-verified hosts",
+      verifiedDescription: "The same instruction also works with other Agent Skills-compatible coding agents.",
+      capabilitiesTitle: "What Monica Guide can help with",
+      capabilitiesDescription: "Guide reports the current global setup first, then asks what you want instead of forcing an initialization path.",
+      capabilities: [
+        "Explore Monica and choose a development path",
+        "Initialize or configure a repository when you are ready",
+        "Bind Monica and Monica.Docs source globally, separately or together",
+        "Check status, diagnose drift, and update Monica skills",
+        "Prepare framework, documentation, or upstream contributions safely",
       ],
-      verifyTitle: "What Guide will verify",
-      verifyDescription: "The website selects the intent. Guide inspects the actual repository and produces the authoritative dry-run.",
-      verifyCommon: [
-        "Repository identity and compatible Monica release",
-        "The selected skill capability group",
-        "Managed AGENTS.md and optional CLAUDE.md instructions",
-        "No remote GitHub action and no repository change before approval",
-      ],
-      verifyByGoal: {
-        application: ["Application architecture is detected or requested", "Exact framework source remains optional"],
-        extension: ["Extension author profile is confirmed", "Exact read-only Monica source is required"],
-      },
       fullPrompt: "View the full instruction",
       manualLabel: "Manual .NET setup",
       manualTabs: ["CLI", "Program.cs"],
-      genericFallback: "Generic npx skills fallback",
+      genericFallback: "Interactive npx skills fallback",
+      genericFallbackDescription: "Use this in a terminal only when your coding agent cannot install the skill itself. The installer will ask which detected agent target to use.",
       localDevelopment: "Local-development prompt preview — public builds require a verified immutable Monica ref.",
-      windowKicker: "MONICA / PREVIEW BEFORE APPLY",
+      windowKicker: "MONICA / INSTALL ONCE, CHOOSE LATER",
       copy: "Copy",
       copied: "Copied to clipboard",
       copyFailed: "Clipboard access failed. The instruction is selected below so you can copy it manually.",
       selectManually: "Select and copy this instruction manually",
-      afterTitle: "Then start building",
-      afterDescription: "After Guide is applied and doctor is clean, give your agent a concrete first task.",
-      tasks: [
-        { title: "Plan a feature", prompt: "Review this Monica repository and propose the smallest coherent plan for adding an order approval feature. Do not change files yet." },
-        { title: "Create a module", prompt: "Create a Monica module for order notifications, including its public registration, options, Guide methods, and focused tests." },
-        { title: "Review architecture", prompt: "Review this repository's Monica module and ProjectUnit boundaries. Report misplaced responsibilities and dependency-direction problems before editing." },
-      ],
-      copyTask: "Copy request",
     },
     how: {
       folio: "How Monica works",
@@ -373,69 +336,46 @@ export const homeCopy: Record<Locale, HomeCopy> = {
       folio: "Agent-first 快速开始",
       title: "可以从编码 Agent 开始，也可以完全手动。",
       description:
-        "Monica Guide 帮助编码 Agent 准备当前仓库。它是设置工具，不是应用运行依赖；任何仓库修改都会先给出预览。",
+        "Monica Guide 是用来了解、配置和诊断 Monica 的全局工具箱。你可以在选定仓库或开发路线之前安装它，再让 Guide 解释后续选项。",
       steps: [
-        { title: "选择", body: "选择宿主和开发目标" },
-        { title: "粘贴", body: "把生成的指令发送到 Agent 对话" },
-        { title: "审核", body: "批准 Guide 的 dry-run 后再修改" },
+        { title: "复制", body: "复制一条通用 Guide 指令" },
+        { title: "安装", body: "让 Agent 安装并发现 Guide" },
+        { title: "选择", body: "先了解工具箱，再决定下一步" },
       ],
       quickStart: "打开完整快速开始",
       modeLabel: "快速开始模式",
       modes: ["Agent 设置", "手动 .NET"],
       beforeTitle: "开始之前",
       beforeItems: [
-        "在目标仓库根目录打开 Codex 或 Claude Code。",
+        "使用任意支持 Agent Skills 的编码 Agent；现在还不需要仓库。",
         "把复制的指令粘贴到 Agent 对话中，而不是终端。",
-        "Guide 通常每台机器安装一次，每个仓库初始化一次。",
-        "当不同仓库要求不兼容的 Monica 版本时，需要明确切换唯一的全局 Skill 版本。",
+        "这条指令只会从不可变 Monica 发布版本全局安装 Monica Guide。",
+        "Guide 会先解释工具箱，在初始化、绑定源码或修改文件前等待你选择。",
       ],
-      agentLabel: "编码 Agent",
-      agents: ["Codex", "Claude Code"],
-      goalLabel: "你准备构建什么？",
-      goals: [
-        {
-          title: "Monica 应用",
-          body: "使用 Monica 应用约定创建或扩展服务、模块化单体。",
-          action: "复制应用设置指令",
-          badge: "推荐",
-        },
-        {
-          title: "Monica 扩展",
-          body: "基于精确的框架源码构建可复用模块或 Provider 包。",
-          action: "复制扩展设置指令",
-          badge: "需要源码",
-        },
+      promptAction: "复制 Monica Guide 指令",
+      promptContext: "一条指令 · 无需仓库或 Profile",
+      verifiedLabel: "已验证宿主",
+      verifiedDescription: "同一条指令也可用于其他兼容 Agent Skills 的编码 Agent。",
+      capabilitiesTitle: "Monica Guide 可以做什么",
+      capabilitiesDescription: "Guide 会先报告当前全局设置，再询问你的意图，不会强制进入初始化路线。",
+      capabilities: [
+        "了解 Monica 并选择开发路线",
+        "准备好后再初始化或配置仓库",
+        "全局绑定 Monica 与 Monica.Docs 源码，可单独或同时绑定",
+        "查看状态、诊断漂移并更新 Monica Skills",
+        "安全准备框架、文档或上游贡献",
       ],
-      verifyTitle: "Guide 会验证什么",
-      verifyDescription: "官网只负责选择意图；Guide 会检查实际仓库，并生成权威的 dry-run 结果。",
-      verifyCommon: [
-        "仓库身份与兼容的 Monica 发布版本",
-        "所选 Skill 能力集合",
-        "受管理的 AGENTS.md 与可选 CLAUDE.md 指令",
-        "批准前不执行远程 GitHub 操作，也不修改仓库",
-      ],
-      verifyByGoal: {
-        application: ["检测应用架构，无法判断时请求选择", "精确框架源码保持可选"],
-        extension: ["确认扩展作者工作模式", "要求精确、只读的 Monica 源码"],
-      },
       fullPrompt: "查看完整指令",
       manualLabel: "手动 .NET 设置",
       manualTabs: ["CLI", "Program.cs"],
-      genericFallback: "通用 npx skills 备用方案",
+      genericFallback: "交互式 npx skills 备用方案",
+      genericFallbackDescription: "只有当编码 Agent 无法自行安装 Skill 时，才在终端使用。安装器会询问要使用哪个已检测到的 Agent 目标。",
       localDevelopment: "本地开发 Prompt 预览——公开构建必须使用已验证的不可变 Monica ref。",
-      windowKicker: "MONICA / 应用前先预览",
+      windowKicker: "MONICA / 安装一次，稍后选择",
       copy: "复制",
       copied: "已复制到剪贴板",
       copyFailed: "无法访问剪贴板。下面的指令已被选中，你可以手动复制。",
       selectManually: "手动选择并复制这段指令",
-      afterTitle: "然后开始构建",
-      afterDescription: "应用 Guide 且 doctor 检查通过后，给 Agent 一个明确的首个任务。",
-      tasks: [
-        { title: "规划功能", prompt: "检查当前 Monica 仓库，为新增订单审批功能提出最小且完整的实施计划。暂时不要修改文件。" },
-        { title: "创建模块", prompt: "创建一个订单通知 Monica 模块，包含公开注册入口、Option、Guide 方法与聚焦测试。" },
-        { title: "审核架构", prompt: "审核当前仓库的 Monica 模块与 ProjectUnit 边界。在修改前报告职责放置和依赖方向问题。" },
-      ],
-      copyTask: "复制请求",
     },
     how: {
       folio: "Monica 如何工作",

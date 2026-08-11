@@ -1,60 +1,73 @@
 ---
 title: Agent setup
-description: Set up Codex or Claude Code for a Monica repository, preview the changes, and begin development safely.
+description: Install Monica Guide in any Agent Skills-compatible coding agent, explore its toolbox, and choose a development path when you are ready.
 sidebar_position: 2
 ---
 
-`monica-guide` prepares a coding agent to work in a Monica repository. It installs the development guidance for your goal, checks the repository, and previews its setup before changing any files. It is not a runtime package, does not replace the .NET CLI, and does not edit your business code during initialization.
+`monica-guide` is Monica's global toolbox for coding agents. You can install it while you are still learning Monica, before you have a repository or know whether you will build an application, an extension, framework code, or documentation. It is not a runtime package and does not replace the .NET CLI.
 
-## Before you start
+## Install before choosing a repository
 
-1. Open **Codex** or **Claude Code** at the root of the repository you want to work on.
-2. Open the [Agent setup starter](/#start), then choose your coding agent and goal.
-3. Copy the generated instruction and paste it into the **agent chat**, not a terminal.
+1. Open the [Agent setup starter](/#start).
+2. Copy its one universal instruction.
+3. Paste the instruction into an **Agent Skills-compatible coding agent**, not a terminal.
 
-You normally install Guide once for each user account on a machine and initialize it once in each repository. The website instruction pins Guide to an immutable Monica release and asks it to stop after a dry-run preview.
+The instruction gives the agent an immutable Monica Git URL. The agent installs only `monica-guide` globally, verifies that it can discover the installed skill, and restarts only when successful installation is not visible in the current session. Codex and Claude Code are release-smoke-tested hosts, but the instruction is not tied to either one.
 
-## Choose your goal
+If an agent cannot install the skill itself, expand the interactive `npx skills` fallback on the homepage and run it in a terminal. It asks which detected agent target to use instead of assuming a specific host.
 
-| Goal | Choose it when | Source requirement |
-|---|---|---|
-| **Build a Monica application** | The repository consumes Monica packages to implement an application | Exact read-only Monica source is optional and recommended when work depends on framework internals |
-| **Build an extension** | You are creating an independent Monica module, provider, UI package, or companion image | Exact read-only Monica source is required; the extension itself continues to consume Monica through NuGet |
+## What Guide can do
 
-Guide can inspect the repository and explain its recommendation, but ambiguous or mixed repositories remain your decision. Framework and documentation contributors should use the repository-specific flows in [Guide operations and safety](./guide-operations.md#contributor-repositories).
+After discovery, Guide explains these capabilities before asking what you want:
 
-## Review the preview
+- show the active global Monica skill release and installed-skill health;
+- show verified global bindings for Monica and Monica.Docs source;
+- help you explore Monica without configuring a repository;
+- inspect a workspace and recommend an application, extension, framework, or docs profile;
+- initialize or reconfigure a workspace when you choose to do so;
+- bind or unbind exact Monica and Monica.Docs source independently, or bind both;
+- diagnose and update Monica skills; and
+- route an upstream contribution without performing remote mutations automatically.
 
-The pasted instruction asks your agent to:
+Installing Guide does not initialize a repository, select a profile, install downstream development skills, bind source, or modify files. Guide reports current global state and asks which capability you want to use next.
 
-- install only `monica-guide` from the advertised immutable Monica tag;
-- verify that the selected host can discover the installed skill;
-- restart only when discovery is unavailable;
-- initialize the selected goal without `--apply`; and
-- report the resolved release, actions, affected files, diff, warnings, blockers, and `planDigest`.
+## What a source binding looks like
 
-Read that result before approving it. Setup may install Monica development skills globally and may propose a managed block in the repository's root `AGENTS.md`. It does not authorize commits, pushes, issues, pull requests, or other remote changes.
+Source bindings are global user state, keyed by canonical repository rather than by workspace profile. `status` presents each binding with its repository, exact ref and commit, local path, provenance, and compatibility findings. This makes a verified checkout reusable whenever an agent needs Monica or Monica.Docs internals.
 
-## Apply the unchanged plan
+An application developer may bind neither source, only Monica, only Monica.Docs, or both. A profile can recommend source for a task, but it does not own or hide the binding. Offline work never substitutes another release or a default branch when the exact source is unavailable.
 
-If the preview is correct, tell the agent to apply that exact plan. Guide requires both `--apply` and the displayed `--plan-digest`; it refuses an apply if the repository or plan changed after preview. When that happens, request a fresh preview instead of reusing the old digest.
+## Choose a workspace profile later
 
-After a successful apply, ask the agent to run `doctor` and explain any remaining warnings. Start a new agent run when managed `AGENTS.md` or `CLAUDE.md` instructions changed so the host reads the new repository guidance.
+Profiles are optional initialization presets, not installation choices:
 
-## Start development
+| Profile | Use it when |
+|---|---|
+| `application` | Building a Monica-consuming application |
+| `extension-author` | Building an independently published Monica module or provider |
+| `framework-contributor` | Working in a writable Monica checkout |
+| `docs-contributor` | Working in a writable Monica.Docs checkout |
 
-Try one concrete request after setup:
+Guide can inspect an existing workspace and explain a recommendation. New, mixed, and ambiguous workspaces remain your decision, and you do not need to choose a profile merely to inspect status or manage global source bindings.
+
+## Review changes before apply
+
+Every later mutation remains preview-first. Guide reports the complete action list, file diff, warnings, blockers, and `planDigest`; applying requires the matching `--apply --plan-digest <digest>` and fails after plan or workspace drift. Initialization may install a profile's skill closure globally and propose a managed root `AGENTS.md` block, but it never authorizes commits, pushes, issues, pull requests, or other remote changes.
+
+After an applied workspace change, run `doctor`. Start a new agent run when managed `AGENTS.md` or `CLAUDE.md` instructions changed so the host reads the updated guidance.
+
+## Try the toolbox
 
 ```text
-Explain this repository's Monica architecture and show where a new order feature belongs. Do not change files yet.
+Use Monica Guide to explain its toolbox and help me choose what to do next. Do not change anything yet.
 ```
 
 ```text
-Implement the next application feature using the Monica skills selected for this repository, then run the relevant tests.
+Use Monica Guide to show my active Monica skill release and all global source bindings, then explain any issues.
 ```
 
 ```text
-Run Monica Guide status and tell me whether this repository and my active skill release still agree.
+Use Monica Guide to preview binding exact Monica and Monica.Docs source globally. Show the paths, refs or commits, provenance, compatibility warnings, and plan digest before applying anything.
 ```
 
 For channels, updates, source binding, state, recovery, and contribution controls, continue to [Guide operations and safety](./guide-operations.md).

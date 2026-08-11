@@ -23,8 +23,8 @@ Key facts for navigation:
 
 - This repository is expected to exercise Monica features directly, including framework demos and UI demos.
 - Direct `ProjectReference` links into `../MoLibrary` are intentional. Do not remove Monica UI references merely to suppress IDE restore errors.
-- If the root cause is in Monica, prefer fixing it in `../MoLibrary` instead of adding a Monica.Docs-only workaround.
-- You may inspect and modify `../MoLibrary` when the real issue lives there.
+- If the root cause appears to be in Monica, inspect the exact source in `../MoLibrary` and report the upstream fix instead of adding a Monica.Docs-only workaround.
+- Exact source inspection and lookup in `../MoLibrary` are allowed. Any edit to that sibling repository requires explicit user approval in the current session; this repository and its profiles grant no standing write authorization.
 
 ## Skill Usage
 
@@ -67,4 +67,4 @@ dotnet run --project src/AppHost/Monica.Docs.Demo/Monica.Docs.Demo.csproj
 
 - Keep code comments and annotations in English.
 - Avoid editing `bin/` or `obj/`.
-- When a solution or restore problem comes from external Monica references, prefer fixing Monica itself over weakening the demo surface in Monica.Docs.
+- When a solution or restore problem comes from external Monica references, diagnose it against the exact Monica source. If the user explicitly authorizes sibling edits in the current session, prefer fixing Monica itself over weakening the demo surface in Monica.Docs.

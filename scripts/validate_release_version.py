@@ -65,23 +65,8 @@ MONICA_RELEASE_TAG = re.compile(
     r"(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
     r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$"
 )
-PROMPT_HOSTS = ("codex", "claude-code", "generic")
-PROMPT_GOALS = ("application", "extension")
 PROMPT_LOCALES = ("en-US", "zh-CN")
-PROMPT_AGENT_FLAGS = {
-    "codex": ("--agent codex",),
-    "claude-code": ("--agent claude-code",),
-    "generic": ("--agent codex", "--agent claude-code"),
-}
-PROMPT_AGENT_TARGETS = {
-    "codex": ["codex"],
-    "claude-code": ["claude-code"],
-    "generic": ["codex", "claude-code"],
-}
-PROMPT_PROFILES = {
-    "application": "application",
-    "extension": "extension-author",
-}
+VERIFIED_AGENT_TARGETS = ["codex", "claude-code"]
 
 
 def sha256_digest(content: bytes) -> str:
@@ -370,7 +355,7 @@ def validate_guide_prompts(agent_skill_ref: str, require_ref: bool, failures: li
 
     payload_distribution = payload.get("distribution")
     if (
-        payload.get("schemaVersion") != 2
+        payload.get("schemaVersion") != 3
         or payload.get("repository") != "Tairitsua/Monica"
         or payload.get("skill") != "monica-guide"
         or payload.get("immutableRef") != MONICA_GUIDE_REF_TOKEN
@@ -384,88 +369,55 @@ def validate_guide_prompts(agent_skill_ref: str, require_ref: bool, failures: li
         failures.append(f"unexpected Monica Guide prompt contract in {prompt_path}")
         return
 
-    hosts = payload.get("hosts")
-    goals = payload.get("goals")
-    if (
-        not isinstance(hosts, dict)
-        or set(hosts) != set(PROMPT_HOSTS)
-        or any(
-            not isinstance(hosts.get(host), dict)
-            or hosts[host].get("agentTargets") != PROMPT_AGENT_TARGETS[host]
-            for host in PROMPT_HOSTS
-        )
-        or not isinstance(goals, dict)
-        or set(goals) != set(PROMPT_GOALS)
-        or any(
-            not isinstance(goals.get(goal), dict)
-            or goals[goal].get("profile") != PROMPT_PROFILES[goal]
-            for goal in PROMPT_GOALS
-        )
-    ):
-        failures.append(f"invalid Monica Guide host/goal mapping in {prompt_path}")
+    if payload.get("verifiedAgentTargets") != VERIFIED_AGENT_TARGETS:
+        failures.append(f"invalid Monica Guide verified agent targets in {prompt_path}")
+        return
+
+    immutable_skill_url = (
+        "https://github.com/Tairitsua/Monica/tree/"
+        f"{MONICA_GUIDE_REF_TOKEN}/skills/monica-guide"
+    )
+    fallback = payload.get("fallback")
+    expected_fallback = {
+        "installCommand": (
+            f"npx --yes {cli_package}@{cli_version} add {immutable_skill_url} "
+            "-g -s monica-guide"
+        ),
+        "verifyCommand": f"npx --yes {cli_package}@{cli_version} ls -g --json",
+    }
+    if fallback != expected_fallback:
+        failures.append(f"invalid Monica Guide interactive fallback in {prompt_path}")
         return
 
     locales = payload.get("locales")
     if not isinstance(locales, dict) or set(locales) != set(PROMPT_LOCALES):
         failures.append(f"missing Monica Guide prompt locales in {prompt_path}")
         return
-    cli_reference = f"npx --yes {cli_package}@{cli_version}"
     for locale in PROMPT_LOCALES:
         localized = locales.get(locale)
-        localized_hosts = localized.get("hosts") if isinstance(localized, dict) else None
-        if not isinstance(localized_hosts, dict) or set(localized_hosts) != set(PROMPT_HOSTS):
-            failures.append(f"missing Monica Guide {locale} prompts in {prompt_path}")
-            continue
-        for host in PROMPT_HOSTS:
-            localized_host = localized_hosts.get(host)
-            localized_goals = (
-                localized_host.get("goals")
-                if isinstance(localized_host, dict)
-                else None
+        prompt = localized.get("prompt") if isinstance(localized, dict) else None
+        if (
+            not isinstance(localized, dict)
+            or set(localized) != {"prompt"}
+            or not isinstance(prompt, str)
+            or not prompt.strip()
+            or immutable_skill_url not in prompt
+            or "monica-guide" not in prompt
+            or MONICA_GUIDE_CATALOG_DIGEST_TOKEN in prompt
+            or set(PROMPT_TEMPLATE_TOKEN.findall(prompt)) != {MONICA_GUIDE_REF_TOKEN}
+            or re.search(
+                r"(?:^|\s)(?:init|--workspace|--profile|--agent|--apply)(?:\s|$)",
+                prompt,
             )
-            if not isinstance(localized_goals, dict) or set(localized_goals) != set(
-                PROMPT_GOALS
-            ):
-                failures.append(
-                    f"missing Monica Guide {locale}.{host} goals in {prompt_path}"
-                )
-                continue
-            for goal in PROMPT_GOALS:
-                prompt_entry = localized_goals.get(goal)
-                prompt = (
-                    prompt_entry.get("prompt")
-                    if isinstance(prompt_entry, dict)
-                    else None
-                )
-                if (
-                    not isinstance(prompt, str)
-                    or not prompt.strip()
-                    or MONICA_GUIDE_REF_TOKEN not in prompt
-                    or MONICA_GUIDE_CATALOG_DIGEST_TOKEN not in prompt
-                    or f"--release-tag {MONICA_GUIDE_REF_TOKEN}" not in prompt
-                    or f"--profile {PROMPT_PROFILES[goal]}" not in prompt
-                    or "--json" not in prompt
-                    or "--apply" in prompt
-                    or "--channel" in prompt
-                    or set(PROMPT_TEMPLATE_TOKEN.findall(prompt))
-                    - {
-                        MONICA_GUIDE_REF_TOKEN,
-                        MONICA_GUIDE_CATALOG_DIGEST_TOKEN,
-                    }
-                    or cli_reference not in prompt
-                    or f"{cli_package}@latest" in prompt
-                    or any(flag not in prompt for flag in PROMPT_AGENT_FLAGS[host])
-                ):
-                    failures.append(
-                        f"invalid Monica Guide {locale}.{host}.{goal} prompt in {prompt_path}"
-                    )
+        ):
+            failures.append(f"invalid universal Monica Guide {locale} prompt in {prompt_path}")
 
     normalized_ref = agent_skill_ref.strip()
     if require_ref and not normalized_ref:
         failures.append("--agent-skill-ref is required with --verify-published")
     if require_ref and normalized_ref and MONICA_RELEASE_TAG.fullmatch(normalized_ref) is None:
         failures.append(
-            "public website validation requires a v<semver> Monica tag that passed install smoke testing"
+            "public website validation requires a v<semver> Monica tag that passed installation and discovery smoke testing"
         )
     if normalized_ref and IMMUTABLE_AGENT_SKILL_REF.fullmatch(normalized_ref) is None:
         failures.append(

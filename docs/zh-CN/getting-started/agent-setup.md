@@ -1,60 +1,73 @@
 ---
 title: Agent 设置
-description: 为 Monica 仓库设置 Codex 或 Claude Code，预览变更，并安全开始开发。
+description: 在任意兼容 Agent Skills 的编码 Agent 中安装 Monica Guide，了解工具箱，并在准备好后选择开发路线。
 sidebar_position: 2
 ---
 
-`monica-guide` 用来让编码 Agent 为 Monica 仓库做好开发准备。它会按照你的目标安装开发指导、检查仓库，并在修改文件前预览设置方案。它不是运行时包，不会替代 .NET CLI，也不会在初始化期间修改业务代码。
+`monica-guide` 是面向编码 Agent 的 Monica 全局工具箱。即使你还在了解 Monica，没有仓库，也没决定要开发应用、扩展、框架还是文档，也可以先安装它。它不是运行时包，也不会替代 .NET CLI。
 
-## 开始前
+## 选定仓库之前就可以安装
 
-1. 在目标仓库根目录打开 **Codex** 或 **Claude Code**。
-2. 打开首页的 [Agent 设置起步区](/zh-CN/#start)，选择编码 Agent 与开发目标。
-3. 复制生成的指令，并粘贴到 **Agent 对话框**，而不是终端。
+1. 打开首页的 [Agent 设置起步区](/zh-CN/#start)。
+2. 复制唯一的通用指令。
+3. 把指令粘贴到任意**兼容 Agent Skills 的编码 Agent** 对话框，而不是终端。
 
-通常每个用户在一台机器上只需安装一次 Guide，每个仓库只需初始化一次。官网指令会把 Guide 固定到不可变的 Monica 发布版本，并要求它在 Dry-run 预览后停止。
+指令会向 Agent 提供一个不可变的 Monica Git URL。Agent 只会全局安装 `monica-guide`，验证是否真正发现该 Skill，只有安装成功但当前会话仍不可见时才重启。Codex 与 Claude Code 是发布 Smoke Test 验证过的宿主，但这条指令不会绑定任何一个宿主。
 
-## 选择开发目标
+如果 Agent 无法自行安装 Skill，可展开首页的交互式 `npx skills` 备用方案，然后在终端运行。它会询问要使用哪个已检测到的 Agent 目标，不会预设宿主。
 
-| 目标 | 适用场景 | 源码要求 |
-|---|---|---|
-| **开发 Monica 应用** | 仓库通过 Monica 包实现应用 | 精确的只读 Monica 源码可选；依赖框架内部行为时建议绑定 |
-| **开发扩展** | 创建独立 Monica 模块、Provider、UI 包或配套镜像 | 必须绑定精确的只读 Monica 源码；扩展项目本身仍通过 NuGet 使用 Monica |
+## Guide 可以做什么
 
-Guide 可以检查仓库并解释建议，但对于模糊或混合仓库，最终选择仍由你确认。框架与文档贡献者应使用[Guide 运维与安全](./guide-operations.md#贡献者仓库)中的仓库专用流程。
+发现 Skill 后，Guide 会先解释以下能力，然后询问你想做什么：
 
-## 审核预览
+- 显示当前激活的 Monica Skill 全局发布版本和已安装 Skill 健康状态；
+- 显示已验证的 Monica 与 Monica.Docs 全局源码绑定；
+- 在不配置仓库的情况下帮你了解 Monica；
+- 检查工作区，并建议应用、扩展、框架或文档 Profile；
+- 在你选择后初始化或重新配置工作区；
+- 独立绑定或解除 Monica 与 Monica.Docs 精确源码，也可同时绑定两者；
+- 诊断并更新 Monica Skill；
+- 安全路由上游贡献，但不自动执行远程变更。
 
-粘贴后的指令会要求 Agent：
+安装 Guide 不会初始化仓库、选择 Profile、安装下游开发 Skill、绑定源码或修改文件。Guide 会先报告当前全局状态，再询问你想使用哪项能力。
 
-- 只从官网公布的不可变 Monica tag 安装 `monica-guide`；
-- 验证所选宿主能否发现已安装的 Skill；
-- 仅在无法发现 Skill 时重启；
-- 按所选目标初始化，但不传入 `--apply`；
-- 报告解析后的发布版本、操作、受影响文件、Diff、警告、阻塞项与 `planDigest`。
+## 源码绑定会如何呈现
 
-请先审核结果再批准。设置过程可能全局安装 Monica 开发 Skill，也可能建议在仓库根 `AGENTS.md` 中加入托管区块；它不会授权 Commit、Push、Issue、Pull Request 或其他远程变更。
+源码绑定保存在全局用户状态中，以规范仓库为键，而不是归属某个工作区 Profile。`status` 会列出每个绑定的仓库、精确 ref 与 commit、本地路径、来源和兼容性检查结果。因此，任何需要 Monica 或 Monica.Docs 内部实现的 Agent 都可重用已验证 Checkout。
 
-## 应用未变化的计划
+应用开发者可以两个都不绑定，只绑定 Monica，只绑定 Monica.Docs，或同时绑定两者。Profile 可以根据任务推荐源码，但不会拥有或隐藏绑定。离线工作时，精确源码不可用就会停止，绝不会替换成其他发布版本或默认分支。
 
-如果预览正确，请让 Agent 应用这份原样计划。Guide 同时要求 `--apply` 与预览中显示的 `--plan-digest`；如果预览后仓库或计划发生变化，它会拒绝执行。此时应重新生成预览，不要复用旧 Digest。
+## 稍后再选择工作区 Profile
 
-应用成功后，让 Agent 运行 `doctor` 并解释仍存在的警告。如果托管的 `AGENTS.md` 或 `CLAUDE.md` 指令发生变化，请开始一次新的 Agent 运行，让宿主读取新的仓库指导。
+Profile 是可选的初始化预设，而不是安装 Guide 的前置选择：
 
-## 开始开发
+| Profile | 适用场景 |
+|---|---|
+| `application` | 开发消费 Monica 的应用 |
+| `extension-author` | 开发独立发布的 Monica 模块或 Provider |
+| `framework-contributor` | 在可写 Monica Checkout 中工作 |
+| `docs-contributor` | 在可写 Monica.Docs Checkout 中工作 |
 
-设置完成后，可以先提出一个具体请求：
+Guide 可以检查现有工作区并解释建议。新建、混合或模糊的工作区仍由你决定；仅为查看状态或管理全局源码绑定时，不需要选择 Profile。
+
+## 应用前审核变更
+
+后续的每个修改型操作仍然会先预览。Guide 会报告完整操作列表、文件 Diff、警告、阻塞项与 `planDigest`；应用时必须提供匹配的 `--apply --plan-digest <digest>`，计划或工作区漂移后会失败。初始化可能全局安装 Profile 的 Skill 闭包，也可能建议托管根 `AGENTS.md` 区块，但永远不会授权 Commit、Push、Issue、Pull Request 或其他远程变更。
+
+工作区变更应用后，运行 `doctor`。如果托管的 `AGENTS.md` 或 `CLAUDE.md` 指令发生变化，请开始一次新的 Agent 运行，让宿主读取更新后的指导。
+
+## 试试这个工具箱
 
 ```text
-解释这个仓库的 Monica 架构，并指出新增订单功能应该放在哪里。先不要修改文件。
+使用 Monica Guide 解释它的工具箱，并帮我选择下一步。暂时不要修改任何内容。
 ```
 
 ```text
-使用此仓库已选择的 Monica Skill 实现下一个应用功能，然后运行相关测试。
+使用 Monica Guide 显示我当前激活的 Monica Skill 发布版本和所有全局源码绑定，再解释存在的问题。
 ```
 
 ```text
-运行 Monica Guide status，并告诉我此仓库是否仍与当前激活的 Skill 发布版本一致。
+使用 Monica Guide 预览全局绑定精确 Monica 与 Monica.Docs 源码。在应用前显示建议路径、ref 或 commit、来源、兼容性警告与 plan digest。
 ```
 
 如需了解通道、更新、源码绑定、状态、恢复与贡献控制，请继续阅读 [Guide 运维与安全](./guide-operations.md)。

@@ -9,9 +9,9 @@ test.describe("documentation shell", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Agent setup" })).toBeVisible();
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       "content",
-      "Set up Codex or Claude Code for a Monica repository, preview the changes, and begin development safely.",
+      "Install Monica Guide in any Agent Skills-compatible coding agent, explore its toolbox, and choose a development path when you are ready.",
     );
-    await expect(page.getByRole("heading", { level: 2, name: "Before you start" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Install before choosing a repository" })).toBeVisible();
   });
 
   test("renders a migrated document title only from the article shell", async ({ page }) => {
@@ -57,6 +57,6 @@ test.describe("documentation shell", () => {
 
     await page.getByLabel("文档导航").getByRole("link", { name: "Agent 设置" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Agent 设置" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 2, name: "开始前" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "选定仓库之前就可以安装" })).toBeVisible();
   });
 });
