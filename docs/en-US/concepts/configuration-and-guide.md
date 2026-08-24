@@ -34,7 +34,7 @@ An `Add*`, `Use*`, `Map*`, or `Register*` extension on `ModuleRegistration<TModu
 - satisfies a required feature; or
 - needs a dedicated configuration object that does not belong in the primary option type.
 
-Examples include `UseInMemoryMetadataRepository()`, `UseSchedulerScope("local-dev")`, `MapSignalRHub<THub>(...)`, and `UseSetup<TSetup>()`.
+Examples include `UseInMemoryStore()`, `UseSchedulerScope("local-dev")`, `MapSignalRHub<THub>(...)`, and `UseSetup<TSetup>()`.
 
 Registration extensions remain valid only inside the enclosing `AddMonica(...)` callback. The returned registration is sealed with the graph and must not be stored for later mutation.
 

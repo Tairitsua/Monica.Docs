@@ -41,7 +41,7 @@ app.Run();
 
 典型例子：
 
-- `monica.AddJobScheduler().UseInMemoryMetadataRepository().UseSchedulerScope("local").UseInMemoryProvider()`
+- `monica.AddJobScheduler().UseInMemoryStore().UseSchedulerScope("local").UseCatalogRelease("local:dev", 1, [new("local", "local:dev")]).AsStandalone()`
 - `monica.AddSignalR().AddSignalR<...>().MapSignalRHub<THub>(...)`
 - `monica.AddDataChannel().UseSetup<TSetup>()`
 

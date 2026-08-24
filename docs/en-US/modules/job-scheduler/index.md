@@ -1,10 +1,10 @@
 ---
 title: JobScheduler
-description: Run recurring and triggered work with inspectable definitions and execution history.
+description: An immutable job catalog control plane with a revision-aware durable execution plane.
 sidebar_position: 1
 ---
 
-`Monica.JobScheduler` discovers `RecurringJob` and `TriggeredJob<TArgs>` types, reconciles definitions, executes work with scoped dependency injection, and tracks execution state. The module deliberately requires a metadata repository, a scheduler scope, and an execution provider.
+`Monica.JobScheduler` discovers `RecurringJob` and `TriggeredJob<TArgs>` types, publishes them as immutable catalog releases, and hands them to revision-aware workers through a durable leased queue. The module requires three explicit choices: **a unified store, a scheduler scope, and an immutable catalog release**.
 
 Each recurring or triggered attempt enters the shared [Execution Pipeline](../execution-pipeline/index.md), but its descriptor uses `ExecutionTransactionMode.None`. The JobScheduler adapter therefore creates no automatic outer Unit of Work. Write-heavy jobs must divide work into business-sized or bounded batches with explicit `IUnitOfWorkManager.RunAsync(...)` scopes.
 
@@ -23,9 +23,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddMonica(monica =>
 {
     monica.AddJobScheduler()
-        .UseInMemoryMetadataRepository()
+        .UseInMemoryStore()
         .UseSchedulerScope("orders-development")
-        .UseInMemoryProvider();
+        .UseCatalogRelease(
+            "orders-development:1",
+            deploymentGeneration: 1,
+            [new("orders", "orders-development:1")])
+        .AsStandalone()
+        .UseLocalWorkerIdentity("orders", "orders-development:1");
 });
 
 var app = builder.Build();
@@ -48,19 +53,29 @@ public sealed class OrderBacklogJob(ILogger<OrderBacklogJob> logger)
 }
 ```
 
-## Required registration choices
+## Packages and registration
 
-| Requirement | Local choice | Production/provider choice |
-|---|---|---|
-| Metadata | `UseInMemoryMetadataRepository()` | `UseCustomMetadataRepository<T>()` or `Monica.JobScheduler.EfCore` |
-| Scope | `UseSchedulerScope("...")` | Use a stable key unique to the application and environment. |
-| Execution coordination | `UseInMemoryProvider()` | `UseDistributeProvider()` after configuring distributed EventBus, cancellation, state, and discovery providers. |
+| Item | Value |
+|---|---|
+| Package | `Monica.JobScheduler` |
+| Registration | `monica.AddJobScheduler()` |
+| EF Core persistence | `Monica.JobScheduler.EfCore` (`UseEfCoreStore(...)`) |
+| Operational UI | `monica.AddJobSchedulerUI()` |
 
-The default cron timezone is `TimeZoneInfo.Local`. Zombie detection, long-interval scheduling, and history cleanup are enabled. The in-memory path is for local or single-process operation; it does not provide durable history or cross-instance coordination. `Monica.JobScheduler.UI` is a separate Stable dashboard package.
+## Public surface
+
+- `IRecurringJob`, `ITriggeredJob<TArgs>`: job contracts, with the `RecurringJob` and `TriggeredJob<TArgs>` base classes.
+- `JobConfigAttribute`: declares a job's display name, description, concurrency, retries, timeout, cron schedule, and validity window.
+- `ITriggeredJobManager`: the host entry point for enqueuing triggered work and cancelling executions from code.
+- `IJobSchedulerStore`: the single durable correctness boundary for catalog, policy, queue, lease, recurring-cursor, and analytics state.
+- `JobSchedulerFacade`: the control-plane facade for host APIs and the operational UI (overview, catalog, policy, trigger, execution, analytics, cancellation, release rollback).
+- `JobExecutionFeature`: the typed context for the current attempt inside the execution pipeline.
 
 ## Next steps
 
 - [Quick start](./quick-start.md)
+- [Catalog releases and lifecycle](./catalog-lifecycle.md)
 - [Configuration](./configuration.md)
-- [Registration Extensions and Providers](./guide-and-providers.md)
+- [Registration extensions and roles](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
+- [Operational UI workspace](./ui-workspace.md)

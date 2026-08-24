@@ -51,9 +51,14 @@ builder.AddMonica(monica =>
     });
 
     monica.AddJobScheduler()
-        .UseInMemoryMetadataRepository()
+        .UseInMemoryStore()
         .UseSchedulerScope("orders")
-        .UseInMemoryProvider();
+        .UseCatalogRelease(
+            "orders:development",
+            deploymentGeneration: 1,
+            [new("orders", "orders:development")])
+        .AsStandalone()
+        .UseLocalWorkerIdentity("orders", "orders:development");
 
     monica.AddJobSchedulerUI();
 });

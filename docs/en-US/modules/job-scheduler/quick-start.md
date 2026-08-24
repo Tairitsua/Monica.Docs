@@ -26,9 +26,14 @@ builder.AddMonica(monica =>
         {
             options.MaxWorkerExecutionThreads = 4;
         })
-        .UseInMemoryMetadataRepository()
+        .UseInMemoryStore()
         .UseSchedulerScope("local-development")
-        .UseInMemoryProvider();
+        .UseCatalogRelease(
+            "local-development:1",
+            deploymentGeneration: 1,
+            [new("local-development", "local-development:1")])
+        .AsStandalone()
+        .UseLocalWorkerIdentity("local-development", "local-development:1");
 });
 
 [JobConfig(JobName = "Ping job", CronSchedule = "0 */5 * * * *")]
@@ -39,6 +44,15 @@ public sealed class PingJob : IRecurringJob
 }
 ```
 
-JobScheduler always requires a metadata repository, scheduler scope, and execution provider. The in-memory choices are intended for local or single-process use.
+JobScheduler always requires a unified store, a scheduler scope, and an immutable catalog release. The in-memory store is intended for local or single-process use; it does not survive restarts and cannot coordinate multiple hosts.
+
+`UseCatalogRelease(...)` takes a release identifier, a monotonically increasing `deploymentGeneration`, and the complete owner-to-worker-revision manifest. In a single-process sample the manifest only contains the local owner; worker and standalone hosts must always include their local owner. See [Catalog releases and lifecycle](./catalog-lifecycle.md).
 
 The job attempt enters the execution pipeline and can receive registered diagnostics, routing, and application behaviors that match its descriptor, but it does not receive an automatic outer Unit of Work. Add explicit transaction scopes only around its database write units.
+
+## Next steps
+
+- [Catalog releases and lifecycle](./catalog-lifecycle.md)
+- [Configuration](./configuration.md)
+- [Registration extensions and roles](./guide-and-providers.md)
+- [Scenarios](./scenarios.md)

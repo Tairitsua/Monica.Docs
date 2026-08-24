@@ -34,7 +34,7 @@ public sealed class ModuleAnalyticsOption : ModuleOptions<ModuleAnalytics>
 - 满足必需 Feature；
 - 使用不属于主 Option 的专用配置对象。
 
-例如 `UseInMemoryMetadataRepository()`、`UseSchedulerScope("local-dev")`、`MapSignalRHub<THub>(...)` 与 `UseSetup<TSetup>()`。
+例如 `UseInMemoryStore()`、`UseSchedulerScope("local-dev")`、`MapSignalRHub<THub>(...)` 与 `UseSetup<TSetup>()`。
 
 注册扩展只在外层 `AddMonica(...)` 回调内有效。返回的 Registration 会随模块图一起封闭，不能保存后再修改。
 
