@@ -10,7 +10,7 @@ sidebar_position: 2
 dotnet add package Monica.JobScheduler --prerelease
 ```
 
-## Register the three required choices
+## Register the two required choices
 
 ```csharp
 using Monica.Core.Modularity.Extensions;
@@ -27,32 +27,43 @@ builder.AddMonica(monica =>
             options.MaxWorkerExecutionThreads = 4;
         })
         .UseInMemoryStore()
-        .UseSchedulerScope("local-development")
-        .UseCatalogRelease(
-            "local-development:1",
-            deploymentGeneration: 1,
-            [new("local-development", "local-development:1")])
-        .AsStandalone()
-        .UseLocalWorkerIdentity("local-development", "local-development:1");
+        .UseSchedulerScope("local-development");
 });
 
 [JobConfig(JobName = "Ping job", CronSchedule = "0 */5 * * * *")]
-public sealed class PingJob : IRecurringJob
+public sealed class PingJob(ILogger<PingJob> logger) : RecurringJob(logger)
 {
-    public Task ExecuteAsync(CancellationToken cancellationToken) =>
-        Task.CompletedTask;
+    public override Task ExecuteAsync(CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Ping");
+        return Task.CompletedTask;
+    }
 }
 ```
 
-JobScheduler always requires a unified store, a scheduler scope, and an immutable catalog release. The in-memory store is intended for local or single-process use; it does not survive restarts and cannot coordinate multiple hosts.
+JobScheduler always requires a unified store and a scheduler scope; module validation fails at startup when either is missing. The in-memory store is intended for local or single-process use; it does not survive restarts and cannot coordinate multiple hosts.
 
-`UseCatalogRelease(...)` takes a release identifier, a monotonically increasing `deploymentGeneration`, and the complete owner-to-worker-revision manifest. In a single-process sample the manifest only contains the local owner; worker and standalone hosts must always include their local owner. See [Catalog releases and lifecycle](./catalog-lifecycle.md).
+The host resolves its owner key from `ProjectName` (or the application-level project name, falling back to the entry assembly name) and its worker instance id from the `HOSTNAME` environment variable (or `machine:pid`). Both feed job discovery, snapshot publication, and lease fencing automatically.
 
 The job attempt enters the execution pipeline and can receive registered diagnostics, routing, and application behaviors that match its descriptor, but it does not receive an automatic outer Unit of Work. Add explicit transaction scopes only around its database write units.
 
-## Next steps
+## First useful configuration
 
-- [Catalog releases and lifecycle](./catalog-lifecycle.md)
+Two settings cover most real adjustments:
+
+```csharp
+monica.AddJobScheduler(options =>
+    {
+        options.CronTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Shanghai");
+        options.RecurringJobDebugMode = builder.Environment.IsDevelopment();
+    })
+```
+
+`CronTimeZone` unifies cron interpretation across hosts (persisted occurrences are always UTC), and `RecurringJobDebugMode` suppresses automatic recurring materialization in development while leaving run-now and triggered work available.
+
+## What to read next
+
+- [Catalog and lifecycle](./catalog-lifecycle.md)
 - [Configuration](./configuration.md)
-- [Registration extensions and roles](./guide-and-providers.md)
+- [Registration and providers](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)

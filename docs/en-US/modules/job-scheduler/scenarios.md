@@ -1,23 +1,20 @@
 ---
 title: Scenarios
-description: Compose local, durable, and multi-host schedulers with explicit transaction ownership.
+description: Compose local, durable, and multi-service schedulers with explicit transaction ownership.
 sidebar_position: 6
 ---
 
 ## Scenario 1 — Run locally with the in-memory store
 
-The best combination for docs, demos, and local verification: `UseInMemoryStore()` + `UseSchedulerScope("local-dev")` + `UseCatalogRelease(...)` + `AsStandalone()`. It lets one process exercise catalog convergence, scheduling, and execution. See the [Quick start](./quick-start.md) and `examples/JobSchedulerMinimal` in the Monica repository for complete samples.
+The best combination for docs, demos, and local verification: `UseInMemoryStore()` + `UseSchedulerScope("local-dev")`. One process exercises discovery, snapshot publication, scheduling, and execution. See the [Quick start](./quick-start.md) and `examples/JobSchedulerMinimal` in the Monica repository for complete samples.
 
 ## Scenario 2 — Persist with the EF Core store
 
-For real deployments, switch the unified store to `Monica.JobScheduler.EfCore` and vary the scope key and release manifest per environment. Local debugging and production then reuse the same Monica registration shape.
+For real deployments, switch the unified store to `Monica.JobScheduler.EfCore` and vary the scope key per environment. Local debugging and production then reuse the same Monica registration shape.
 
 ```csharp
 using Microsoft.EntityFrameworkCore;
-using Monica.JobScheduler.Models.Catalog;
 using Monica.Modules;
-
-var owners = new[] { new JobCatalogOwnerManifest("orders", "orders:2026.8") };
 
 builder.AddMonica(monica =>
 {
@@ -29,35 +26,24 @@ builder.AddMonica(monica =>
         {
             optionsBuilder.UseNpgsql(builder.Configuration.GetConnectionString("JobScheduler")!);
         })
-        .UseSchedulerScope(builder.Environment.IsDevelopment() ? "orders-debug" : "orders")
-        .UseCatalogRelease("orders:2026.8", deploymentGeneration: 12, owners)
-        .AsStandalone();
+        .UseSchedulerScope(builder.Environment.IsDevelopment() ? "orders-debug" : "orders");
 });
 ```
 
-Every replica of one scope must share the same database and byte-equivalent release manifests; production deployments should use PostgreSQL-compatible serializable transactions.
+Every host of one scope must point at the same database; production deployments should use PostgreSQL-compatible serializable transactions.
 
-## Scenario 3 — Split control plane and workers across hosts
+## Scenario 3 — Share one scope across services
 
-To scale out, deploy the control plane and workers separately against the same database and scope:
+In a microservice deployment, every service registers the same store and scope, and each service's jobs stay with that service:
 
 ```csharp
-// Control-plane host: carries no executable job types.
+// In every service of the environment — identical store + scope:
 monica.AddJobScheduler()
-    .UseEfCoreStore((sp, optionsBuilder) => optionsBuilder.UseNpgsql(connectionString))
-    .UseSchedulerScope("orders")
-    .UseCatalogRelease("orders:2026.8", deploymentGeneration: 12, owners)
-    .AsControlPlane();
-
-// Worker host: the manifest must include its local owner.
-monica.AddJobScheduler()
-    .UseEfCoreStore((sp, optionsBuilder) => optionsBuilder.UseNpgsql(connectionString))
-    .UseSchedulerScope("orders")
-    .UseCatalogRelease("orders:2026.8", deploymentGeneration: 12, owners)
-    .AsWorker();
+    .UseEfCoreStore((sp, optionsBuilder) => optionsBuilder.UseNpgsql(sharedConnectionString))
+    .UseSchedulerScope("zgyg-dev");
 ```
 
-Workers claim only exact-revision executions. To roll out a new revision, update the worker revision in the manifest and publish a higher `deploymentGeneration`. To roll back, use `JobSchedulerFacade.ReactivateReleaseAsync(...)` to explicitly reactivate the older release.
+The owner key resolves per service (for example `AlarmService.API`), so each host discovers, schedules, and executes only its own jobs, while replicas of the same service share one owner queue and coordinate through leases. Operations see every service's jobs in one catalog, and the runtime page lists each owner's footprint and liveness. A service's jobs never execute inside another service, so a job always runs where its dependencies and configuration exist.
 
 ## Scenario 4 — Trigger parameterized work from code
 
@@ -81,7 +67,7 @@ public sealed class InvoiceService(ITriggeredJobManager jobs)
 }
 ```
 
-Operator-side triggering goes through `JobSchedulerFacade.TriggerAsync(...)` and `RunRecurringNowAsync(...)`; both pass admission checks against the active catalog and the durable queue.
+Operator-side triggering goes through `JobSchedulerFacade.TriggerAsync(...)` and `RunRecurringNowAsync(...)`; both pass admission checks against the active definitions and the durable queue.
 
 ## Scenario 5 — Bound database work explicitly
 
@@ -100,9 +86,9 @@ If the job must publish an event or call another external system, commit the dat
 
 ## Common mistakes
 
-- Omitting one of the three required choices (store, scope, catalog release), which fails module validation at startup.
-- Reusing one scheduler scope across unrelated environments, mixing catalogs, queues, and history.
-- Providing inconsistent release manifests across hosts of the same release (release id, generation, or owner manifest not byte-equivalent).
-- Leaving the local owner out of a worker or standalone manifest, or attaching executable job types to a `ControlPlane` host.
+- Omitting one of the two required choices (store, scope), which fails module validation at startup.
+- Reusing one scheduler scope across unrelated environments, mixing definitions, queues, and history.
+- Pointing replicas of one service at different stores or scopes, splitting one owner's queue.
+- Expecting a host to execute another owner's jobs; scheduling is owner-local by design.
 - Assuming a job attempt receives an automatic Unit of Work because it is a business execution descriptor.
 - Holding database locks across network calls or an unbounded scan.

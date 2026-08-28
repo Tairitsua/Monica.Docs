@@ -10,7 +10,7 @@ sidebar_position: 2
 dotnet add package Monica.JobScheduler --prerelease
 ```
 
-## 最小注册
+## 注册两个必需选择
 
 ```csharp
 using Monica.Core.Modularity.Extensions;
@@ -27,36 +27,41 @@ builder.AddMonica(monica =>
             options.MaxWorkerExecutionThreads = 4;
         })
         .UseInMemoryStore()
-        .UseSchedulerScope("local-dev")
-        .UseCatalogRelease(
-            "local-dev:development",
-            deploymentGeneration: 1,
-            [new("local-dev", "local-dev:development")])
-        .AsStandalone()
-        .UseLocalWorkerIdentity("local-dev", "local-dev:development");
+        .UseSchedulerScope("local-dev");
 });
 
-[JobConfig(JobName = "Ping Job", CronSchedule = "0 */5 * * * *")]
-public sealed class PingJob : IRecurringJob
+[JobConfig(JobName = "Ping job", CronSchedule = "0 */5 * * * *")]
+public sealed class PingJob(ILogger<PingJob> logger) : RecurringJob(logger)
 {
-    public Task ExecuteAsync(CancellationToken cancellationToken)
+    public override Task ExecuteAsync(CancellationToken cancellationToken)
     {
+        logger.LogInformation("Ping");
         return Task.CompletedTask;
     }
 }
 ```
 
+JobScheduler 始终要求统一存储与调度作用域，缺一会在启动时被模块校验拒绝。内存存储面向本地或单进程场景；它不跨越进程重启，也无法协调多个宿主。
+
+宿主自动从 `ProjectName`（或应用级项目名，回退到入口程序集名）解析所有者键，从 `HOSTNAME` 环境变量（否则 `machine:pid`）解析工作实例标识。两者直接驱动作业发现、快照发布与租约 fencing。
+
 ## 第一个有价值的配置
 
-`JobScheduler` 不是"只加模块就能跑"的类型。它要求你明确三件事：**统一存储、调度作用域、不可变目录发布**。本地开发时，最小可运行组合通常是 `UseInMemoryStore()` + `UseSchedulerScope("local-dev")` + `UseCatalogRelease(...)`，并配合 `AsStandalone()` 让单进程同时承担控制面与工作面。
+两个设置覆盖绝大多数真实调整：
 
-`UseCatalogRelease(...)` 需要一个发布标识、单调递增的部署代号（`deploymentGeneration`）以及完整的 owner 到 worker revision 清单。单进程示例里，清单只需包含本地 owner；worker 与 standalone 宿主必须在清单里包含自己的本地 owner。详见[目录发布与生命周期](./catalog-lifecycle.md)。
+```csharp
+monica.AddJobScheduler(options =>
+    {
+        options.CronTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Shanghai");
+        options.RecurringJobDebugMode = builder.Environment.IsDevelopment();
+    })
+```
 
-作业尝试会进入统一执行管线，因此可以获得宿主已注册且匹配的诊断、路由和应用行为，但不会获得自动外层 UnitOfWork。只有数据库写入单元需要显式事务作用域。
+`CronTimeZone` 统一各宿主的 Cron 解释（持久化的执行时点始终换算为 UTC）；`RecurringJobDebugMode` 在开发期抑制自动物化，但立即执行与触发式作业不受影响。
 
 ## 接下来读什么
 
-- [目录发布与生命周期](./catalog-lifecycle.md)
+- [目录与生命周期](./catalog-lifecycle.md)
 - [Configuration](./configuration.md)
-- [注册扩展与角色](./guide-and-providers.md)
+- [注册与提供程序](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)

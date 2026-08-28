@@ -1,51 +1,43 @@
 ---
-title: Catalog releases and lifecycle
-description: Core concepts behind immutable catalog releases, activation convergence, operator policy, and execution templates.
+title: Catalog and lifecycle
+description: Owner-local identity, snapshot publication, operator policy, and the execution lifecycle.
 sidebar_position: 3
 ---
 
-JobScheduler separates "what jobs the code declares" from "how operations run those jobs" into two independently evolving planes: the control plane stages, publishes, and activates immutable catalog releases, while the worker plane claims and executes work by exact revision. Once the concepts below click, the remaining configuration and operations are straightforward.
+JobScheduler separates "what jobs the code declares" from "how operations run those jobs". Every host owns both planes for its own jobs: it publishes its declarations as an owner snapshot and runs its own queue, while operations read one shared catalog and adjust policy per job. Once the concepts below click, the remaining configuration and operations are straightforward.
 
 ## Identity model
 
 | Concept | Description |
 |---|---|
-| Scheduler scope (`UseSchedulerScope`) | The stable namespace of one environment or logical scheduler installation. Every control-plane and worker host in the same scope shares the catalog, queue, and history; different environments must use different scope keys. |
-| Catalog release (`UseCatalogRelease`) | One immutable deployment release, identified by a release id, a monotonically increasing `deploymentGeneration`, and the complete owner manifest. |
-| Owner manifest | The mapping from every owner to one worker revision. Each host participating in the same release must provide byte-equivalent values; removing an owner from the manifest decommissions that owner's jobs when the release activates. |
-| Logical job key | The job type's full name, unique within a scope. Operator policy is bound to the logical key, not to a specific deployment revision. |
+| Scheduler scope (`UseSchedulerScope`) | The stable namespace of one environment or logical scheduler installation. Every host in the same scope shares definitions, queue, and history; different environments must use different scope keys. |
+| Owner key | The identity each host schedules and executes under: explicit `ProjectName` → application-level project name → entry assembly name. Replicas of one service share the owner key; different services get different owners. |
+| Logical job key | The job type's full name, unique within an owner. Operator policy binds to `(owner, job key)`, so renaming or moving the class changes its identity. |
+| Worker instance id | `WorkerInstanceId` (`HOSTNAME` env var, else `machine:pid`) fences leases per process; replicas of one service claim distinct instances of the same owner's queue. |
 
-## Publication and activation
+## Owner snapshots and absent definitions
 
-The control plane converges a release in this order:
-
-1. **Stage the release**: local job declarations and the owner manifest are written to the store.
-2. **Publish owner snapshots**: once every owner's catalog snapshot is ready, the release becomes activatable.
-3. **Activate**: the store appends a new activation epoch. Activation never mutates history; rollback uses `JobSchedulerFacade.ReactivateReleaseAsync(...)` to append a new epoch instead of rewriting existing records.
-
-Normal deployments rely on the monotonic `deploymentGeneration` to order intent automatically; explicit reactivation exists only for deliberate operator rollback.
-
-**Convergence** means the desired release matches the active catalog, and every owner's active workers match its declared revision. The overview page and `GetOverviewAsync(...)` expose per-owner convergence status. A `ControlPlane` host cannot carry executable job types — it only publishes releases and materializes recurring work.
+Each host periodically publishes a `JobOwnerSnapshot` with every job type it currently carries (default cadence `SnapshotSyncInterval`, 30s). The store keeps definitions that disappear from a snapshot as **absent**: they stop being scheduled, their retained executions stay available for audit, and the UI marks them so operators can distinguish retired work from a missing deployment. A definition becomes present again as soon as its owner republishes it.
 
 ## Declaration versus operator policy
 
-- **Declaration (`JobDeclaration`)**: the immutable contract that comes from code and `[JobConfig]`, frozen per release. Covers concurrency, retries, timeout, cron expression, timezone, and validity window.
+- **Declaration (`JobDeclaration`)**: the immutable contract that comes from code and `[JobConfig]`. Covers concurrency, retries, timeout, cron expression, timezone, and validity window.
 - **Operator policy (`JobPolicy`)**: an independently editable overlay replaced atomically through `JobSchedulerFacade.UpdatePolicyAsync(...)` / `UpdatePoliciesAsync(...)` with optimistic concurrency. It can override display name, description, concurrency, retries, timeout, schedule (cron plus validity window), the disabled flag, and retention policy (retained record count and retention days).
 
 Two semantics matter most:
 
 - **Unset overrides inherit declaration values.** Policy stores only what operations explicitly changed; upgrading job code never forces a policy refresh.
-- **Policy is sticky to the logical job key.** Changing a job's owner or revision does not lose its policy; `IsPolicyReviewOutdated` flags release drift when the policy was last reviewed against an older job revision than the active release provides.
+- **Policy is sticky to the logical job key.** Editing policy never mutates the declaration; both stay independently versioned with a concurrency stamp that fences stale edits.
 
 Batch updates (up to 100 items) settle per item: a single failure does not roll back successful items, so operators only refresh and retry the stale selections.
 
 ## Execution template freezing
 
-When an execution is enqueued, the store captures an immutable **execution template** for it: the effective configuration plus the applied policy revision (`AppliedPolicyRevision`). Queued or running executions are immune to later policy edits; operational changes only affect attempts enqueued afterwards.
+When an execution is enqueued, the store captures an immutable **execution template** for it: the effective configuration at admission time. Queued or running executions are immune to later policy edits; operational changes only affect attempts enqueued afterwards.
 
 ## Leases and fenced execution
 
-Workers advertise their executable revision through capability leases and hold each attempt through execution leases; every state transition happens inside serializable store transactions with row-level fencing. Expired leases are recovered and retried by the control plane. When job code gets stuck, the host requests process shutdown after a grace period so an external supervisor can terminate the unsafe process instead of risking double writes.
+Every state transition happens inside serializable store transactions with row-level fencing. The worker claims its own owner's queued executions in bounded batches, holds each attempt through an execution lease, and renews the lease while the attempt runs. Expired leases are recovered and retried by the scheduling loop, so a crashed process does not strand work. When job code gets stuck, the host requests process shutdown after a grace period so an external supervisor can terminate the unsafe process instead of risking double writes.
 
 ## Recurring schedule cursors
 
@@ -58,6 +50,6 @@ Each recurring schedule owns a store-authoritative cursor:
 
 ## Related pages
 
-- [Registration extensions and roles](./guide-and-providers.md)
+- [Registration and providers](./guide-and-providers.md)
 - [Scenarios](./scenarios.md)
 - [Operational UI workspace](./ui-workspace.md)
