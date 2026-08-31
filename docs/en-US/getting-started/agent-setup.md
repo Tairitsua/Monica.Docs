@@ -12,9 +12,9 @@ sidebar_position: 2
 2. Copy its one universal instruction.
 3. Paste the instruction into an **Agent Skills-compatible coding agent**, not a terminal.
 
-The instruction gives the agent an immutable Monica Git URL. The agent installs only `monica-guide` globally, verifies that it can discover the installed skill, and restarts only when successful installation is not visible in the current session. Codex and Claude Code are release-smoke-tested hosts, but the instruction is not tied to either one.
+The instruction names one immutable Monica release. Your agent downloads the Monica Guide archive that matches its own platform — `win-x64`, `linux-x64`, or `osx-arm64` — verifies it against the release `SHA256SUMS`, and installs into the current project directory: `$monica-guide init --workspace <this repository> --profile <profile you confirm>`, then `$monica-guide configure --workspace <this repository>`, previewed first and applied only with the approved plan digest. The installation stays inside that repository; a machine-wide installation that changes your user-level skill directory happens only when you explicitly ask for one. Codex and Claude Code are release-smoke-tested hosts, but the instruction is not tied to either one.
 
-If an agent cannot install the skill itself, expand the interactive `npx skills` fallback on the homepage and run it in a terminal. It asks which detected agent target to use instead of assuming a specific host.
+If an agent cannot run the installation itself, expand the manual terminal fallback on the homepage: download the platform-matched archive, verify it against `SHA256SUMS`, and run the same `$monica-guide configure --workspace <workspace>` and `$monica-guide status --workspace <workspace>` commands yourself.
 
 ## What Guide can do
 

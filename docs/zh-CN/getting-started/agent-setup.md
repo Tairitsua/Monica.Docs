@@ -12,9 +12,9 @@ sidebar_position: 2
 2. 复制唯一的通用指令。
 3. 把指令粘贴到任意**兼容 Agent Skills 的编码 Agent** 对话框，而不是终端。
 
-指令会向 Agent 提供一个不可变的 Monica Git URL。Agent 只会全局安装 `monica-guide`，验证是否真正发现该 Skill，只有安装成功但当前会话仍不可见时才重启。Codex 与 Claude Code 是发布 Smoke Test 验证过的宿主，但这条指令不会绑定任何一个宿主。
+指令会指定一个不可变的 Monica 发布版本。Agent 会下载与自身平台匹配的 Monica Guide 发布包——`win-x64`、`linux-x64` 或 `osx-arm64`——先对照发布附件 `SHA256SUMS` 校验，再安装进当前项目目录：先运行 `$monica-guide init --workspace <本仓库> --profile <你确认的 profile>`，再运行 `$monica-guide configure --workspace <本仓库>`（先审阅预览，只用批准的计划摘要应用）。这次安装只写入该仓库；只有当你明确提出整机安装时，才会修改用户级 Skill 目录。Codex 与 Claude Code 是发布 Smoke Test 验证过的宿主，但这条指令不会绑定任何一个宿主。
 
-如果 Agent 无法自行安装 Skill，可展开首页的交互式 `npx skills` 备用方案，然后在终端运行。它会询问要使用哪个已检测到的 Agent 目标，不会预设宿主。
+如果 Agent 无法自行完成安装，可展开首页的手动终端备用方案：自行下载与平台匹配的发布包并对照 `SHA256SUMS` 校验，然后在终端运行同样的 `$monica-guide configure --workspace <工作区>` 与 `$monica-guide status --workspace <工作区>` 命令。
 
 ## Guide 可以做什么
 

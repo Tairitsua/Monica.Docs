@@ -5,12 +5,54 @@ import { resolve } from "node:path";
 const IMMUTABLE_REF_TOKEN = "{{MONICA_IMMUTABLE_REF}}";
 const CATALOG_DIGEST_TOKEN = "{{MONICA_CATALOG_DIGEST}}";
 const UNRESOLVED_TEMPLATE_TOKEN = /\{\{[^{}\r\n]+\}\}/u;
+const UPPERCASE_TEMPLATE_TOKEN = /\{\{[A-Z0-9_]+\}\}/gu;
 const LOCAL_DEVELOPMENT_REF = "LOCAL_DEVELOPMENT_ONLY";
 const IMMUTABLE_RELEASE_TAG = /^v(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/u;
 const FULL_COMMIT_SHA = /^[0-9a-f]{40}$/u;
-const SEMANTIC_VERSION = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/u;
 const LOCALES = ["en-US", "zh-CN"];
 const VERIFIED_AGENT_TARGETS = ["codex", "claude-code"];
+const EXPECTED_INSTALLER = Object.freeze({
+  assetNameTemplate: "monica-guide-v{version}-{rid}.zip",
+  sha256SumsAsset: "SHA256SUMS",
+});
+const EXPECTED_FALLBACK = Object.freeze({
+  installCommand: "$monica-guide configure --workspace <workspace>",
+  verifyCommand: "$monica-guide status --workspace <workspace>",
+});
+const CONCRETE_PROFILE_SELECTION = [
+  "--apply",
+  "--agent",
+  "--profile application",
+  "--profile extension",
+  "--profile framework",
+  "--profile docs",
+  "-a codex",
+  "-a claude-code",
+];
+const LOCALE_SAFETY_FRAGMENTS = {
+  "en-US": [
+    "The installation stays inside this repository.",
+    "restart the host only if discovery still fails",
+    "ask what I want to do next",
+    "approve its preview",
+    "After that installation, these restrictions apply",
+    "Do not initialize another repository",
+    "bind or unbind source",
+    "make any other file changes",
+    "remote mutations",
+  ],
+  "zh-CN": [
+    "只写入本仓库内部",
+    "只有发现仍失败时才重启宿主",
+    "询问我下一步想做什么",
+    "批准其预览",
+    "完成这次安装后",
+    "不要初始化其他仓库",
+    "绑定或解绑源码",
+    "再修改其他文件",
+    "远程变更",
+  ],
+};
 
 /**
  * Read Monica's canonical schema-v3 prompt manifest and render it for one immutable release.
@@ -62,7 +104,7 @@ export function loadMonicaGuidePrompts({ projectDirectory, publicReleaseBuild = 
     ref: immutableRef,
     catalogDigest,
     isLocalDevelopment: !configuredRef,
-    skillsCli: guideDistribution.skillsCli,
+    installer: guideDistribution.installer,
     immutableSkillUrlTemplate: guideDistribution.immutableSkillUrlTemplate,
     verifiedAgentTargets: payload.verifiedAgentTargets,
     fallback: {
@@ -78,7 +120,7 @@ export function loadMonicaGuidePrompts({ projectDirectory, publicReleaseBuild = 
 
 function validateCatalog(catalog, catalogPath) {
   const distribution = catalog?.distribution;
-  const skillsCli = distribution?.skillsCli;
+  const installer = distribution?.installer;
   const guidePath = catalog?.skills?.["monica-guide"]?.path;
   const bootstrapAsset = catalog?.prompts?.bootstrapAsset;
   const bootstrapSchema = catalog?.prompts?.bootstrapSchema;
@@ -86,11 +128,10 @@ function validateCatalog(catalog, catalogPath) {
     !distribution
     || typeof distribution !== "object"
     || distribution.repository !== "Tairitsua/Monica"
-    || !skillsCli
-    || typeof skillsCli !== "object"
-    || skillsCli.package !== "skills"
-    || typeof skillsCli.version !== "string"
-    || !SEMANTIC_VERSION.test(skillsCli.version)
+    || !installer
+    || typeof installer !== "object"
+    || installer.assetNameTemplate !== EXPECTED_INSTALLER.assetNameTemplate
+    || installer.sha256SumsAsset !== EXPECTED_INSTALLER.sha256SumsAsset
     || typeof distribution.immutableSkillUrlTemplate !== "string"
     || !distribution.immutableSkillUrlTemplate.includes("{tag}")
     || !distribution.immutableSkillUrlTemplate.includes("{skill}")
@@ -102,7 +143,7 @@ function validateCatalog(catalog, catalogPath) {
   }
 
   return {
-    skillsCli: { package: skillsCli.package, version: skillsCli.version },
+    installer: { ...installer },
     immutableSkillUrlTemplate: distribution.immutableSkillUrlTemplate,
   };
 }
@@ -117,8 +158,8 @@ function validateAsset(payload, assetPath, catalogDistribution) {
     || payload.skill !== "monica-guide"
     || payload.immutableRef !== IMMUTABLE_REF_TOKEN
     || payload.catalogDigest !== CATALOG_DIGEST_TOKEN
-    || payload.distribution?.skillsCli?.package !== catalogDistribution.skillsCli.package
-    || payload.distribution?.skillsCli?.version !== catalogDistribution.skillsCli.version
+    || payload.distribution?.installer?.assetNameTemplate !== catalogDistribution.installer.assetNameTemplate
+    || payload.distribution?.installer?.sha256SumsAsset !== catalogDistribution.installer.sha256SumsAsset
     || payload.distribution?.immutableSkillUrlTemplate !== catalogDistribution.immutableSkillUrlTemplate
   ) {
     throw new Error(`Unexpected Monica Guide bootstrap prompt contract in ${assetPath}.`);
@@ -132,13 +173,11 @@ function validateAsset(payload, assetPath, catalogDistribution) {
     throw new Error(`Invalid verified agent targets in ${assetPath}.`);
   }
 
-  const cliReference = `npx --yes ${catalogDistribution.skillsCli.package}@${catalogDistribution.skillsCli.version}`;
-  const immutableSkillUrl = "https://github.com/Tairitsua/Monica/tree/{{MONICA_IMMUTABLE_REF}}/skills/monica-guide";
   if (
-    payload.fallback?.installCommand !== `${cliReference} add ${immutableSkillUrl} -g -s monica-guide`
-    || payload.fallback?.verifyCommand !== `${cliReference} ls -g --json`
+    payload.fallback?.installCommand !== EXPECTED_FALLBACK.installCommand
+    || payload.fallback?.verifyCommand !== EXPECTED_FALLBACK.verifyCommand
   ) {
-    throw new Error(`Invalid interactive fallback commands in ${assetPath}.`);
+    throw new Error(`Invalid terminal fallback commands in ${assetPath}.`);
   }
 
   if (
@@ -154,9 +193,6 @@ function validateAsset(payload, assetPath, catalogDistribution) {
   for (const locale of LOCALES) {
     const localized = payload.locales[locale];
     const prompt = localized?.prompt;
-    const installationScope = locale === "en-US"
-      ? ["After that installation, these restrictions apply", "make any other file changes"]
-      : ["完成这次安装后", "以下限制适用：不要初始化仓库", "修改其他文件"];
     if (
       !localized
       || typeof localized !== "object"
@@ -165,10 +201,21 @@ function validateAsset(payload, assetPath, catalogDistribution) {
       || !Object.hasOwn(localized, "prompt")
       || typeof prompt !== "string"
       || !prompt.trim()
-      || !prompt.includes(immutableSkillUrl)
+      || !prompt.includes("$monica-guide init --workspace")
+      || !prompt.includes("$monica-guide configure --workspace")
+      || !prompt.includes("{rid}")
+      || prompt.includes("Monica.Guide.exe")
+      || prompt.includes("win-x64")
+      || prompt.includes("--environment")
+      || prompt.includes("--target shared")
+      || !prompt.includes("SHA256SUMS")
+      || prompt.includes("npx")
+      || !prompt.includes("Monica.Docs")
       || prompt.includes(CATALOG_DIGEST_TOKEN)
-      || /(?:^|\s)(?:init|--workspace|--profile|--agent|--apply)(?:\s|$)/u.test(prompt)
-      || installationScope.some((fragment) => !prompt.includes(fragment))
+      || new Set(prompt.match(UPPERCASE_TEMPLATE_TOKEN) ?? []).size !== 1
+      || !prompt.includes(IMMUTABLE_REF_TOKEN)
+      || CONCRETE_PROFILE_SELECTION.some((fragment) => prompt.includes(fragment))
+      || LOCALE_SAFETY_FRAGMENTS[locale].some((fragment) => !prompt.includes(fragment))
     ) {
       throw new Error(`Invalid universal ${locale} prompt in ${assetPath}.`);
     }

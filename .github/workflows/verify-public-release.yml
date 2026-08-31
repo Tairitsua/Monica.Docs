@@ -89,6 +89,47 @@ jobs:
           npm run verify:manual-dotnet
           npm run test:e2e
 
+      - name: Smoke test the published guide executable
+        run: |
+          set -euo pipefail
+          SMOKE="$(mktemp -d)"
+          export MONICA_GUIDE_DATA_ROOT="${SMOKE}/guide-state"
+          cd "${SMOKE}"
+          BASE="https://github.com/Tairitsua/Monica/releases/download/${MONICA_AGENT_SKILL_REF}"
+          ARCHIVE="monica-guide-${MONICA_AGENT_SKILL_REF}-linux-x64.zip"
+          curl --fail --silent --show-error --location \
+            --output SHA256SUMS "${BASE}/SHA256SUMS" \
+            --output "${ARCHIVE}" "${BASE}/${ARCHIVE}"
+          grep " ${ARCHIVE}\$" SHA256SUMS | sha256sum --check -
+          python3 -m zipfile --extract "${ARCHIVE}" extracted
+          ENTRY="extracted/app/Monica.Guide"
+          chmod +x "${ENTRY}"
+          digest() { python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['plan']['planDigest'])" "$1"; }
+
+          "${ENTRY}" configure --product monica --environment linux --target shared --json > smoke-configure-preview.json
+          PLAN_DIGEST="$(digest smoke-configure-preview.json)"
+          "${ENTRY}" configure --product monica --environment linux --target shared \
+            --apply --plan-digest "${PLAN_DIGEST}" --json > smoke-configure-apply.json
+          test -f "${HOME}/.agents/skills/monica-guide/SKILL.md"
+          "${ENTRY}" status --product monica --json > smoke-status.json
+          python3 - <<'PY'
+          import json
+          status = json.load(open("smoke-status.json", encoding="utf-8-sig"))
+          assert status["status"] == "ready", status["status"]
+          installed = any(
+              check["id"].startswith("skills.linux.shared.catalog")
+              and check["status"] == "ok"
+              for check in status["checks"]
+          )
+          assert installed, "installed skill projection was not verified"
+          PY
+
+          "${ENTRY}" unconfigure --product monica --environment linux --target shared --json > smoke-unconfigure-preview.json
+          PLAN_DIGEST="$(digest smoke-unconfigure-preview.json)"
+          "${ENTRY}" unconfigure --product monica --environment linux --target shared \
+            --apply --plan-digest "${PLAN_DIGEST}" --json > smoke-unconfigure-apply.json
+          test ! -e "${HOME}/.agents/skills/monica-guide"
+
       - name: Build and probe the release containers
         working-directory: Monica.Docs/deploy/public
         env:

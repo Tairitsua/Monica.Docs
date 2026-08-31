@@ -26,10 +26,13 @@ checkouts must therefore represent the same release. Set
 `MONICA_AGENT_SKILL_REF` to the immutable Monica tag that passed the
 install-and-discovery smoke test. The disposable web build stage independently
 verifies the exact advertised tag against `Directory.Build.props`, downloads and
-hashes the published catalog/index/manifest/archive contracts, checks the local
-canonical prompt bytes, and performs a fresh `monica-guide` install and Codex
-and Claude Code discovery plus unblocked initialization-preview smoke tests
-before Next.js can build.
+hashes the published catalog/index/manifest/skills-archive contracts plus every
+per-platform `monica-guide-<tag>-<rid>.zip` bundle and the `SHA256SUMS` digest
+manifest, and checks the local canonical prompt bytes before Next.js can build.
+That stage has no .NET runtime by design; the live
+install/discovery/configure/unconfigure smoke of the published guide executable
+runs in the public-release workflow on its runner and in Monica's own
+per-platform release matrix.
 
 The public web image fails closed when `MONICA_AGENT_SKILL_REF` is missing, does
 not exactly equal `v<Directory.Build.props Version>`, is not a published GitHub

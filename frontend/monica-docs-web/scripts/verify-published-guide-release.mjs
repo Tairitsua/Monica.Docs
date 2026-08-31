@@ -1,6 +1,4 @@
-import { existsSync } from "node:fs";
-import { homedir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 
@@ -32,10 +30,18 @@ function run(command, args, environment, label) {
   return { stdout: result.stdout ?? "", stderr: result.stderr ?? "" };
 }
 
+/**
+ * Verify the published release as an external consumer: the canonical prompt
+ * contract, the published catalog/index/manifest/skills archive bytes, every
+ * per-platform guide bundle, and the SHA256SUMS digest manifest. The live
+ * executable smoke of the installed guide runs in MoLibrary's release matrix
+ * and in this repository's public-release workflow, where the .NET runtime is
+ * available; the disposable web build stage has no runtime by design.
+ */
 export function verifyPublishedGuideRelease() {
   if (process.env.MONICA_RELEASE_SMOKE_CONTAINER !== "1") {
     throw new Error(
-      "Published installation smoke testing is restricted to the disposable public web build stage.",
+      "Published release verification is restricted to the disposable public web build stage.",
     );
   }
   const contract = loadMonicaGuidePrompts({ projectDirectory, publicReleaseBuild: true });
@@ -52,62 +58,9 @@ export function verifyPublishedGuideRelease() {
     "Published release byte verification",
   );
 
-  const npx = process.platform === "win32" ? "npx.cmd" : "npx";
-  const cli = `${contract.skillsCli.package}@${contract.skillsCli.version}`;
-  const sourceUrl = buildMonicaGuideSourceUrl(contract);
-
-  const sourceDiscovery = run(
-    npx,
-    ["--yes", cli, "add", sourceUrl, "--list"],
-    process.env,
-    "Immutable source discovery smoke test",
+  console.log(
+    `Verified published ${contract.skill} release ${contract.ref}: catalog, index, manifest, skills archive, every ${contract.installer.assetNameTemplate} bundle, and ${contract.installer.sha256SumsAsset}.`,
   );
-  if (!sourceDiscovery.stdout.includes(contract.skill)) {
-    throw new Error("Immutable source discovery did not report monica-guide.");
-  }
-
-  run(
-    npx,
-    [
-      "--yes", cli, "add", sourceUrl, "-g",
-      ...contract.verifiedAgentTargets.flatMap((agent) => ["-a", agent]),
-      "-s", contract.skill, "-y",
-    ],
-    process.env,
-    "Fresh global installation smoke test",
-  );
-
-  for (const agent of contract.verifiedAgentTargets) {
-    const installedDiscovery = run(
-      npx,
-      ["--yes", cli, "ls", "-g", "-a", agent, "--json"],
-      process.env,
-      `${agent} installed discovery smoke test`,
-    );
-    let installedSkills;
-    try {
-      installedSkills = JSON.parse(installedDiscovery.stdout);
-    } catch (error) {
-      throw new Error(`${agent} discovery did not return valid JSON.`, { cause: error });
-    }
-    if (
-      !Array.isArray(installedSkills)
-      || !installedSkills.some((skill) => skill?.name === contract.skill && skill?.scope === "global")
-    ) {
-      throw new Error(`${agent} discovery did not report the freshly installed monica-guide skill.`);
-    }
-  }
-
-  const guideCandidates = [
-    join(homedir(), ".agents", "skills", contract.skill, "scripts", "monica-guide.mjs"),
-    join(homedir(), ".claude", "skills", contract.skill, "scripts", "monica-guide.mjs"),
-  ];
-  const guideEntry = guideCandidates.find(existsSync);
-  if (!guideEntry) {
-    throw new Error("Fresh discovery succeeded but the installed monica-guide entry point was not found.");
-  }
-
-  console.log(`Verified published ${contract.skill} release ${contract.ref}, immutable source discovery, and every release-verified host installation.`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

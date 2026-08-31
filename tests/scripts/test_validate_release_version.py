@@ -154,6 +154,97 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "missing agent-skill-index.json"):
             self._verify(fixture)
 
+    def test_rejects_release_without_guide_sums_asset(self) -> None:
+        fixture = self._fixture()
+        release = self._json(fixture, "release")
+        release["assets"] = [
+            asset
+            for asset in release["assets"]
+            if asset["name"] != "SHA256SUMS"
+        ]
+        fixture["payloads"][fixture["urls"]["release"]] = self._json_bytes(release)
+
+        with self.assertRaisesRegex(ValueError, "is missing SHA256SUMS"):
+            self._verify(fixture)
+
+    def test_rejects_release_without_one_platform_guide_bundle(self) -> None:
+        fixture = self._fixture()
+        release = self._json(fixture, "release")
+        removed = "monica-guide-v1.2.3-rc.1-osx-arm64.zip"
+        release["assets"] = [
+            asset for asset in release["assets"] if asset["name"] != removed
+        ]
+        fixture["payloads"][fixture["urls"]["release"]] = self._json_bytes(release)
+
+        with self.assertRaisesRegex(ValueError, f"is missing .*{removed}"):
+            self._verify(fixture)
+
+    def test_rejects_guide_archive_that_drifts_from_sums(self) -> None:
+        fixture = self._fixture()
+        url = fixture["urls"]["guide-linux-x64"]
+        fixture["payloads"][url] += b"drift"
+
+        with self.assertRaisesRegex(ValueError, "archive digest mismatch"):
+            self._verify(fixture)
+
+    def test_rejects_sums_that_skip_a_published_archive(self) -> None:
+        fixture = self._fixture()
+        url = fixture["urls"]["sums"]
+        fixture["payloads"][url] = "".join(
+            line
+            for line in fixture["payloads"][url].decode("utf-8").splitlines(keepends=True)
+            if "win-x64.zip" not in line
+        ).encode("utf-8")
+
+        with self.assertRaisesRegex(ValueError, "does not cover exactly the published archives"):
+            self._verify(fixture)
+
+    def test_rejects_guide_bundle_with_inconsistent_rid(self) -> None:
+        fixture = self._fixture()
+
+        def mislabel(manifest: dict[str, object]) -> None:
+            manifest["runtimeIdentifier"] = "linux-arm64"
+
+        self._write_guide_bundle(
+            fixture,
+            str(fixture["tag"]),
+            str(fixture["version"]),
+            "linux-x64",
+            manifest_updates=mislabel,
+        )
+        self._refresh_sums(fixture)
+
+        with self.assertRaisesRegex(ValueError, "inconsistent release manifest"):
+            self._verify(fixture)
+
+    def test_rejects_non_executable_unix_guide_entry(self) -> None:
+        fixture = self._fixture()
+        self._write_guide_bundle(
+            fixture,
+            str(fixture["tag"]),
+            str(fixture["version"]),
+            "linux-x64",
+            entry_mode=0o644,
+        )
+        self._refresh_sums(fixture)
+
+        with self.assertRaisesRegex(ValueError, "entry point is not executable"):
+            self._verify(fixture)
+
+    def test_rejects_tampered_guide_bundle_payload_file(self) -> None:
+        fixture = self._fixture()
+        self._write_guide_bundle(
+            fixture,
+            str(fixture["tag"]),
+            str(fixture["version"]),
+            "win-x64",
+            tamper_entry=True,
+        )
+        self._refresh_sums(fixture)
+
+        with self.assertRaisesRegex(ValueError, "file digest mismatch"):
+            self._verify(fixture)
+
     def test_rejects_catalog_bytes_that_do_not_match_index_digest(self) -> None:
         fixture = self._fixture()
         fixture["payloads"][fixture["urls"]["catalog"]] += b" "
@@ -378,34 +469,52 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "local canonical bootstrap prompt bytes"):
             self._verify(fixture)
 
-    def test_prompt_validation_derives_cli_pin_from_catalog(self) -> None:
-        cli_package = "skills"
-        cli_version = "9.8.7"
-        reference = f"npx --yes {cli_package}@{cli_version}"
+    def test_prompt_validation_accepts_installer_contract(self) -> None:
         immutable_skill_url_template = (
             "https://github.com/Tairitsua/Monica/tree/{tag}/skills/{skill}"
         )
-        immutable_skill_url = (
-            "https://github.com/Tairitsua/Monica/tree/"
-            "{{MONICA_IMMUTABLE_REF}}/skills/monica-guide"
-        )
-        prompt = (
-            "Install only monica-guide globally from the immutable Agent Skill at "
-            f"{immutable_skill_url}. This changes user-level Agent Skills. Verify "
-            "that this host actually discovers monica-guide, and restart it only if "
-            "discovery fails. Invoke $monica-guide to explain the Monica toolbox, "
-            "current global status, and source bindings, then ask what I want to do. "
-            "Do not initialize a repository, choose a profile, install downstream "
-            "skills, change source bindings or files, or mutate remote state before "
-            "I choose an intent and approve the preview."
-        )
+        prompts = {
+            "en-US": (
+                "From this immutable release {{MONICA_IMMUTABLE_REF}}, install the Monica "
+                "Agent Skills into my current project directory: download the monica-guide "
+                "release asset for this platform (`{rid}`), verify it against SHA256SUMS, "
+                "and run $monica-guide init --workspace <this repository> --profile "
+                "<profile I confirm>, then $monica-guide configure --workspace <this "
+                "repository> (preview first, then apply with the approved plan digest). "
+                "The installation stays inside this repository. A machine-wide install "
+                "that changes my user-level skill directory happens only if I explicitly "
+                "ask for one. Verify with $monica-guide status --workspace <this "
+                "repository>; restart the host only if discovery still fails. Then invoke "
+                "$monica-guide, introduce its toolbox, global state, and the Monica and "
+                "Monica.Docs source bindings, and ask what I want to do next. After that "
+                "installation, these restrictions apply until I choose an operation and "
+                "approve its preview: Do not initialize another repository, select a "
+                "different profile, install further Monica skills, bind or unbind source "
+                "repositories, make any other file changes, or perform remote mutations."
+            ),
+            "zh-CN": (
+                "从这个不可变发布版本 {{MONICA_IMMUTABLE_REF}} 开始，把 Monica Agent Skills "
+                "安装进我当前的项目目录：下载与当前平台匹配的 monica-guide 发布资产"
+                "（`{rid}`），对照 SHA256SUMS 校验后，先运行 $monica-guide init "
+                "--workspace <本仓库> --profile <我确认的 profile>，再运行 $monica-guide "
+                "configure --workspace <本仓库>（先审阅打印的预览，再用批准的计划摘要应"
+                "用）。除非我明确要求整机安装，这次安装只写入本仓库内部。用 "
+                "$monica-guide status --workspace <本仓库> 验证；只有发现仍失败时才重启宿"
+                "主。随后调用 $monica-guide，介绍其工具箱、全局状态以及 Monica 和 "
+                "Monica.Docs 源码绑定，并询问我下一步想做什么。完成这次安装后，在我选"
+                "择操作并批准其预览之前，以下限制适用：不要初始化其他仓库、选择其他 "
+                "profile、安装后续 Monica Skill、绑定或解绑源码、不要再修改其他文件或"
+                "执行远程变更。"
+            ),
+        }
         catalog_path = Path(self.temporary_directory.name) / "catalog.json"
         prompt_path = Path(self.temporary_directory.name) / "prompts.json"
         catalog_path.write_text(
             json.dumps(
                 {
                     "distribution": {
-                        "skillsCli": {"package": cli_package, "version": cli_version},
+                        "repository": "Tairitsua/Monica",
+                        "installer": dict(VALIDATOR.GUIDE_INSTALLER),
                         "immutableSkillUrlTemplate": immutable_skill_url_template,
                     },
                     "prompts": {
@@ -417,42 +526,57 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
             ),
             encoding="utf-8",
         )
-        prompt_path.write_text(
-            json.dumps(
-                {
-                    "schemaVersion": 3,
-                    "repository": "Tairitsua/Monica",
-                    "skill": "monica-guide",
-                    "immutableRef": "{{MONICA_IMMUTABLE_REF}}",
-                    "catalogDigest": "{{MONICA_CATALOG_DIGEST}}",
-                    "distribution": {
-                        "skillsCli": {"package": cli_package, "version": cli_version},
-                        "immutableSkillUrlTemplate": immutable_skill_url_template,
-                    },
-                    "verifiedAgentTargets": VALIDATOR.VERIFIED_AGENT_TARGETS,
-                    "fallback": {
-                        "installCommand": (
-                            f"{reference} add {immutable_skill_url} "
-                            "-g -s monica-guide"
-                        ),
-                        "verifyCommand": f"{reference} ls -g --json",
-                    },
-                    "locales": {
-                        locale: {"prompt": prompt}
-                        for locale in VALIDATOR.PROMPT_LOCALES
-                    },
-                }
-            ),
-            encoding="utf-8",
-        )
         previous_catalog = os.environ.get("MONICA_AGENT_SKILL_CATALOG_PATH")
         previous_prompts = os.environ.get("MONICA_GUIDE_PROMPTS_PATH")
+
+        def write_prompt(mutate: Callable[[str], str]) -> None:
+            prompt_path.write_text(
+                json.dumps(
+                    {
+                        "schemaVersion": 3,
+                        "repository": "Tairitsua/Monica",
+                        "skill": "monica-guide",
+                        "immutableRef": "{{MONICA_IMMUTABLE_REF}}",
+                        "catalogDigest": "{{MONICA_CATALOG_DIGEST}}",
+                        "distribution": {
+                            "repository": "Tairitsua/Monica",
+                            "installer": dict(VALIDATOR.GUIDE_INSTALLER),
+                            "immutableSkillUrlTemplate": immutable_skill_url_template,
+                        },
+                        "verifiedAgentTargets": VALIDATOR.VERIFIED_AGENT_TARGETS,
+                        "fallback": dict(VALIDATOR.GUIDE_FALLBACK),
+                        "locales": {
+                            locale: {"prompt": mutate(prompts[locale])}
+                            for locale in VALIDATOR.PROMPT_LOCALES
+                        },
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+
         try:
             os.environ["MONICA_AGENT_SKILL_CATALOG_PATH"] = str(catalog_path)
             os.environ["MONICA_GUIDE_PROMPTS_PATH"] = str(prompt_path)
+
+            write_prompt(lambda text: text)
             failures: list[str] = []
             VALIDATOR.validate_guide_prompts("v1.2.3", require_ref=True, failures=failures)
             self.assertEqual([], failures)
+
+            for label, mutate in (
+                ("npx installer", lambda text: text.replace("{rid}", "npx")),
+                ("windows executable", lambda text: text + " Monica.Guide.exe"),
+                ("single platform", lambda text: text + " win-x64"),
+                ("machine-wide default", lambda text: text + " --environment"),
+            ):
+                with self.subTest(label=label):
+                    write_prompt(mutate)
+                    drift_failures: list[str] = []
+                    VALIDATOR.validate_guide_prompts(
+                        "v1.2.3", require_ref=True, failures=drift_failures
+                    )
+                    self.assertTrue(drift_failures, label)
         finally:
             self._restore_environment("MONICA_AGENT_SKILL_CATALOG_PATH", previous_catalog)
             self._restore_environment("MONICA_GUIDE_PROMPTS_PATH", previous_prompts)
@@ -530,7 +654,7 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
             "schemaVersion": 1,
             "distribution": {
                 "repository": "Tairitsua/Monica",
-                "skillsCli": {"package": "skills", "version": "9.8.7"},
+                "installer": dict(VALIDATOR.GUIDE_INSTALLER),
                 "immutableSkillUrlTemplate": (
                     "https://github.com/Tairitsua/Monica/tree/{tag}/skills/{skill}"
                 ),
@@ -622,6 +746,14 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
             "agent-skill-manifest.json": urls["manifest"],
             f"monica-agent-skills-{release_tag}.zip": urls["archive"],
         }
+        for rid in VALIDATOR.GUIDE_PLATFORMS:
+            urls[f"guide-{rid}"] = (
+                f"https://downloads.example/{release_tag}"
+                f"/monica-guide-{release_tag}-{rid}.zip"
+            )
+            asset_names[f"monica-guide-{release_tag}-{rid}.zip"] = urls[f"guide-{rid}"]
+        urls["sums"] = f"https://downloads.example/{release_tag}/SHA256SUMS"
+        asset_names["SHA256SUMS"] = urls["sums"]
         release = {
             "tag_name": release_tag,
             "target_commitish": self.COMMIT,
@@ -643,8 +775,103 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
                 urls["manifest"]: manifest_bytes,
             },
         }
+        for rid in VALIDATOR.GUIDE_PLATFORMS:
+            self._write_guide_bundle(fixture, release_tag, version, rid)
         self._refresh_archive(fixture)
         return fixture
+
+    def _write_guide_bundle(
+        self,
+        fixture: dict[str, object],
+        tag: str,
+        version: str,
+        rid: str,
+        *,
+        entry_mode: int = 0o755,
+        manifest_updates: Callable[[dict[str, object]], None] | None = None,
+        tamper_entry: bool = False,
+    ) -> None:
+        entry = VALIDATOR.GUIDE_PLATFORMS[rid]
+        entry_point = f"app/{entry}"
+        projected_catalog = self._json_bytes(
+            {
+                "schemaVersion": 1,
+                "skills": [
+                    {"name": "monica-guide", "relativePath": "skills/monica-guide"}
+                ],
+            }
+        )
+        payload_files = {
+            entry_point: b"guide-app-image\n",
+            "skills/catalog.json": projected_catalog,
+            "skills/monica-guide/SKILL.md": b"---\nname: monica-guide\n---\n",
+        }
+        files = [
+            {
+                "relativePath": path,
+                "length": len(content),
+                "sha256": hashlib.sha256(content).hexdigest(),
+            }
+            for path, content in sorted(payload_files.items())
+        ]
+        manifest = {
+            "schemaVersion": VALIDATOR.GUIDE_BUNDLE_MANIFEST_SCHEMA_VERSION,
+            "productId": "Tairitsua.Monica",
+            "productName": "Monica",
+            "productVersion": version,
+            "assemblyVersion": "1.2.3.0",
+            "tag": tag,
+            "runtimeIdentifier": rid,
+            "distributionKind": f"portable-{rid}",
+            "selfContained": False,
+            "programEntryPoint": entry_point,
+            "programFiles": [
+                record
+                for record in files
+                if record["relativePath"].startswith("app/")
+            ],
+            "skillCatalogDigest": hashlib.sha256(projected_catalog).hexdigest(),
+            "skills": [
+                {"name": "monica-guide", "relativePath": "skills/monica-guide"}
+            ],
+            "files": files,
+        }
+        if manifest_updates is not None:
+            manifest_updates(manifest)
+        zipped_files = dict(payload_files)
+        zipped_files["release-manifest.json"] = self._json_bytes(manifest)
+        if tamper_entry:
+            zipped_files[entry_point] += b"tampered\n"
+        output = io.BytesIO()
+        with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+            for path, content in sorted(zipped_files.items()):
+                info = zipfile.ZipInfo(path)
+                info.compress_type = zipfile.ZIP_DEFLATED
+                mode = entry_mode if path == entry_point else 0o644
+                info.external_attr = (mode << 16) | 0o100000
+                archive.writestr(info, content)
+        urls = fixture["urls"]
+        assert isinstance(urls, dict)
+        fixture["payloads"][urls[f"guide-{rid}"]] = output.getvalue()
+
+    def _refresh_sums(self, fixture: dict[str, object]) -> None:
+        release = self._json(fixture, "release")
+        url_by_name = {
+            asset["name"]: asset["browser_download_url"]
+            for asset in release["assets"]
+        }
+        skills_archive = f"monica-agent-skills-{fixture['tag']}.zip"
+        archive_names = [skills_archive] + [
+            f"monica-guide-{fixture['tag']}-{rid}.zip"
+            for rid in VALIDATOR.GUIDE_PLATFORMS
+        ]
+        lines = "".join(
+            f"{hashlib.sha256(fixture['payloads'][url_by_name[name]]).hexdigest()}  {name}\n"
+            for name in sorted(archive_names)
+        )
+        urls = fixture["urls"]
+        assert isinstance(urls, dict)
+        fixture["payloads"][urls["sums"]] = lines.encode("utf-8")
 
     def _update_manifest(
         self,
@@ -715,6 +942,7 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
             for path, content in sorted(fixture["archive_files"].items()):
                 archive.writestr(path, content)
         fixture["payloads"][fixture["urls"]["archive"]] = output.getvalue()
+        self._refresh_sums(fixture)
 
     @staticmethod
     def _json(fixture: dict[str, object], name: str) -> dict[str, object]:

@@ -67,6 +67,56 @@ MONICA_RELEASE_TAG = re.compile(
 )
 PROMPT_LOCALES = ("en-US", "zh-CN")
 VERIFIED_AGENT_TARGETS = ["codex", "claude-code"]
+GUIDE_INSTALLER = {
+    "assetNameTemplate": "monica-guide-v{version}-{rid}.zip",
+    "sha256SumsAsset": "SHA256SUMS",
+}
+# The guide bundle platform matrix mirrors KnownAgentProducts.PortablePlatforms.
+GUIDE_PLATFORMS = {
+    "win-x64": "Monica.Guide.exe",
+    "linux-x64": "Monica.Guide",
+    "osx-arm64": "Monica.Guide",
+}
+GUIDE_BUNDLE_MANIFEST_SCHEMA_VERSION = 1
+GUIDE_FALLBACK = {
+    "installCommand": "$monica-guide configure --workspace <workspace>",
+    "verifyCommand": "$monica-guide status --workspace <workspace>",
+}
+SHA256SUMS_ENTRY = re.compile(r"^([0-9a-f]{64})  (\S+)$")
+CONCRETE_PROFILE_SELECTION = (
+    "--apply",
+    "--agent",
+    "--profile application",
+    "--profile extension",
+    "--profile framework",
+    "--profile docs",
+    "-a codex",
+    "-a claude-code",
+)
+LOCALE_SAFETY_FRAGMENTS = {
+    "en-US": (
+        "The installation stays inside this repository.",
+        "restart the host only if discovery still fails",
+        "ask what I want to do next",
+        "approve its preview",
+        "After that installation, these restrictions apply",
+        "Do not initialize another repository",
+        "bind or unbind source",
+        "make any other file changes",
+        "remote mutations",
+    ),
+    "zh-CN": (
+        "只写入本仓库内部",
+        "只有发现仍失败时才重启宿主",
+        "询问我下一步想做什么",
+        "批准其预览",
+        "完成这次安装后",
+        "不要初始化其他仓库",
+        "绑定或解绑源码",
+        "再修改其他文件",
+        "远程变更",
+    ),
+}
 
 
 def sha256_digest(content: bytes) -> str:
@@ -88,19 +138,12 @@ def configured_contract_path(environment_name: str, default: Path) -> Path:
     return Path(configured).resolve() if configured else default
 
 
-def read_skills_cli(catalog: dict[str, object], label: str) -> tuple[str, str]:
+def read_installer(catalog: dict[str, object], label: str) -> dict[str, str]:
     distribution = catalog.get("distribution")
-    skills_cli = distribution.get("skillsCli") if isinstance(distribution, dict) else None
-    package = skills_cli.get("package") if isinstance(skills_cli, dict) else None
-    version = skills_cli.get("version") if isinstance(skills_cli, dict) else None
-    if (
-        not isinstance(package, str)
-        or not package.strip()
-        or not isinstance(version, str)
-        or SEMANTIC_VERSION.fullmatch(version) is None
-    ):
-        raise ValueError(f"{label} has no valid distribution.skillsCli pin")
-    return package, version
+    installer = distribution.get("installer") if isinstance(distribution, dict) else None
+    if not isinstance(installer, dict) or installer != GUIDE_INSTALLER:
+        raise ValueError(f"{label} has no valid distribution.installer release contract")
+    return dict(installer)
 
 
 def file_manifest_digest(files: dict[str, bytes]) -> str:
@@ -317,7 +360,7 @@ def validate_guide_prompts(agent_skill_ref: str, require_ref: bool, failures: li
     try:
         payload = parse_json_object(prompt_path.read_bytes(), str(prompt_path))
         catalog = parse_json_object(catalog_path.read_bytes(), str(catalog_path))
-        cli_package, cli_version = read_skills_cli(catalog, str(catalog_path))
+        installer = read_installer(catalog, str(catalog_path))
     except (OSError, ValueError) as exception:
         failures.append(str(exception))
         return
@@ -353,18 +396,13 @@ def validate_guide_prompts(agent_skill_ref: str, require_ref: bool, failures: li
         failures.append(f"unexpected Monica Guide catalog contract in {catalog_path}")
         return
 
-    payload_distribution = payload.get("distribution")
     if (
         payload.get("schemaVersion") != 3
         or payload.get("repository") != "Tairitsua/Monica"
         or payload.get("skill") != "monica-guide"
         or payload.get("immutableRef") != MONICA_GUIDE_REF_TOKEN
         or payload.get("catalogDigest") != MONICA_GUIDE_CATALOG_DIGEST_TOKEN
-        or not isinstance(payload_distribution, dict)
-        or payload_distribution.get("skillsCli")
-        != {"package": cli_package, "version": cli_version}
-        or payload_distribution.get("immutableSkillUrlTemplate")
-        != immutable_skill_url_template
+        or payload.get("distribution") != catalog.get("distribution")
     ):
         failures.append(f"unexpected Monica Guide prompt contract in {prompt_path}")
         return
@@ -373,20 +411,8 @@ def validate_guide_prompts(agent_skill_ref: str, require_ref: bool, failures: li
         failures.append(f"invalid Monica Guide verified agent targets in {prompt_path}")
         return
 
-    immutable_skill_url = (
-        "https://github.com/Tairitsua/Monica/tree/"
-        f"{MONICA_GUIDE_REF_TOKEN}/skills/monica-guide"
-    )
-    fallback = payload.get("fallback")
-    expected_fallback = {
-        "installCommand": (
-            f"npx --yes {cli_package}@{cli_version} add {immutable_skill_url} "
-            "-g -s monica-guide"
-        ),
-        "verifyCommand": f"npx --yes {cli_package}@{cli_version} ls -g --json",
-    }
-    if fallback != expected_fallback:
-        failures.append(f"invalid Monica Guide interactive fallback in {prompt_path}")
+    if payload.get("fallback") != GUIDE_FALLBACK:
+        failures.append(f"invalid Monica Guide terminal fallback in {prompt_path}")
         return
 
     locales = payload.get("locales")
@@ -401,14 +427,20 @@ def validate_guide_prompts(agent_skill_ref: str, require_ref: bool, failures: li
             or set(localized) != {"prompt"}
             or not isinstance(prompt, str)
             or not prompt.strip()
-            or immutable_skill_url not in prompt
-            or "monica-guide" not in prompt
+            or "$monica-guide init --workspace" not in prompt
+            or "$monica-guide configure --workspace" not in prompt
+            or "{rid}" not in prompt
+            or "Monica.Guide.exe" in prompt
+            or "win-x64" in prompt
+            or "--environment" in prompt
+            or "--target shared" in prompt
+            or "SHA256SUMS" not in prompt
+            or "npx" in prompt
+            or "Monica.Docs" not in prompt
             or MONICA_GUIDE_CATALOG_DIGEST_TOKEN in prompt
             or set(PROMPT_TEMPLATE_TOKEN.findall(prompt)) != {MONICA_GUIDE_REF_TOKEN}
-            or re.search(
-                r"(?:^|\s)(?:init|--workspace|--profile|--agent|--apply)(?:\s|$)",
-                prompt,
-            )
+            or any(fragment in prompt for fragment in CONCRETE_PROFILE_SELECTION)
+            or any(fragment not in prompt for fragment in LOCALE_SAFETY_FRAGMENTS[locale])
         ):
             failures.append(f"invalid universal Monica Guide {locale} prompt in {prompt_path}")
 
@@ -481,6 +513,151 @@ def fetch_url_bytes(url: str) -> bytes:
         return response.read()
 
 
+def verify_published_guide_bundles(
+    tag: str,
+    version: str,
+    installer: dict[str, str],
+    assets: dict[str, str],
+    skills_archive_name: str,
+    skills_archive_bytes: bytes,
+    *,
+    fetch_bytes: Callable[[str], bytes],
+) -> None:
+    """Verify SHA256SUMS and every published per-platform guide bundle."""
+
+    guide_archives = {
+        rid: installer["assetNameTemplate"]
+        .replace("{version}", version)
+        .replace("{rid}", rid)
+        for rid in GUIDE_PLATFORMS
+    }
+    sums_name = installer["sha256SumsAsset"]
+    missing = (set(guide_archives.values()) | {skills_archive_name, sums_name}) - assets.keys()
+    if missing:
+        raise ValueError(f"GitHub release {tag} is missing {', '.join(sorted(missing))}")
+
+    sums_label = f"GitHub release {tag} {sums_name}"
+    sums_entries = parse_sha256sums(
+        fetch_bytes(str(assets[sums_name])), sums_label
+    )
+    expected_archives = set(guide_archives.values()) | {skills_archive_name}
+    if set(sums_entries) != expected_archives:
+        raise ValueError(
+            f"{sums_label} does not cover exactly the published archives"
+        )
+
+    fetched: dict[str, bytes] = {skills_archive_name: skills_archive_bytes}
+    for archive in sorted(expected_archives):
+        content = fetched.setdefault(archive, fetch_bytes(str(assets[archive])))
+        if hashlib.sha256(content).hexdigest() != sums_entries[archive]:
+            raise ValueError(f"GitHub release {tag} archive digest mismatch: {archive}")
+
+    for rid, archive in sorted(guide_archives.items()):
+        verify_published_guide_bundle(
+            tag,
+            version,
+            rid,
+            archive,
+            fetched[archive],
+        )
+
+
+def parse_sha256sums(content: bytes, label: str) -> dict[str, str]:
+    entries: dict[str, str] = {}
+    for raw_line in content.decode("utf-8").splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        match = SHA256SUMS_ENTRY.fullmatch(line)
+        if match is None or match.group(2) in entries:
+            raise ValueError(f"{label} has an invalid or duplicate entry: {line}")
+        entries[match.group(2)] = match.group(1)
+    if not entries:
+        raise ValueError(f"{label} is empty")
+    return entries
+
+
+def verify_published_guide_bundle(
+    tag: str,
+    version: str,
+    rid: str,
+    archive_name: str,
+    archive_bytes: bytes,
+) -> None:
+    label = f"GitHub release {tag} guide bundle {archive_name}"
+    entry_point = f"app/{GUIDE_PLATFORMS[rid]}"
+    try:
+        with zipfile.ZipFile(io.BytesIO(archive_bytes)) as bundle:
+            entries = {
+                name: bundle.read(name)
+                for name in bundle.namelist()
+                if not name.endswith("/")
+            }
+            entry_modes = {
+                name: (bundle.getinfo(name).external_attr >> 16) & 0o777
+                for name in entries
+            }
+    except zipfile.BadZipFile as exception:
+        raise ValueError(f"{label} is invalid") from exception
+
+    if "release-manifest.json" not in entries:
+        raise ValueError(f"{label} has no release manifest")
+    manifest = parse_json_object(entries["release-manifest.json"], f"{label} manifest")
+    files = manifest.get("files")
+    if (
+        manifest.get("schemaVersion") != GUIDE_BUNDLE_MANIFEST_SCHEMA_VERSION
+        or manifest.get("productId") != "Tairitsua.Monica"
+        or manifest.get("productName") != "Monica"
+        or manifest.get("tag") != tag
+        or manifest.get("productVersion") != version
+        or manifest.get("runtimeIdentifier") != rid
+        or manifest.get("distributionKind") != f"portable-{rid}"
+        or manifest.get("selfContained") is not False
+        or manifest.get("programEntryPoint") != entry_point
+        or not isinstance(files, list)
+        or not files
+        or any(not isinstance(record, dict) for record in files)
+    ):
+        raise ValueError(f"{label} has an inconsistent release manifest")
+
+    record_paths = [record.get("relativePath") for record in files]
+    if (
+        any(not isinstance(path, str) for path in record_paths)
+        or len(record_paths) != len(set(record_paths))
+        or set(record_paths) | {"release-manifest.json"} != set(entries)
+    ):
+        raise ValueError(f"{label} does not match its declared file manifest")
+    for record in files:
+        content = entries[record["relativePath"]]
+        if (
+            not isinstance(record.get("sha256"), str)
+            or hashlib.sha256(content).hexdigest() != record["sha256"]
+            or record.get("length") != len(content)
+        ):
+            raise ValueError(f"{label} file digest mismatch: {record['relativePath']}")
+
+    if entry_point not in entries:
+        raise ValueError(f"{label} is missing its entry point {entry_point}")
+    if rid != "win-x64" and entry_modes.get(entry_point) != 0o755:
+        raise ValueError(f"{label} entry point is not executable")
+
+    manifest_skills = manifest.get("skills")
+    skill_names = (
+        {skill.get("name") for skill in manifest_skills}
+        if isinstance(manifest_skills, list)
+        else set()
+    )
+    if "monica-guide" not in skill_names:
+        raise ValueError(f"{label} does not carry the monica-guide skill")
+
+    projected_catalog = entries.get("skills/catalog.json")
+    if (
+        projected_catalog is None
+        or hashlib.sha256(projected_catalog).hexdigest() != manifest.get("skillCatalogDigest")
+    ):
+        raise ValueError(f"{label} skill catalog does not match skillCatalogDigest")
+
+
 def verify_agent_skill_release(
     tag: str,
     *,
@@ -524,7 +701,7 @@ def verify_agent_skill_release(
     catalog = parse_json_object(catalog_bytes, f"GitHub release {tag} catalog")
     index = parse_json_object(index_bytes, f"GitHub release {tag} index")
     manifest = parse_json_object(manifest_bytes, f"GitHub release {tag} manifest")
-    read_skills_cli(catalog, f"GitHub release {tag} catalog")
+    installer = read_installer(catalog, f"GitHub release {tag} catalog")
 
     version = expected_version
     version_without_build_metadata = version.split("+", 1)[0]
@@ -648,6 +825,16 @@ def verify_agent_skill_release(
     for path, expected_digest in files.items():
         if sha256_digest(archived_files[path]) != expected_digest:
             raise ValueError(f"GitHub release {tag} archive file digest mismatch: {path}")
+
+    verify_published_guide_bundles(
+        tag,
+        version,
+        installer,
+        assets,
+        archive_name,
+        archive_bytes,
+        fetch_bytes=fetch_bytes,
+    )
 
     skills = catalog.get("skills")
     if not isinstance(skills, dict):

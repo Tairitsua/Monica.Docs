@@ -12,7 +12,6 @@ const HTML_ROUTES = [
   "/reference",
 ];
 const SEMANTIC_VERSION_SOURCE = String.raw`(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?`;
-const SEMANTIC_VERSION = new RegExp(`^${SEMANTIC_VERSION_SOURCE}$`, "u");
 const IMMUTABLE_RELEASE_TAG = new RegExp(`^v${SEMANTIC_VERSION_SOURCE}$`, "u");
 const RELEASE_MANIFEST_SCHEMA_VERSION = 2;
 const CATALOG_DIGEST = /^sha256:[0-9a-f]{64}$/u;
@@ -41,7 +40,7 @@ export async function verifyDeployedSite(
     throw new Error(`MONICA_AGENT_SKILL_REF must be an immutable Monica release tag, received ${expectedRef}.`);
   }
   const fetchImpl = options.fetchImpl ?? fetch;
-  const expectedSkillsCli = await loadPublishedSkillsCli(expectedRef, {
+  await loadPublishedInstaller(expectedRef, {
     fetchImpl,
     releaseAssetBaseUrl: options.releaseAssetBaseUrl,
   });
@@ -60,7 +59,6 @@ export async function verifyDeployedSite(
   const robots = await robotsResponse.text();
   const expectedVersion = expectedRef.slice(1);
   const expectedTemplatePackage = `Monica.Templates@${expectedVersion}`;
-  const expectedSkillsCliPackage = `${expectedSkillsCli.package}@${expectedSkillsCli.version}`;
   for (const [route, routeHtml] of htmlResponses) {
     for (const marker of CLOUDFLARE_EMAIL_MARKERS) {
       if (routeHtml.includes(marker)) {
@@ -68,11 +66,17 @@ export async function verifyDeployedSite(
       }
     }
   }
-  for (const route of ["/", "/zh-CN"]) {
-    assertExactPackageSpec(pages[route], expectedSkillsCli.package, expectedSkillsCliPackage, "catalog-pinned skills CLI", route);
+  const releasePhrases = {
+    "/": `From this immutable release ${expectedRef}`,
+    "/zh-CN": `从这个不可变发布版本 ${expectedRef} 开始`,
+  };
+  for (const [route, releasePhrase] of Object.entries(releasePhrases)) {
     assertExactPackageSpec(pages[route], "Monica.Templates", expectedTemplatePackage, "Monica.Templates", route);
-    if (!pages[route].includes(`/tree/${expectedRef}/skills/monica-guide`)) {
+    if (!pages[route].includes(releasePhrase)) {
       throw new Error(`The deployed homepage ${route} does not advertise ${expectedRef}.`);
+    }
+    if (!pages[route].includes("SHA256SUMS") || !pages[route].includes("{rid}")) {
+      throw new Error(`The deployed homepage ${route} does not teach the platform-matched release verification.`);
     }
   }
   assertExactPackageSpec(
@@ -93,9 +97,9 @@ export async function verifyDeployedSite(
   console.log(`Verified ${HTML_ROUTES.length} edge-served HTML routes, package strings, and crawler policy at ${root.origin}.`);
 }
 
-export async function loadPublishedSkillsCli(expectedRef, options = {}) {
+export async function loadPublishedInstaller(expectedRef, options = {}) {
   if (!IMMUTABLE_RELEASE_TAG.test(expectedRef)) {
-    throw new Error(`Cannot resolve a published skills CLI for invalid release tag ${expectedRef}.`);
+    throw new Error(`Cannot resolve a published guide installer for invalid release tag ${expectedRef}.`);
   }
   const fetchImpl = options.fetchImpl ?? fetch;
   const releaseAssetBaseUrl = (
@@ -130,16 +134,15 @@ export async function loadPublishedSkillsCli(expectedRef, options = {}) {
     throw new Error(`Published manifest does not bind the catalog bytes for ${expectedRef}.`);
   }
 
-  const skillsCli = catalog?.distribution?.skillsCli;
+  const installer = catalog?.distribution?.installer;
   if (
     catalog?.distribution?.repository !== "Tairitsua/Monica"
-    || skillsCli?.package !== "skills"
-    || typeof skillsCli.version !== "string"
-    || !SEMANTIC_VERSION.test(skillsCli.version)
+    || installer?.assetNameTemplate !== "monica-guide-v{version}-{rid}.zip"
+    || installer?.sha256SumsAsset !== "SHA256SUMS"
   ) {
-    throw new Error(`Unexpected skills CLI distribution contract for ${expectedRef}.`);
+    throw new Error(`Unexpected guide installer distribution contract for ${expectedRef}.`);
   }
-  return { package: skillsCli.package, version: skillsCli.version };
+  return { assetNameTemplate: installer.assetNameTemplate, sha256SumsAsset: installer.sha256SumsAsset };
 }
 
 function assertExactPackageSpec(content, packageName, expected, label, route) {

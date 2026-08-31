@@ -5,9 +5,9 @@ type MonicaGuidePrompts = {
   ref: string;
   catalogDigest: `sha256:${string}`;
   isLocalDevelopment: boolean;
-  skillsCli: {
-    package: "skills";
-    version: string;
+  installer: {
+    assetNameTemplate: string;
+    sha256SumsAsset: string;
   };
   immutableSkillUrlTemplate: string;
   verifiedAgentTargets: readonly ["codex", "claude-code"];

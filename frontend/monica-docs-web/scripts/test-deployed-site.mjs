@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { createServer } from "node:http";
 
-import { verifyDeployedSite } from "./verify-deployed-site.mjs";
+import { loadPublishedInstaller, verifyDeployedSite } from "./verify-deployed-site.mjs";
 
 const goodRobots = `User-agent: *
 Allow: /
@@ -10,18 +10,20 @@ Content-Signal: search=yes, ai-input=yes, ai-train=no, use=reference
 `;
 const releaseTag = "v1.2.3-rc.4";
 const releaseVersion = releaseTag.slice(1);
-const skillsCli = { package: "skills", version: "1.5.21" };
-const publishedCatalog = `${JSON.stringify({
+const installer = { assetNameTemplate: "monica-guide-v{version}-{rid}.zip", sha256SumsAsset: "SHA256SUMS" };
+let publishedCatalog = `${JSON.stringify({
   schemaVersion: 1,
   distribution: {
     repository: "Tairitsua/Monica",
-    skillsCli,
+    installer,
   },
 }, null, 2)}\n`;
 const publishedCatalogDigest = `sha256:${createHash("sha256").update(publishedCatalog).digest("hex")}`;
 let catalogResponseBody = publishedCatalog;
-const home = `<html><body>${skillsCli.package}@${skillsCli.version} add Monica.Templates@${releaseVersion} /tree/${releaseTag}/skills/monica-guide</body></html>`;
-const zhHome = `<html lang="zh-CN"><body>${skillsCli.package}@${skillsCli.version} add Monica.Templates@${releaseVersion} /tree/${releaseTag}/skills/monica-guide</body></html>`;
+const releaseGuidance = `From this immutable release ${releaseTag} SHA256SUMS {rid} monica-guide-v{version}-{rid}.zip`;
+const zhReleaseGuidance = `从这个不可变发布版本 ${releaseTag} 开始 SHA256SUMS {rid} monica-guide-v{version}-{rid}.zip`;
+const home = `<html><body>${releaseGuidance} Monica.Templates@${releaseVersion}</body></html>`;
+const zhHome = `<html lang="zh-CN"><body>${zhReleaseGuidance} Monica.Templates@${releaseVersion}</body></html>`;
 const serializedTemplateCommand = String.raw`Monica.Templates@${releaseVersion}\\ndotnet new monica-api`;
 const docs = String.raw`<html><body>
   <code>Monica.Templates@${releaseVersion}</code>
@@ -38,6 +40,7 @@ const pages = new Map([
 ]);
 
 let robots = goodRobots;
+let staleManifestDigest = false;
 const server = createServer((request, response) => {
   const path = new URL(request.url ?? "/", "http://localhost").pathname;
   if (path === "/release/agent-skill-catalog.json") {
@@ -47,15 +50,17 @@ const server = createServer((request, response) => {
   }
   if (path === "/release/agent-skill-manifest.json") {
     const releaseAssetBaseUrl = `http://${request.headers.host}/release`;
+    const currentDigest = `sha256:${createHash("sha256").update(catalogResponseBody).digest("hex")}`;
+    const catalogDigest = staleManifestDigest ? publishedCatalogDigest : currentDigest;
     response.writeHead(200, { "content-type": "application/json" });
     response.end(JSON.stringify({
       schemaVersion: 2,
       tag: releaseTag,
       monicaVersion: releaseVersion,
       catalogUrl: `${releaseAssetBaseUrl}/agent-skill-catalog.json`,
-      catalogDigest: publishedCatalogDigest,
+      catalogDigest,
       files: {
-        ".monica/agent-skill-catalog.json": publishedCatalogDigest,
+        ".monica/agent-skill-catalog.json": catalogDigest,
       },
     }));
     return;
@@ -87,11 +92,12 @@ try {
   );
 
   await verify();
-
-  await assert.rejects(
-    verifyDeployedSite(baseUrl, "", { releaseAssetBaseUrl }),
-    /MONICA_AGENT_SKILL_REF is required/u,
+  await assert.deepEqual(
+    await loadPublishedInstaller(releaseTag, { releaseAssetBaseUrl }),
+    installer,
   );
+
+  await assert.rejects(verifyDeployedSite(baseUrl, "", { releaseAssetBaseUrl }), /MONICA_AGENT_SKILL_REF is required/u);
   await assert.rejects(
     verifyDeployedSite(baseUrl, "dev", { releaseAssetBaseUrl }),
     /must be an immutable Monica release tag/u,
@@ -109,8 +115,14 @@ try {
     /does not bind the catalog bytes for v1\.2\.4/u,
   );
 
-  catalogResponseBody = publishedCatalog.replace(skillsCli.version, "9.9.9");
+  catalogResponseBody = publishedCatalog.replace(
+    installer.assetNameTemplate,
+    "monica-guide-v{version}-win-x64.zip",
+  );
+  await assert.rejects(verify(), /Unexpected guide installer distribution contract/u);
+  staleManifestDigest = true;
   await assert.rejects(verify(), /does not bind the catalog bytes/u);
+  staleManifestDigest = false;
   catalogResponseBody = publishedCatalog;
 
   const originalHome = pages.get("/");
@@ -119,15 +131,12 @@ try {
     verify(),
     /exact Monica\.Templates package specifier/u,
   );
-  pages.set("/", originalHome.replace(`${skillsCli.package}@${skillsCli.version}`, "skills@9.9.9"));
-  await assert.rejects(
-    verify(),
-    /exact catalog-pinned skills CLI package specifier/u,
-  );
-  pages.set("/", originalHome.replace(`${skillsCli.package}@${skillsCli.version}`, `evil${skillsCli.package}@${skillsCli.version}`));
-  await assert.rejects(verify(), /exact catalog-pinned skills CLI package specifier/u);
-  pages.set("/", `${originalHome} ${skillsCli.package}@latest`);
-  await assert.rejects(verify(), /unexpected catalog-pinned skills CLI package specifier skills@latest/u);
+  pages.set("/", originalHome.replace(`From this immutable release ${releaseTag}`, "From an immutable release"));
+  await assert.rejects(verify(), /does not advertise/u);
+  pages.set("/", originalHome.replaceAll("{rid}", "win-x64"));
+  await assert.rejects(verify(), /platform-matched release verification/u);
+  pages.set("/", originalHome.replace("SHA256SUMS", "checksums"));
+  await assert.rejects(verify(), /platform-matched release verification/u);
   pages.set("/", `${originalHome} Monica.Templates@latest`);
   await assert.rejects(verify(), /unexpected Monica\.Templates package specifier Monica\.Templates@latest/u);
   pages.set("/", originalHome);

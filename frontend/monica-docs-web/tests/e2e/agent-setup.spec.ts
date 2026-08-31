@@ -1,11 +1,4 @@
 import { expect, test } from "@playwright/test";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-
-const catalog = JSON.parse(
-  readFileSync(resolve(process.cwd(), "../../../MoLibrary/.monica/agent-skill-catalog.json"), "utf8"),
-) as { distribution: { skillsCli: { package: string; version: string } } };
-const cliReference = `${catalog.distribution.skillsCli.package}@${catalog.distribution.skillsCli.version} add`;
 
 test("installs one universal Guide before asking for a repository or profile", async ({ page }) => {
   await page.goto("/");
@@ -30,21 +23,24 @@ test("installs one universal Guide before asking for a repository or profile", a
   const fullPrompt = page.locator("details.full-prompt-details");
   await expect(fullPrompt).not.toHaveAttribute("open", "");
   await fullPrompt.getByText("View the full instruction", { exact: true }).click();
-  await expect(fullPrompt).toContainText("https://github.com/Tairitsua/Monica/tree/");
-  await expect(fullPrompt).toContainText("skills/monica-guide");
-  await expect(fullPrompt).not.toContainText("--profile");
-  await expect(fullPrompt).not.toContainText("--agent");
-  await expect(fullPrompt).not.toContainText("releaseCatalogDigest");
+  await expect(fullPrompt).toContainText("$monica-guide init --workspace");
+  await expect(fullPrompt).toContainText("$monica-guide configure --workspace");
+  await expect(fullPrompt).toContainText("{rid}");
+  await expect(fullPrompt).toContainText("SHA256SUMS");
+  await expect(fullPrompt).toContainText("Monica.Docs");
   await expect(fullPrompt).not.toContainText("--apply");
+  await expect(fullPrompt).not.toContainText("--agent");
+  await expect(fullPrompt).not.toContainText("--profile application");
+  await expect(fullPrompt).not.toContainText("npx");
+  await expect(fullPrompt).not.toContainText("Monica.Guide.exe");
 
   const fallback = page.locator("details.generic-fallback");
   await expect(fallback).not.toHaveAttribute("open", "");
-  await fallback.getByText("Interactive npx skills fallback", { exact: true }).click();
-  await expect(fallback).toContainText(cliReference);
-  await expect(fallback).toContainText("-g -s monica-guide");
-  await expect(fallback).toContainText("ls -g --json");
+  await fallback.getByText("Manual terminal fallback", { exact: true }).click();
+  await expect(fallback).toContainText("$monica-guide configure --workspace <workspace>");
+  await expect(fallback).toContainText("$monica-guide status --workspace <workspace>");
   await expect(fallback).not.toContainText("-a codex");
-  await expect(fallback).not.toContainText("-a claude-code");
+  await expect(fallback).not.toContainText("npx");
 });
 
 test("keeps Manual .NET as a complete first-class path", async ({ page }) => {
@@ -74,10 +70,12 @@ test("supports keyboard tab navigation and successful clipboard feedback", async
   await expect(page.getByRole("status")).toHaveText("Copied to clipboard");
   const clipboard = await page.evaluate(() => navigator.clipboard.readText());
   expect(clipboard).toContain("monica-guide");
-  expect(clipboard).toContain("https://github.com/Tairitsua/Monica/tree/");
-  expect(clipboard).not.toContain("--profile");
+  expect(clipboard).toContain("From this immutable release");
+  expect(clipboard).toContain("$monica-guide init --workspace");
+  expect(clipboard).toContain("{rid}");
+  expect(clipboard).toContain("SHA256SUMS");
+  expect(clipboard).not.toContain("--apply");
   expect(clipboard).not.toContain("--agent");
-  expect(clipboard).not.toMatch(/\binit\s/u);
   expect(clipboard).not.toContain("{{MONICA_IMMUTABLE_REF}}");
   expect(clipboard).not.toContain("{{MONICA_CATALOG_DIGEST}}");
 });
@@ -96,8 +94,8 @@ test("makes clipboard failure recoverable without losing the instruction", async
   await expect(alert).toContainText("Clipboard access failed");
   const fallback = alert.getByRole("textbox", { name: "Select and copy this instruction manually" });
   await expect(fallback).toBeFocused();
-  await expect(fallback).toHaveValue(/skills\/monica-guide/u);
-  await expect(fallback).not.toHaveValue(/--profile/u);
+  await expect(fallback).toHaveValue(/monica-guide/u);
+  await expect(fallback).not.toHaveValue(/--profile application/u);
   const selection = await fallback.evaluate((element) => {
     const textarea = element as HTMLTextAreaElement;
     return [textarea.selectionStart, textarea.selectionEnd, textarea.value.length];
