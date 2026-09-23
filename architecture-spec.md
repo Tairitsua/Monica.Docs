@@ -18,14 +18,14 @@ The public API must never acquire demo, admin, mutation, local-RPC, or operation
 - TypeScript and Tailwind CSS 4
 - .NET 10 and ASP.NET Core
 - Monica host-bound composition through `builder.AddMonica(...)`
-- Repository Markdown under `docs/` as the content source of truth
+- Stable editorial Markdown under `docs/`; canonical Agent Skills under Monica's `skills/` tree
 
-The website and API are independently deployable. The frontend consumes only HTTP contracts and never references backend projects or types.
+The website and API are independently deployable. The frontend builds its reading and search content from Markdown and verified release artifacts. Its optional asset proxy consumes an HTTP contract; it never references backend projects or types.
 
 ## Repository shape
 
 ```text
-docs/                                      localized Markdown source
+docs/                                      stable localized editorial Markdown
 frontend/monica-docs-web/                  public Next.js website
 src/
 ├── AppHost/
@@ -45,18 +45,22 @@ src/
 
 AppHost projects are composition roots. Query handlers, domain services, repositories, and content rules remain in `Domains/Documentation`. Stable external contracts remain in `Platform.Protocol`.
 
-## Content delivery flow
+## Content ownership and delivery
 
 ```text
-docs/**/*.md
-    -> Monica Markdown catalog
-    -> Documentation repository and processors
-    -> read-only HTTP contracts
-    -> Next.js server components and asset proxy
-    -> localized public routes
+Monica/skills/* + release catalog
+    -> immutable monica-knowledge.json + SHA256SUMS
+    -> verified website projection
+    -> /skills pages, raw resources, and llms.txt
+
+Monica.Docs/docs/{en-US,zh-CN}/**/*.md
+    -> stable editorial documentation catalog
+    -> localized /docs routes
 ```
 
-The backend owns source discovery, locale resolution, navigation ordering, slug normalization, Markdown metadata, heading extraction, search ranking, and safe asset resolution. The frontend owns presentation, interaction, fallback content, SEO metadata, and route localization.
+Agent Skills are authored under the sibling Monica repository's `skills/` tree. The nine `monica-infra-*` skills own consumer guidance formerly spread across `docs/{locale}/modules/` pages; those old pages are no longer a second authority. Published website skill content comes from the selected immutable release artifact and its checksum. Local development may project the current sibling source for preview. Do not edit generated pages, raw resources, or `llms.txt` as independent content.
+
+The documentation backend retains its read-only editorial API and safe asset behavior. The frontend owns presentation, SEO metadata, localized routes, and the verified build-time skill projection. Monica.Docs has no Guide-specific profile or source binding; an exact Monica framework binding may be used separately for source lookup.
 
 The documentation root is resolved in this order:
 
@@ -122,20 +126,23 @@ The website provides first-class English and Simplified Chinese launch routes:
 - `/` and `/zh-CN`
 - `/docs` and `/zh-CN/docs`
 - `/docs/[...slug]` and `/zh-CN/docs/[...slug]`
+- `/skills` and `/zh-CN/skills`
+- `/skills/[...slug]` and `/zh-CN/skills/[...slug]`
+- `/api/skills/[...path]` and `/llms.txt`
 - `/modules` and `/zh-CN/modules`
 - `/reference` and `/zh-CN/reference`
 - `/roadmap` and `/zh-CN/roadmap`
 
 The homepage uses a technical-editorial visual system and interactive architecture evidence rather than a generic feature grid. Runtime snapshots are labeled as examples and align with the executable Ordering reference application.
 
-When `MONICA_DOCS_API_URL` is configured, server-side readers use the public API with bounded request timeouts and revalidation. When it is absent or temporarily unavailable, a small curated launch guide keeps critical routes usable. The fallback is a resilience layer, not a second complete content source.
+Before development or build, `scripts/build-content.mjs` projects stable Markdown and verified skill resources into ignored `src/generated/` JSON. Articles, navigation, and search use that same snapshot. `MONICA_DOCS_API_URL` is needed only by the optional asset proxy. There is no handwritten fallback document corpus.
 
 The frontend also owns:
 
 - localized metadata, canonical routes, language alternates, sitemap, and robots policy
 - accessible keyboard interaction and reduced-motion behavior
 - local font and icon assets with no browser-loaded CDN dependency
-- documentation search proxying with no-store result responses
+- search across stable guides and canonical skills with no-store result responses
 - a validated asset proxy that preserves byte ranges and cache validators
 - redirects for the previous documentation URLs
 
@@ -151,10 +158,10 @@ An untranslated page is preferable to an inaccurate machine-shaped duplicate. Ne
 - Keep public documentation behavior inside the Documentation bounded context.
 - Keep demo jobs and mutations outside the public API graph.
 - Keep external contracts in `Platform.Protocol`; do not leak entities or repositories.
-- Keep the frontend coupled only to HTTP contracts.
+- Keep frontend publication contracts independent of backend project types.
 - Preserve one-way project references and do not create fake microservices inside one deployment.
 - Treat Stable, Integrations, and Labs as release promises, not marketing adjectives.
-- Keep the framework package manifest authoritative; review the mirrored website catalog whenever it changes.
+- Keep Monica's framework package and skill catalog authoritative; regenerate and verify the website projection whenever their contracts change.
 - Use `app.UseMonica()` and `app.MapMonica()` only after `builder.Build()`.
 
 ## Verification

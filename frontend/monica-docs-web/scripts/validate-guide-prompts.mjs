@@ -8,7 +8,7 @@ const publicReleaseBuild = process.argv.includes("--production");
 
 try {
   const prompts = loadMonicaGuidePrompts({ projectDirectory, publicReleaseBuild });
-  const mode = prompts.isLocalDevelopment ? "local-development fallback" : prompts.ref;
+  const mode = prompts.isLocalDevelopment ? "local source preview" : prompts.ref;
   console.log(`Validated canonical Monica Guide prompts for ${mode}.`);
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);

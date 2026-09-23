@@ -1,6 +1,6 @@
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
-import type { ComponentPropsWithoutRef } from "react";
+import type { ComponentProps, ComponentPropsWithoutRef } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
@@ -25,7 +25,7 @@ function rewriteAssetSource(source: string | Blob): string | Blob {
   return source;
 }
 
-function MarkdownImage({ src, alt }: ComponentPropsWithoutRef<"img">) {
+function MarkdownImage({ src, alt, hrefResolver }: ComponentPropsWithoutRef<"img"> & { hrefResolver?: (href: string, rawAsset?: boolean) => string }) {
   if (!src) {
     return null;
   }
@@ -35,17 +35,18 @@ function MarkdownImage({ src, alt }: ComponentPropsWithoutRef<"img">) {
     return null;
   }
 
-  return <Image className="docs-media" src={rewrittenSource} alt={alt ?? ""} width={1280} height={720} unoptimized />;
+  return <Image className="docs-media" src={hrefResolver?.(rewrittenSource, true) ?? rewrittenSource} alt={alt ?? ""} width={1280} height={720} unoptimized />;
 }
 
 type MarkdownLinkProps = ComponentPropsWithoutRef<"a"> & {
   locale: Locale;
   currentSlug: string;
+  hrefResolver?: (href: string, rawAsset?: boolean) => string;
 };
 
-function MarkdownLink({ href = "", children, locale, currentSlug, ...props }: MarkdownLinkProps) {
-  const external = /^https?:\/\//iu.test(href);
-  const resolvedHref = resolveDocumentationHref(href, locale, currentSlug);
+function MarkdownLink({ href = "", children, locale, currentSlug, hrefResolver, ...props }: MarkdownLinkProps) {
+  const resolvedHref = hrefResolver?.(href) ?? resolveDocumentationHref(href, locale, currentSlug);
+  const external = /^https?:\/\//iu.test(resolvedHref);
   return (
     <a href={resolvedHref} {...props} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>
       {children}
@@ -54,15 +55,15 @@ function MarkdownLink({ href = "", children, locale, currentSlug, ...props }: Ma
   );
 }
 
-export function DocsMarkdown({ markdown, locale, currentSlug }: { markdown: string; locale: Locale; currentSlug: string }) {
+export function DocsMarkdown({ markdown, locale, currentSlug, hrefResolver, remarkPlugins }: { markdown: string; locale: Locale; currentSlug: string; hrefResolver?: (href: string, rawAsset?: boolean) => string; remarkPlugins?: ComponentProps<typeof ReactMarkdown>["remarkPlugins"] }) {
   return (
     <div className="docs-markdown">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, ...(remarkPlugins ?? [])]}
         rehypePlugins={[rehypeSlug]}
         components={{
-          a: (props) => <MarkdownLink {...props} locale={locale} currentSlug={currentSlug} />,
-          img: MarkdownImage,
+          a: (props) => <MarkdownLink {...props} locale={locale} currentSlug={currentSlug} hrefResolver={hrefResolver} />,
+          img: (props) => <MarkdownImage {...props} hrefResolver={hrefResolver} />,
         }}
       >
         {markdown}

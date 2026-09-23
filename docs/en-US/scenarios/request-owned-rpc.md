@@ -189,5 +189,5 @@ This is the recommended boundary for binary `PhysicalFileResult` responses, mult
 
 ## Next steps
 
-- [AutoControllers](../modules/auto-controllers/index.md)
+- [AutoControllers](/skills/monica-infra-web)
 - [ProjectUnits](../concepts/project-units.md)

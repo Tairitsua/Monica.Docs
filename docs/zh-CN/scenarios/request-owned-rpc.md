@@ -221,5 +221,5 @@ Monica.Docs 的 `QueryGetDocAsset` 就与 Handler 放在同一文件中。
 
 ## 继续阅读
 
-- [AutoControllers](../modules/auto-controllers/index.md)
+- [AutoControllers](/zh-CN/skills/monica-infra-web)
 - [项目单元编写](../concepts/project-unit-authoring.md)

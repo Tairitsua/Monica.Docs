@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   const locale: Locale = request.nextUrl.searchParams.get("locale")?.toLowerCase() === "zh-cn" ? "zh-CN" : "en";
 
   if (!query) {
-    return NextResponse.json({ results: [], source: "fallback" }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ results: [], source: "snapshot" }, { headers: { "Cache-Control": "no-store" } });
   }
 
   const result = await searchDocumentation(locale, query);

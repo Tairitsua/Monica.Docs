@@ -25,7 +25,7 @@ export function SiteHeader({ locale, nav, languageLabel, demoLabel, languageHref
   const destinations = [
     `${homeHref}#start`,
     `${homeHref}#concepts`,
-    localizedPath(locale, "/modules"),
+    localizedPath(locale, "/skills"),
     `${homeHref}#example`,
     localizedPath(locale, "/docs"),
   ] as const;

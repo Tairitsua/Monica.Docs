@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Monica documentation",
     short_name: "Monica",
-    description: "Observable application architecture for .NET teams.",
+    description: "Modular .NET infrastructure and canonical skills for agent-driven development.",
     start_url: "/",
     display: "standalone",
     background_color: "#f2eee5",

@@ -1,7 +1,7 @@
 import type { Locale } from "@/content/home";
 
 export type DocumentationLocale = "en-US" | "zh-CN";
-export type DocumentationSource = "api" | "fallback" | "unavailable";
+export type DocumentationSource = "snapshot" | "unavailable";
 
 export type DocTreeItem = {
   title: string;

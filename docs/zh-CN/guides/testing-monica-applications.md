@@ -170,4 +170,4 @@ var total = await fixture.Unit.CalculateAsync(
 - [Module 模式与主机边界](../concepts/module-pattern.md)
 - [执行边界](../concepts/execution-boundaries.md)
 - [项目单元编写](../concepts/project-unit-authoring.md)
-- [模块目录](../modules/index.md)
+- [能力 Skill](/zh-CN/skills)

@@ -119,4 +119,4 @@ Call `UseMonica()` and then `MapMonica()` exactly once on the same `WebApplicati
 
 Use `MonicaTestApplicationFactory<TDiscoveryAnchor>` when a test must exercise this complete boundary, including graph validation, finalized options, type discovery, service registration, and host lifecycle.
 
-Continue with [Options and registration extensions](./configuration-and-guide.md) for the public configuration surface, [Core composition](../modules/core-composition/index.md) for host policy and diagnostics, or [Testing Monica applications](../guides/testing-monica-applications.md) for host-backed test patterns.
+Continue with [Options and registration extensions](./configuration-and-guide.md) for the public configuration surface, [Core composition](/skills/monica-infra-hosting) for host policy and diagnostics, or [Testing Monica applications](../guides/testing-monica-applications.md) for host-backed test patterns.

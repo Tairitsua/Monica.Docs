@@ -47,7 +47,7 @@ app.Run();
 
 `AddHealthCheck()` 会在所有 Web 环境映射就绪与存活端点。应用检查应通过 `AddMonicaReadinessCheck<T>()` 或 `AddMonicaLivenessCheck<T>()` 注册；不要让生产就绪依赖仅 Development 调用的 `AddServiceDefaults()`。Dashboard 展示就绪、聚合计数、搜索、状态/标签筛选、耗时、有界 Data 与有界错误。它只表示承载当前 Blazor Circuit 的宿主，不会创建持久历史。
 
-探针语义见 [Health Check](../modules/health-check/index.md)，页面行为见 [Health Check UI](../modules/health-check-ui/index.md)。
+探针语义与页面行为见[可观测性与诊断 Skill](/zh-CN/skills/monica-infra-observability)。
 
 ## Seeder 运维
 
@@ -55,7 +55,7 @@ app.Run();
 
 Dashboard 展示有效模块配置、运行进度、策略来源、依赖、尝试历史和有界失败证据。页面刻意只读，数据也只属于当前进程。
 
-调度策略见 [Seeder](../modules/seeder/index.md)，页面契约见 [Seeder UI](../modules/seeder-ui/index.md)。
+调度策略与页面契约见[作业与种子数据 Skill](/zh-CN/skills/monica-infra-jobs)。
 
 ## Module System 工作台
 
@@ -173,4 +173,4 @@ Debug 模式在所有环境都优先于全局策略和页面覆盖，并且 Moni
 
 每个页面仍会在 Facade 边界前重新检查访问权限。Debug 模式关闭时，策略缺失、授权服务缺失、策略未注册、评估异常或当前用户未通过都会隐藏受保护导航，也不会请求诊断。仍应配合认证、HTTPS、网络隔离与最小权限授权；即使凭据类 Value 与 Stack Trace 不会暴露，拓扑、组件名、耗时和有界错误仍属于敏感运维信息。
 
-需要编程访问时，继续阅读[核心组合诊断](../modules/core-composition/index.md#不可变诊断-facade)、[Health Check 诊断](../modules/health-check/guide-and-providers.md#查询当前宿主)与 [Seeder 诊断](../modules/seeder/guide-and-providers.md#查询诊断)。
+需要编程访问时，继续阅读[核心组合诊断](/zh-CN/skills/monica-infra-hosting)、[Health Check 诊断](/zh-CN/skills/monica-infra-observability)与 [Seeder 诊断](/zh-CN/skills/monica-infra-jobs)。

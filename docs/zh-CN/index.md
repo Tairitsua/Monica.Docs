@@ -12,8 +12,9 @@ Monica 是面向可观测 .NET 后端的 Agent-governed application architecture
 - [主机绑定的模块组合](./concepts/module-pattern.md)：理解 `builder.AddMonica(...)`、模块图与生命周期边界。
 - [项目单元编写](./concepts/project-unit-authoring.md)：用明确的应用与领域角色组织业务代码。
 - [执行边界](./concepts/execution-boundaries.md)：理解统一执行管线在哪些入口运行，以及为什么每个子系统应明确拥有自己的边界。
+- [Agent 知识归属](./concepts/agent-knowledge.md)：了解经验证的行为如何进入 Skill、稳定指南与发布知识。
 - [测试 Monica 应用](./guides/testing-monica-applications.md)：在完整宿主场景、原始 ProjectUnit Fixture 与 UI 测试之间选择真实边界。
-- [模块目录](./modules/index.md)：按需选择基础设施、集成与实验能力。
+- [能力 Skill](/zh-CN/skills)：按需选择 Monica 基础设施能力。
 - [包成熟度](./packages/index.md)：理解 Stable、Integrations 与 Labs 的官方承诺。
 - [第三方生态](./ecosystem/index.md)：研发、标识、授权并发布独立 Monica 模块包。
 - [场景指南](./scenarios/index.md)：把多个模块组合成可运行方案。

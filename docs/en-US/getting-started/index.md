@@ -78,4 +78,4 @@ app.Run();
 3. Open `/framework/units` to inspect discovered ProjectUnits.
 4. Move from the in-memory provider to an Integration package only when the deployment needs it.
 
-Continue with [ProjectUnits](../modules/project-units/index.md), [JobScheduler](../modules/job-scheduler/index.md), or the [Stable module catalog](../modules/index.md). For a domain-oriented application layout, use the Ordering reference application in the Monica repository.
+Continue with [ProjectUnit authoring](/skills/monica-application-project-unit-development), [jobs and seeding](/skills/monica-infra-jobs), or the [capability skills](/skills). For a domain-oriented application layout, use the Ordering reference application in the Monica repository.

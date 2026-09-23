@@ -5,7 +5,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
 import type { Locale } from "@/content/home";
-import type { DocSearchResult, DocumentationSource } from "@/lib/documentation-types";
+import type { DocSearchResult } from "@/lib/documentation-types";
 
 type DocsSearchProps = {
   locale: Locale;
@@ -19,7 +19,6 @@ type DocsSearchProps = {
 export function DocsSearch({ locale, label, placeholder, action, hint, noResults }: DocsSearchProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<DocSearchResult[]>([]);
-  const [source, setSource] = useState<DocumentationSource | null>(null);
   const [state, setState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const regionRef = useRef<HTMLDivElement>(null);
 
@@ -54,14 +53,12 @@ export function DocsSearch({ locale, label, placeholder, action, hint, noResults
         throw new Error("Search request failed.");
       }
 
-      const payload = await response.json() as { results?: DocSearchResult[]; source?: DocumentationSource };
+      const payload = await response.json() as { results?: DocSearchResult[] };
       setResults(payload.results ?? []);
-      setSource(payload.source ?? null);
       setState("ready");
       requestAnimationFrame(() => regionRef.current?.focus());
     } catch {
       setResults([]);
-      setSource(null);
       setState("error");
     }
   }
@@ -112,7 +109,6 @@ export function DocsSearch({ locale, label, placeholder, action, hint, noResults
         <div className="docs-search-results" ref={regionRef} tabIndex={-1}>
           <div className="docs-search-results-head">
             <span>{results.length.toString().padStart(2, "0")} {locale === "en" ? "RESULTS" : "条结果"}</span>
-            {source && <span>{source === "api" ? "PUBLIC API" : locale === "en" ? "LOCAL PREVIEW" : "本地预览"}</span>}
           </div>
           {results.length === 0 ? <p className="docs-search-empty">{noResults}</p> : (
             <ol>

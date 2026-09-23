@@ -20,7 +20,7 @@ ProjectUnits do not replace good domain modeling. Keep invariants on the state o
 
 A ProjectUnit role describes architecture; it does not automatically wrap every method call. Runtime boundaries are established by subsystem adapters—for example Mediator requests, EventBus handlers, direct MVC actions, jobs, seeders, and hosted work items. A `DomainService` normally runs inside its caller's boundary.
 
-Use the [Execution Pipeline](../modules/execution-pipeline/index.md) when a subsystem needs a shared behavior chain. Ordinary application and domain services remain inside their caller's boundary; a subsystem that owns a new independent entry point should provide an explicit typed adapter.
+Use the [Execution Pipeline](/skills/monica-infra-web) when a subsystem needs a shared behavior chain. Ordinary application and domain services remain inside their caller's boundary; a subsystem that owns a new independent entry point should provide an explicit typed adapter.
 
 ## Declare agent context explicitly
 
@@ -84,7 +84,7 @@ The catalog belongs to the current Monica host. Cross-service aggregation is a g
 
 An application may implement `IProjectUnitRequirementLinkResolver` and register it through `UseRequirementLinkResolver<TResolver>()`. Resolution occurs only when detail is loaded. Unknown IDs remain visible and non-clickable; one resolver failure does not make the catalog unavailable.
 
-Read the [ProjectUnits module guide](../modules/project-units/index.md) for registration, endpoints, dashboard use, and resolver examples.
+Read [ProjectUnit authoring](/skills/monica-application-project-unit-development) for unit contracts and [application endpoints](/skills/monica-infra-web) for registration and generated HTTP behavior.
 
 ## Testing ProjectUnits
 

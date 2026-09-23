@@ -6,7 +6,7 @@ This file provides guidance to coding agents working in this repository.
 
 Monica.Docs is both:
 
-- the documentation project for Monica
+- the home of stable bilingual editorial documentation for Monica
 - a live demo host for Monica modules, including UI-backed demos
 - a teaching/demo repository for the `monica-application-modular-monolith` and `monica-application-project-unit-development` skills
 
@@ -28,7 +28,10 @@ Key facts for navigation:
 
 ## Skill Usage
 
-- Initialize this repository with the global `docs-contributor` profile through `monica-guide`; Monica.Docs does not keep repository-owned copies of Monica development skills.
+- Monica's Agent Skills are canonical in `../MoLibrary/skills/`. This repository keeps stable human-facing guides in `docs/en-US/` and `docs/zh-CN/`; it does not own copied Skill instructions or a separate module-by-module documentation tree.
+- The website projects the skills and their raw resources from the release's immutable `monica-knowledge.json` after checksum verification. Local development can preview the current sibling Monica source. Do not hand-edit generated Skill pages, raw assets, or `llms.txt`.
+- Monica.Docs is an ordinary checkout. It has no `monica-guide` docs-contributor profile or Docs source binding. Use the active repository path; use Guide's Monica binding only for exact framework source lookup outside this workspace.
+- For stable editorial content, use `monica-docs-authoring`. For consumer setup of existing Monica capabilities, route to the matching `monica-infra-persistence`, `monica-infra-messaging`, `monica-infra-jobs`, `monica-infra-configuration`, `monica-infra-hosting`, `monica-infra-observability`, `monica-infra-ai`, `monica-infra-web`, or `monica-infra-ui` skill rather than restoring deleted `docs/{locale}/modules/` pages.
 - Use `monica-application-modular-monolith` whenever the task involves solution structure, `Domains/` boundaries, `Platform.*` placement, the strict project reference chain, AppHost composition, or published-language collaboration.
 - Use `monica-application-project-unit-development` whenever the task involves creating or changing `ApplicationService`, request DTOs, domain services, entities, repositories, domain events, handlers, configurations, or jobs.
 - This repository should actively demonstrate those two skills in practice. Do not introduce local conventions that conflict with them.

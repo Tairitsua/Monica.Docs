@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 
 import { DocsArticlePage } from "@/components/docs/docs-pages";
-import { getFallbackDocumentationSlugs } from "@/lib/documentation-api";
+import { getDocumentationSlugs } from "@/lib/documentation-api";
 import { createDocumentationArticleMetadata, type DocumentationArticlePageProps } from "@/lib/documentation-metadata";
 
 export const revalidate = 300;
 export const dynamicParams = true;
 
 export function generateStaticParams() {
-  return getFallbackDocumentationSlugs("zh-CN").map((slug) => ({ slug: slug.split("/") }));
+  return getDocumentationSlugs("zh-CN").map((slug) => ({ slug: slug.split("/") }));
 }
 
 export async function generateMetadata({ params }: DocumentationArticlePageProps): Promise<Metadata> {

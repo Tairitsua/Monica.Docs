@@ -21,4 +21,4 @@ sidebar_position: 1
 - [安装与主机接入](./installation.md)
 - [注册第一个模块](./first-module.md)
 
-如果你准备搭建领域化应用，请继续阅读[项目单元编写](../concepts/project-unit-authoring.md)；如果你正在选包，请查看[模块目录](../modules/index.md)。
+如果你准备搭建领域化应用，请继续阅读[项目单元编写](../concepts/project-unit-authoring.md)；如果你正在选包，请查看[能力 Skill](/zh-CN/skills)。

@@ -17,19 +17,24 @@
     "verify:manual-dotnet": "node scripts/verify-manual-dotnet.mjs",
     "verify:guide-release:production": "node scripts/verify-published-guide-release.mjs",
     "verify:deployed": "node scripts/verify-deployed-site.mjs",
-    "check": "npm run validate:guide-prompts && npm run test:guide-prompts && npm run test:deployed-contract && npm run lint && npm run typecheck && npm run build"
+    "check": "npm run content:build && npm run validate:guide-prompts && npm run test:guide-prompts && npm run test:deployed-contract && npm run test:knowledge && npm run lint && npm run typecheck && npm run build",
+    "content:build": "node scripts/build-content.mjs",
+    "predev": "npm run content:build",
+    "prebuild": "npm run content:build",
+    "test:knowledge": "node --test scripts/test-knowledge.mjs"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "5.2.10",
     "@fontsource/ibm-plex-mono": "5.2.7",
     "@fontsource/ibm-plex-sans": "5.2.8",
     "lucide-react": "1.24.0",
-    "next": "16.2.12",
+    "next": "16.3.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-markdown": "10.1.0",
     "rehype-slug": "6.0.0",
-    "remark-gfm": "4.0.1"
+    "remark-gfm": "4.0.1",
+    "github-slugger": "2.0.0"
   },
   "devDependencies": {
     "@playwright/test": "1.62.1",
@@ -38,14 +43,9 @@
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "eslint": "9.39.5",
-    "eslint-config-next": "16.2.10",
+    "eslint-config-next": "16.3.6",
     "tailwindcss": "4.3.2",
-    "typescript": "5.9.3"
-  },
-  "overrides": {
-    "next": {
-      "postcss": "8.5.26",
-      "sharp": "0.35.3"
-    }
+    "typescript": "5.9.3",
+    "@types/mdast": "4.0.4"
   }
 }

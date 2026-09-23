@@ -1,7 +1,7 @@
 ---
 title: Packages
 description: Choose packages according to Monica's maturity contract.
-sidebar_position: 4
+sidebar_position: 3
 ---
 
 Monica publishes small composable packages rather than forcing every application to install the whole framework.

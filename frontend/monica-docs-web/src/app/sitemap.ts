@@ -2,11 +2,12 @@ import type { MetadataRoute } from "next";
 
 import { siteUrl } from "@/app/site-metadata";
 import type { Locale } from "@/content/home";
-import { flattenDocumentationTree, getDocumentationTree } from "@/lib/documentation-api";
+import { flattenDocumentationTree, getDocumentationSlugs, getDocumentationTree } from "@/lib/documentation-api";
+import { knowledge, skillFileRoute } from "@/lib/knowledge";
 import { docsPath, localizedPath, routeAlternates } from "@/lib/routes";
 
 const LAST_MODIFIED = new Date("2026-07-13");
-const staticPaths = ["/", "/docs", "/modules", "/reference", "/roadmap"] as const;
+const staticPaths = ["/", "/docs", "/skills", "/modules", "/reference", "/roadmap"] as const;
 const locales: readonly Locale[] = ["en", "zh-CN"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -39,15 +40,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.65,
         alternates: {
           languages: {
-            en: absoluteUrl(docsPath("en", item.slug)),
-            "zh-CN": absoluteUrl(docsPath("zh-CN", item.slug)),
+            ...(getDocumentationSlugs("en").includes(item.slug) ? { en: absoluteUrl(docsPath("en", item.slug)) } : {}),
+            ...(getDocumentationSlugs("zh-CN").includes(item.slug) ? { "zh-CN": absoluteUrl(docsPath("zh-CN", item.slug)) } : {}),
           },
         },
       });
     }
   }
 
-  return [...staticEntries, ...docsEntries];
+  const skillEntries: MetadataRoute.Sitemap = knowledge.skills.flatMap((skill) =>
+    skill.files.flatMap((file) => locales.map((locale) => ({
+      url: absoluteUrl(skillFileRoute(locale, skill.name, file.path)),
+      lastModified: new Date(knowledge.source.updatedAt),
+      changeFrequency: "monthly" as const,
+      priority: file.path === "SKILL.md" ? 0.8 : 0.6,
+      alternates: { languages: {
+        en: absoluteUrl(skillFileRoute("en", skill.name, file.path)),
+        "zh-CN": absoluteUrl(skillFileRoute("zh-CN", skill.name, file.path)),
+      } },
+    }))),
+  );
+  return [...staticEntries, ...docsEntries, ...skillEntries];
 }
 
 function createEntry(path: string, priority: number, sharedPath: string): MetadataRoute.Sitemap[number] {

@@ -51,5 +51,5 @@ Behavior 按数字顺序嵌套，数值越小越靠外。Monica 提供以下标�
 
 ## 下一步
 
-- [ExecutionPipeline 模块](../modules/execution-pipeline/index.md)
-- [UnitOfWork 模块](../modules/unit-of-work/index.md)
+- [ExecutionPipeline 模块](/zh-CN/skills/monica-infra-web)
+- [UnitOfWork 模块](/zh-CN/skills/monica-infra-persistence)

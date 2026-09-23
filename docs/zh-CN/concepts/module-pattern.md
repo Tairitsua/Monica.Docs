@@ -119,4 +119,4 @@ Work Action 必须同步、确定、CPU 密集，并与宿主 Builder、`IServic
 
 当测试需要覆盖模块图校验、最终 Option、类型发现、服务注册与宿主生命周期时，使用 `MonicaTestApplicationFactory<TDiscoveryAnchor>` 复用同一完整边界。
 
-继续阅读 [Option 与注册扩展](./configuration-and-guide.md)了解公开配置面，阅读[核心组合](../modules/core-composition/index.md)了解宿主策略与诊断，或阅读[测试 Monica 应用](../guides/testing-monica-applications.md)了解宿主级测试模式。
+继续阅读 [Option 与注册扩展](./configuration-and-guide.md)了解公开配置面，阅读[核心组合](/zh-CN/skills/monica-infra-hosting)了解宿主策略与诊断，或阅读[测试 Monica 应用](../guides/testing-monica-applications.md)了解宿主级测试模式。

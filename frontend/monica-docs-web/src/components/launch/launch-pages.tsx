@@ -142,7 +142,7 @@ export function ReferencePage({ locale }: { locale: Locale }) {
         <span>REPLACEMENT SEAM / PORT 5275</span>
         <h2>{copy.seamTitle}</h2>
         <p>{copy.seamBody}</p>
-        <Link href={localizedPath(locale, "/docs/architecture")}>{locale === "en" ? "Read the architecture guide" : "阅读架构指南"}<ArrowRight aria-hidden="true" /></Link>
+        <Link href={localizedPath(locale, "/docs/concepts/host-bound-composition")}>{locale === "en" ? "Read the architecture guide" : "阅读架构指南"}<ArrowRight aria-hidden="true" /></Link>
       </section>
     </LaunchShell>
   );

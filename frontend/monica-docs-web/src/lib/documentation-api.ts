@@ -1,140 +1,71 @@
 import "server-only";
 
-import {
-  getFallbackDocument,
-  getFallbackDocuments,
-  getFallbackTree,
-  searchFallbackDocuments,
-} from "@/content/docs-fallback";
 import type { Locale } from "@/content/home";
-import type {
-  DocContent,
-  DocSearchResult,
-  DocTreeItem,
-  DocumentationResult,
-} from "@/lib/documentation-types";
-import { toDocumentationLocale } from "@/lib/documentation-types";
+import snapshotData from "@/generated/documents.json";
+import type { DocContent, DocSearchResult, DocTreeItem, DocumentationResult } from "@/lib/documentation-types";
+import { knowledge, skillFileRoute } from "@/lib/knowledge";
 import { normalizeDocSlug } from "@/lib/routes";
 
-const DOCUMENTATION_API_PATH = "/api/v1/Documentation";
-const REQUEST_TIMEOUT_MS = 3500;
+const snapshot = snapshotData as Record<Locale, { documents: DocContent[]; tree: DocTreeItem[] }>;
 
+// Only media proxying needs the authoring API. Articles and search share the
+// same generated snapshot, so an API outage cannot change published guidance.
 export function getDocumentationApiBaseUrl(): string | null {
-  const configuredUrl = process.env.MONICA_DOCS_API_URL?.trim();
-  if (!configuredUrl) {
-    return null;
-  }
-
   try {
-    const url = new URL(configuredUrl);
-    if (url.protocol !== "http:" && url.protocol !== "https:") {
-      return null;
-    }
-
-    return url.toString().replace(/\/$/u, "");
+    const url = new URL(process.env.MONICA_DOCS_API_URL?.trim() ?? "");
+    return ["http:", "https:"].includes(url.protocol) ? url.toString().replace(/\/$/u, "") : null;
   } catch {
     return null;
   }
-}
-
-export function isDocumentationApiConfigured(): boolean {
-  return getDocumentationApiBaseUrl() !== null;
-}
-
-async function requestApi<T>(endpoint: string, parameters: Record<string, string>): Promise<T | null> {
-  const baseUrl = getDocumentationApiBaseUrl();
-  if (!baseUrl) {
-    return null;
-  }
-
-  const url = new URL(`${baseUrl}${DOCUMENTATION_API_PATH}/${endpoint}`);
-  for (const [name, value] of Object.entries(parameters)) {
-    url.searchParams.set(name, value);
-  }
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-
-  try {
-    const response = await fetch(url, {
-      headers: { Accept: "application/json" },
-      next: { revalidate: 300 },
-      signal: controller.signal,
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const payload: unknown = await response.json();
-    return unwrapEnvelope<T>(payload);
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-function unwrapEnvelope<T>(payload: unknown): T | null {
-  if (payload === null || payload === undefined) {
-    return null;
-  }
-
-  if (typeof payload === "object" && !Array.isArray(payload) && "data" in payload) {
-    return (payload as { data: T | null }).data ?? null;
-  }
-
-  return payload as T;
 }
 
 export async function getDocumentationTree(locale: Locale): Promise<DocumentationResult<DocTreeItem[]>> {
-  const documents = await requestApi<DocTreeItem[]>("tree", { locale: toDocumentationLocale(locale) });
-  if (Array.isArray(documents)) {
-    return { data: documents, source: "api" };
-  }
-
-  const fallback = getFallbackTree(locale);
-  return { data: fallback, source: fallback.length > 0 ? "fallback" : "unavailable" };
+  return { data: snapshot[locale].tree, source: "snapshot" };
 }
 
 export async function getDocumentationArticle(locale: Locale, slug: string): Promise<DocumentationResult<DocContent | null>> {
-  const normalizedSlug = normalizeDocSlug(slug);
-  const document = await requestApi<DocContent>("doc", {
-    slug: normalizedSlug,
-    locale: toDocumentationLocale(locale),
-  });
+  const normalized = normalizeDocSlug(slug).replace(/\/index$/u, "");
+  const document = snapshot[locale].documents.find((item) => item.slug === normalized) ?? null;
+  return { data: document, source: document ? "snapshot" : "unavailable" };
+}
 
-  if (document && typeof document === "object") {
-    return { data: document, source: "api" };
-  }
-
-  const fallback = getFallbackDocument(locale, normalizedSlug);
-  if (fallback) {
-    return { data: fallback, source: "fallback" };
-  }
-
-  return { data: null, source: "unavailable" };
+export function retiredModuleDestination(locale: Locale, slug: string): string | null {
+  const moduleSlug = /^modules\/([^/]+)/u.exec(normalizeDocSlug(slug))?.[1];
+  const owner = knowledge.skills.find((skill) => skill.modules.includes(moduleSlug ?? ""));
+  return owner ? skillFileRoute(locale, owner.name) : null;
 }
 
 export async function searchDocumentation(locale: Locale, query: string): Promise<DocumentationResult<DocSearchResult[]>> {
-  const normalizedQuery = query.trim();
-  if (!normalizedQuery) {
-    return { data: [], source: isDocumentationApiConfigured() ? "api" : "fallback" };
-  }
-
-  const results = await requestApi<DocSearchResult[]>("search", {
-    query: normalizedQuery,
-    locale: toDocumentationLocale(locale),
-  });
-  if (Array.isArray(results)) {
-    return { data: results, source: "api" };
-  }
-
-  return { data: searchFallbackDocuments(locale, normalizedQuery), source: "fallback" };
+  const term = query.trim().toLocaleLowerCase();
+  if (!term) return { data: [], source: "snapshot" };
+  const candidates = [
+    ...snapshot[locale].documents.map((document) => ({
+      slug: document.slug, title: document.title, path: document.canonicalPath,
+      text: document.markdown, pathTrail: locale === "en" ? "Guides" : "指南",
+    })),
+    ...knowledge.skills.flatMap((skill) => skill.files.map((file) => ({
+      slug: `${skill.name}/${file.path}`, title: file.path === "SKILL.md" ? skill.title : `${skill.title} / ${file.title}`,
+      path: skillFileRoute(locale, skill.name, file.path), text: file.content,
+      pathTrail: "Skills",
+    }))),
+  ];
+  const results = candidates.flatMap((item): DocSearchResult[] => {
+    const titleMatch = item.title.toLocaleLowerCase().includes(term);
+    const index = item.text.toLocaleLowerCase().indexOf(term);
+    if (!titleMatch && index < 0) return [];
+    const start = Math.max(0, index - 70);
+    return [{
+      locale: locale === "en" ? "en-US" : locale, slug: item.slug, title: item.title,
+      path: item.path, pathTrail: item.pathTrail, sectionTitle: null,
+      previewText: item.text.slice(start, start + 220).replace(/[#*`]/gu, "").replace(/\s+/gu, " ").trim(),
+      previewHighlights: [], anchorId: null, score: titleMatch ? 2 : 1,
+    }];
+  }).sort((a, b) => b.score - a.score || a.title.localeCompare(b.title)).slice(0, 30);
+  return { data: results, source: "snapshot" };
 }
 
-export function getFallbackDocumentationSlugs(locale: Locale): string[] {
-  return getFallbackDocuments(locale).map((document) => document.slug);
+export function getDocumentationSlugs(locale: Locale): string[] {
+  return snapshot[locale].documents.map((document) => document.slug).filter((slug) => slug !== "index");
 }
 
 export function flattenDocumentationTree(items: DocTreeItem[]): DocTreeItem[] {

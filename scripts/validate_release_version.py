@@ -436,7 +436,8 @@ def validate_guide_prompts(agent_skill_ref: str, require_ref: bool, failures: li
             or "--target shared" in prompt
             or "SHA256SUMS" not in prompt
             or "npx" in prompt
-            or "Monica.Docs" not in prompt
+            or "Monica.Docs" in prompt
+            or "docs-contributor" in prompt
             or MONICA_GUIDE_CATALOG_DIGEST_TOKEN in prompt
             or set(PROMPT_TEMPLATE_TOKEN.findall(prompt)) != {MONICA_GUIDE_REF_TOKEN}
             or any(fragment in prompt for fragment in CONCRETE_PROFILE_SELECTION)

@@ -76,6 +76,13 @@ function validateDocument(filePath, locale, localeRoot) {
   const displayPath = `${locale}/${relativePath}`;
   const { metadata, body } = parseDocument(filePath);
 
+  if (relativePath.startsWith("modules/")) {
+    errors.push(`${displayPath}: retired module documentation is owned by canonical Monica skills.`);
+  }
+  if (/\]\((?:\.\.?\/)*modules\/[^)]+\)/u.test(body)) {
+    errors.push(`${displayPath}: link to a retired module page; link to its owning capability skill.`);
+  }
+
   for (const key of ["title", "description", "sidebar_position"]) {
     if (!metadata[key]) {
       errors.push(`${displayPath}: frontmatter field "${key}" is required.`);

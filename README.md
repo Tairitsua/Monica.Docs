@@ -11,6 +11,8 @@
 
 > The public product site and bilingual documentation for Monica: agent-governed application architecture for observable .NET backends.
 
+Stable editorial guides are maintained in this repository's `docs/en-US/` and `docs/zh-CN/` trees. Monica Agent Skills are authored in the sibling Monica repository under `../MoLibrary/skills/`. The website projects their readable pages, raw resources, and `llms.txt` from a checksum-verified `monica-knowledge.json` asset of the selected immutable Monica release. Local development can preview the current sibling source. The former `docs/{locale}/modules/` page packs have been replaced by nine infrastructure capability skills.
+
 This repository contains three deliberately separate products:
 
 - a Next.js public website for <https://monica.dpdns.org/>
@@ -39,6 +41,7 @@ Open <http://localhost:3000>. Useful routes include:
 
 - `/` and `/zh-CN` — localized product homepages
 - `/docs` and `/zh-CN/docs` — documentation and search
+- `/skills` and `/zh-CN/skills` — canonical Monica skill guidance, including nine infrastructure capabilities
 - `/modules` — the complete Stable / Integrations / Labs catalog
 - `/reference` — template and Ordering reference application
 - `/roadmap` — public release gates and promises
@@ -84,7 +87,7 @@ There is no ambient registration singleton and no registration-time service loca
 ## Repository layout
 
 ```text
-docs/                                      bilingual Markdown source
+docs/                                      stable bilingual editorial Markdown
 frontend/monica-docs-web/                  Next.js 16 / React 19 website
 src/AppHost/Monica.Docs.Api/               read-only public documentation API
 src/AppHost/Monica.Docs.Demo/              broad, resettable Monica demo host
@@ -95,6 +98,8 @@ src/Shared/Platform.*                      shared protocol and infrastructure la
 ```
 
 The documentation source can be relocated with `DocumentationApi__DocsBasePath`. Without an explicit value, the hosts check the preferred `/docs` mount and then repository-relative development paths.
+
+Monica.Docs has no Guide-specific profile or source binding. Use this checkout directly; `monica-guide` can resolve a separate exact Monica framework source binding when needed.
 
 ## Quality checks
 

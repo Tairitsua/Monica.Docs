@@ -21,7 +21,9 @@ export async function createDocumentationArticleMetadata(locale: Locale, slug: s
   const canonicalSlug = article.data?.slug ?? slug;
   const alternateLocale = oppositeLocale(locale);
   const alternateCulture = alternateLocale === "en" ? "en-us" : "zh-cn";
-  const alternateSlug = article.data?.alternates.find((item) => item.locale.toLowerCase() === alternateCulture)?.slug ?? slug;
+  const alternateSlug = article.data?.alternates.find((item) => item.locale.toLowerCase() === alternateCulture)?.slug;
+  const languages: Record<string, string> = { [locale]: docsPath(locale, canonicalSlug) };
+  if (alternateSlug) languages[alternateLocale] = docsPath(alternateLocale, alternateSlug);
 
   return {
     title: article.data?.title ?? fallback.title,
@@ -30,10 +32,7 @@ export async function createDocumentationArticleMetadata(locale: Locale, slug: s
       : fallback.description,
     alternates: {
       canonical: docsPath(locale, canonicalSlug),
-      languages: {
-        en: docsPath("en", locale === "en" ? canonicalSlug : alternateSlug),
-        "zh-CN": docsPath("zh-CN", locale === "zh-CN" ? canonicalSlug : alternateSlug),
-      },
+      languages,
     },
   };
 }

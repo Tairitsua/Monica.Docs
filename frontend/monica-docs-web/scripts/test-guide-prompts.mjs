@@ -34,7 +34,8 @@ try {
     assert.ok(prompt.includes("$monica-guide configure --workspace"), `${locale} workspace configuration`);
     assert.ok(prompt.includes("{rid}"), `${locale} platform placeholder`);
     assert.ok(prompt.includes("SHA256SUMS"), `${locale} release digest guidance`);
-    assert.ok(prompt.includes("Monica.Docs"), `${locale} dual-source discovery`);
+    assert.ok(!prompt.includes("Monica.Docs"), `${locale} has no Docs source binding`);
+    assert.ok(!prompt.includes("docs-contributor"), `${locale} has no Docs profile`);
     assert.ok(!prompt.includes("npx"), `${locale} keeps ad-hoc CLI installers out`);
     assert.ok(!prompt.includes("Monica.Guide.exe"), `${locale} names no single-platform executable`);
     assert.ok(!prompt.includes("win-x64"), `${locale} names no single platform`);

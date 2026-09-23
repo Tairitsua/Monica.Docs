@@ -20,7 +20,7 @@ ProjectUnit 不会替代良好的领域建模。状态约束仍应留在状态�
 
 ProjectUnit 角色描述架构职责，不会自动包装该类型的每一次方法调用。运行时执行边界由子系统适配器建立，例如 Mediator 请求、EventBus 处理器、直接 MVC Action、作业、Seeder 与 Hosted work item。`DomainService` 通常在调用方已经建立的边界内运行。
 
-子系统需要共享行为链时使用 [Execution Pipeline](../modules/execution-pipeline/index.md)。普通应用与领域服务保持在调用方边界内；拥有新独立入口的子系统应提供明确的类型化 Adapter。
+子系统需要共享行为链时使用 [Execution Pipeline](/zh-CN/skills/monica-infra-web)。普通应用与领域服务保持在调用方边界内；拥有新独立入口的子系统应提供明确的类型化 Adapter。
 
 ## 明确声明 Agent 上下文
 
@@ -84,7 +84,7 @@ public sealed class CommandHandlerApproveOrder(
 
 应用可以实现 `IProjectUnitRequirementLinkResolver`，并通过 `UseRequirementLinkResolver<TResolver>()` 注册。只有加载详情时才会解析链接。无法解析的 ID 仍会显示，但不可点击；单个解析失败不会导致整个目录不可用。
 
-注册、接口、状态面板和解析器示例见 [ProjectUnits 模块](../modules/project-units/index.md)。
+项目单元契约见[项目单元开发 Skill](/zh-CN/skills/monica-application-project-unit-development)；注册与生成的 HTTP 行为见[应用端点 Skill](/zh-CN/skills/monica-infra-web)。
 
 ## 测试边界
 

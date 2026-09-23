@@ -11,6 +11,7 @@ const footerLabels = {
   en: {
     quick: "Quick start",
     architecture: "Reference",
+    skills: "Agent Skills",
     modules: "Modules",
     ecosystem: "Third-party ecosystem",
     demo: "Live demo",
@@ -20,6 +21,7 @@ const footerLabels = {
   "zh-CN": {
     quick: "快速开始",
     architecture: "参考应用",
+    skills: "Agent Skills",
     modules: "模块目录",
     ecosystem: "第三方生态",
     demo: "在线演示",
@@ -42,6 +44,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
         <div className="footer-links">
           <span>{copy.footer.learn}</span>
           <Link href={localizedPath(locale, "/docs")}>{labels.quick}</Link>
+          <Link href={localizedPath(locale, "/skills")}>{labels.skills}</Link>
           <Link href={localizedPath(locale, "/reference")}>{labels.architecture}</Link>
           <Link href={localizedPath(locale, "/modules")}>{labels.modules}</Link>
           <Link href={localizedPath(locale, "/docs/ecosystem")}>{labels.ecosystem}</Link>

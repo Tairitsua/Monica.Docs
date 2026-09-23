@@ -41,3 +41,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Canonical content projections; rebuilt before development and publication.
+/src/generated/

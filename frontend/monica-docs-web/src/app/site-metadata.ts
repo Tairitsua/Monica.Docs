@@ -10,25 +10,25 @@ export const sharedMetadata: Metadata = {
   metadataBase: new URL(siteUrl),
   applicationName: "Monica",
   title: {
-    default: "Monica — Observable .NET application architecture",
+    default: "Monica — .NET application architecture for coding agents",
     template: "%s · Monica",
   },
   description:
-    "Monica gives .NET teams architecture agents can follow and systems humans can inspect.",
-  keywords: [".NET", "ASP.NET Core", "application architecture", "modular framework", "OpenTelemetry", "DDD"],
+    "Monica gives coding agents and .NET teams shared guidance for application architecture, infrastructure, and runtime inspection.",
+  keywords: [".NET", "ASP.NET Core", "coding agents", "Agent Skills", "application architecture", "modular framework", "OpenTelemetry", "DDD"],
   authors: [{ name: "Monica contributors", url: MONICA_GITHUB_URL }],
   creator: "Monica contributors",
   openGraph: {
     type: "website",
     siteName: "Monica",
-    title: "Monica — Observable .NET application architecture",
-    description: "Architecture agents can follow. Systems humans can inspect.",
+    title: "Monica — .NET application architecture for coding agents",
+    description: "Canonical Agent Skills and inspectable .NET applications.",
     url: siteUrl,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Monica — Observable .NET application architecture",
-    description: "Architecture agents can follow. Systems humans can inspect.",
+    title: "Monica — .NET application architecture for coding agents",
+    description: "Canonical Agent Skills and inspectable .NET applications.",
   },
   category: "technology",
 };

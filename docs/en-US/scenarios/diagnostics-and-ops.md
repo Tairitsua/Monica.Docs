@@ -47,7 +47,7 @@ The platform probes `/health` and `/alive` are separate anonymous runtime endpoi
 
 `AddHealthCheck()` maps readiness and liveness in every web environment. Register application checks with `AddMonicaReadinessCheck<T>()` or `AddMonicaLivenessCheck<T>()`; do not make production readiness depend on a Development-only `AddServiceDefaults()` call. The dashboard shows readiness, aggregate counts, search, status/tag filters, durations, bounded data, and bounded errors. It represents only the host serving the current Blazor circuit and creates no durable history.
 
-See [Health Check](../modules/health-check/index.md) for probe semantics and [Health Check UI](../modules/health-check-ui/index.md) for dashboard behavior.
+See [observability and diagnostics](/skills/monica-infra-observability) for probe semantics and dashboard behavior.
 
 ## Seeder operations
 
@@ -55,7 +55,7 @@ See [Health Check](../modules/health-check/index.md) for probe semantics and [He
 
 The dashboard shows effective module configuration, run progress, policy origins, dependencies, attempt history, and bounded failure evidence. It is intentionally read-only and current-process only.
 
-See [Seeder](../modules/seeder/index.md) for scheduling policy and [Seeder UI](../modules/seeder-ui/index.md) for the page contract.
+See [jobs and seeding](/skills/monica-infra-jobs) for scheduling policy and the page contract.
 
 ## Module System workbench
 
@@ -173,4 +173,4 @@ Debug mode wins over every global policy and page override in every environment,
 
 Every page still rechecks access before its facade boundary. When Debug mode is off, a missing policy, missing authorization service, unknown policy, exception, or denied user hides protected navigation and prevents the diagnostics request. Keep authentication, HTTPS, network isolation, and least-privilege authorization in place; topology, component names, timing, and bounded errors remain operationally sensitive even when credential-like values and stack traces are withheld.
 
-For programmatic access, continue with [Core composition diagnostics](../modules/core-composition/index.md#immutable-diagnostics-facade), [Health Check diagnostics](../modules/health-check/guide-and-providers.md#query-the-current-host), and [Seeder diagnostics](../modules/seeder/guide-and-providers.md#query-diagnostics).
+For programmatic access, continue with [Core composition diagnostics](/skills/monica-infra-hosting), [Health Check diagnostics](/skills/monica-infra-observability), and [Seeder diagnostics](/skills/monica-infra-jobs).

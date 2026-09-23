@@ -14,8 +14,9 @@ Use Monica when you want coding agents to move quickly without inventing a diffe
 - [Host-bound composition](concepts/host-bound-composition.md) — understand the module graph and lifecycle.
 - [ProjectUnits](concepts/project-units.md) — give application code explicit architectural roles.
 - [Execution boundaries](concepts/execution-boundaries.md) — understand where shared behaviors run and why each subsystem owns its boundary explicitly.
+- [Agent knowledge ownership](concepts/agent-knowledge.md) — see how verified behavior becomes skills, stable guides, and release knowledge.
 - [Testing Monica applications](guides/testing-monica-applications.md) — choose between complete host scenarios, raw ProjectUnit fixtures, and UI tests.
-- [Stable module catalog](modules/index.md) — choose the supported capabilities your host actually needs.
+- [Capability skills](/skills) — choose the Monica infrastructure your host actually needs.
 - [Package maturity](packages/index.md) — choose between Stable, Integrations, and Labs.
 - [Third-party ecosystem](ecosystem/index.md) — build, brand, license, and publish an independent Monica module package.
 - [Runtime observability](guides/runtime-observability.md) — inspect modules, jobs, configuration, and telemetry.

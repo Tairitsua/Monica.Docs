@@ -11,6 +11,8 @@
 
 > Monica 的公开产品站与双语文档：面向可观测 .NET 后端的、由智能体也能遵循的应用架构。
 
+稳定的人类阅读指南维护在本仓库的 `docs/en-US/` 与 `docs/zh-CN/`。Monica Agent Skills 的规范源码位于相邻 Monica 仓库的 `../MoLibrary/skills/`。网站从选定不可变 Monica 发布版本的 `monica-knowledge.json` 读取 Skill 页面、原始资源和 `llms.txt`，并校验发布校验和；本地开发可预览相邻源码。原来的 `docs/{locale}/modules/` 页面包已由九个基础设施能力 Skill 取代。
+
 这个仓库包含三个有意隔离的产品：
 
 - 面向 <https://monica.dpdns.org/> 的 Next.js 官网
@@ -39,6 +41,7 @@ MONICA_DOCS_API_URL=http://localhost:5082 npm run dev
 
 - `/` 与 `/zh-CN`：本地化产品主页
 - `/docs` 与 `/zh-CN/docs`：文档与搜索
+- `/skills` 与 `/zh-CN/skills`：规范 Monica Skill 指南，包括九个基础设施能力
 - `/modules`：完整的 Stable / Integrations / Labs 包目录
 - `/reference`：官方模板与 Ordering 参考应用
 - `/roadmap`：公开发布门槛与承诺
@@ -84,7 +87,7 @@ app.Run();
 ## 仓库结构
 
 ```text
-docs/                                      双语 Markdown 源文档
+docs/                                      稳定的双语编辑性 Markdown 文档
 frontend/monica-docs-web/                  Next.js 16 / React 19 官网
 src/AppHost/Monica.Docs.Api/               只读公开文档 API
 src/AppHost/Monica.Docs.Demo/              完整、可重置的 Monica 演示宿主
@@ -95,6 +98,8 @@ src/Shared/Platform.*                      共享协议与基础设施层
 ```
 
 可以通过 `DocumentationApi__DocsBasePath` 更改文档源位置。未显式配置时，宿主会依次检查首选的 `/docs` 挂载路径与仓库相对开发路径。
+
+Monica.Docs 没有 Guide 专属 Profile 或源码绑定。直接使用当前 Checkout；需要独立查找精确的 Monica 框架源码时，可使用 `monica-guide` 的 Monica 绑定。
 
 ## 质量检查
 

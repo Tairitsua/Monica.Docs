@@ -1,5 +1,6 @@
 import { ArrowLeft, ArrowRight, BookOpen, Braces, Layers3, Radio } from "lucide-react";
 import Link from "next/link";
+import { notFound, permanentRedirect } from "next/navigation";
 
 import { DocsMarkdown } from "@/components/docs/docs-markdown";
 import { DocsSearch } from "@/components/docs/docs-search";
@@ -7,9 +8,8 @@ import { DocsTree } from "@/components/docs/docs-tree";
 import { LaunchShell } from "@/components/site/launch-shell";
 import type { Locale } from "@/content/home";
 import { launchCopy } from "@/content/launch";
-import { getDocumentationArticle, getDocumentationTree } from "@/lib/documentation-api";
-import type { DocumentationSource } from "@/lib/documentation-types";
-import { docsPath, oppositeLocale } from "@/lib/routes";
+import { getDocumentationArticle, getDocumentationTree, retiredModuleDestination } from "@/lib/documentation-api";
+import { docsPath, localizedPath, oppositeLocale } from "@/lib/routes";
 
 export async function DocsLandingPage({ locale }: { locale: Locale }) {
   const copy = launchCopy[locale].docs;
@@ -45,7 +45,7 @@ export async function DocsLandingPage({ locale }: { locale: Locale }) {
           <p>01 / {copy.catalog}</p>
           <h2 id="docs-map-title">{copy.catalog}</h2>
         </div>
-        <SourceNotice locale={locale} source={tree.source} />
+
         <div className="docs-landing-grid">
           <div className="docs-map-panel">
             {tree.data.length > 0
@@ -60,18 +60,18 @@ export async function DocsLandingPage({ locale }: { locale: Locale }) {
               <p>{locale === "en" ? "A five-minute, inspectable .NET 10 host." : "五分钟启动一个可检查的 .NET 10 主机。"}</p>
               <ArrowRight aria-hidden="true" />
             </Link>
-            <Link href={docsPath(locale, "architecture")}>
+            <Link href={docsPath(locale, "concepts/host-bound-composition")}>
               <Braces aria-hidden="true" />
               <span>02</span>
               <strong>{locale === "en" ? "Learn the model" : "理解应用模型"}</strong>
               <p>{locale === "en" ? "Host composition, ProjectUnits, and evidence." : "主机组合、ProjectUnit 与运行证据。"}</p>
               <ArrowRight aria-hidden="true" />
             </Link>
-            <Link href={docsPath(locale, "module-system")}>
+            <Link href={localizedPath(locale, "/skills")}>
               <Layers3 aria-hidden="true" />
               <span>03</span>
-              <strong>{locale === "en" ? "Choose modules" : "选择所需模块"}</strong>
-              <p>{locale === "en" ? "Understand release maturity before adoption." : "采用前先理解每个层级的发布承诺。"}</p>
+              <strong>{locale === "en" ? "Use the skills" : "使用 Skills"}</strong>
+              <p>{locale === "en" ? "Read the same capability contracts as your agent." : "与 Agent 共享同一份能力契约。"}</p>
               <ArrowRight aria-hidden="true" />
             </Link>
           </aside>
@@ -82,33 +82,18 @@ export async function DocsLandingPage({ locale }: { locale: Locale }) {
 }
 
 export async function DocsArticlePage({ locale, slug }: { locale: Locale; slug: string }) {
+  const destination = retiredModuleDestination(locale, slug);
+  if (destination) permanentRedirect(destination);
   const copy = launchCopy[locale].docs;
   const [article, tree] = await Promise.all([
     getDocumentationArticle(locale, slug),
     getDocumentationTree(locale),
   ]);
   const alternateLocale = oppositeLocale(locale);
-  const alternateSlug = article.data?.alternates.find((item) => item.locale.toLowerCase() === (alternateLocale === "en" ? "en-us" : "zh-cn"))?.slug
-    ?? article.data?.slug
-    ?? slug;
+  const alternateSlug = article.data?.alternates.find((item) => item.locale.toLowerCase() === (alternateLocale === "en" ? "en-us" : "zh-cn"))?.slug;
   const languageHref = docsPath(alternateLocale, alternateSlug);
 
-  if (!article.data) {
-    return (
-      <LaunchShell locale={locale} languageHref={languageHref}>
-        <section className="launch-hero shell docs-empty-hero" aria-labelledby="missing-doc-title">
-          <div>
-            <p className="launch-eyebrow">404 / DOC SOURCE</p>
-            <h1 id="missing-doc-title">{copy.articleUnavailable}</h1>
-            <p className="launch-lede">{copy.articleUnavailableBody}</p>
-            <Link className="button button-primary" href={docsPath(locale)}>
-              <ArrowLeft aria-hidden="true" size={17} /> {copy.back}
-            </Link>
-          </div>
-        </section>
-      </LaunchShell>
-    );
-  }
+  if (!article.data) notFound();
 
   const document = article.data;
   const updatedDate = formatDate(document.lastModifiedUtc, locale);
@@ -142,14 +127,14 @@ export async function DocsArticlePage({ locale, slug }: { locale: Locale; slug: 
             ))}
           </nav>
           <header className="docs-article-header">
-            <p><Radio aria-hidden="true" size={14} />{article.source === "api" ? "PUBLIC API" : locale === "en" ? "LOCAL PREVIEW" : "本地预览"}</p>
+            <p><Radio aria-hidden="true" size={14} />{locale === "en" ? "GUIDE" : "指南"}</p>
             <h1>{document.title}</h1>
             <div className="docs-article-meta">
               {document.tags.map((tag) => <span key={tag}>{tag}</span>)}
               <time dateTime={document.lastModifiedUtc}>{copy.updated}: {updatedDate}</time>
             </div>
           </header>
-          <DocsMarkdown markdown={document.markdown} locale={locale} currentSlug={document.slug} />
+          <DocsMarkdown markdown={document.markdown} locale={locale} currentSlug={document.relativePath.split("/").slice(1).join("/")} />
           <nav className="docs-pagination" aria-label={locale === "en" ? "Adjacent documentation" : "相邻文档"}>
             {document.previous
               ? <Link href={docsPath(locale, document.previous.slug)}><span>{copy.previous}</span><strong><ArrowLeft aria-hidden="true" />{document.previous.title}</strong></Link>
@@ -170,23 +155,6 @@ export async function DocsArticlePage({ locale, slug }: { locale: Locale; slug: 
         </aside>
       </div>
     </LaunchShell>
-  );
-}
-
-function SourceNotice({ locale, source }: { locale: Locale; source: DocumentationSource }) {
-  const copy = launchCopy[locale].docs;
-  const content = source === "api"
-    ? { title: copy.apiTitle, body: copy.apiBody, marker: "LIVE" }
-    : source === "fallback"
-      ? { title: copy.fallbackTitle, body: copy.fallbackBody, marker: "PREVIEW" }
-      : { title: copy.unavailableTitle, body: copy.unavailableBody, marker: "OFFLINE" };
-
-  return (
-    <div className={`docs-source-notice source-${source}`}>
-      <span><i />{content.marker}</span>
-      <strong>{content.title}</strong>
-      <p>{content.body}</p>
-    </div>
   );
 }
 

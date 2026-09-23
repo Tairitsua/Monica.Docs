@@ -25,7 +25,6 @@ const CONCRETE_PROFILE_SELECTION = [
   "--profile application",
   "--profile extension",
   "--profile framework",
-  "--profile docs",
   "-a codex",
   "-a claude-code",
 ];
@@ -210,7 +209,8 @@ function validateAsset(payload, assetPath, catalogDistribution) {
       || prompt.includes("--target shared")
       || !prompt.includes("SHA256SUMS")
       || prompt.includes("npx")
-      || !prompt.includes("Monica.Docs")
+      || prompt.includes("Monica.Docs")
+      || prompt.includes("docs-contributor")
       || prompt.includes(CATALOG_DIGEST_TOKEN)
       || new Set(prompt.match(UPPERCASE_TEMPLATE_TOKEN) ?? []).size !== 1
       || !prompt.includes(IMMUTABLE_REF_TOKEN)

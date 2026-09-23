@@ -112,20 +112,20 @@ export type StarterCopy = HomeCopy["starter"];
 export const homeCopy: Record<Locale, HomeCopy> = {
   en: {
     skip: "Skip to content",
-    nav: ["Quick start", "Concepts", "Modules", "Example", "Docs"],
+    nav: ["Quick start", "Concepts", "Skills", "Example", "Docs"],
     languageLabel: "阅读中文版",
     demoLabel: "Live demo",
-    heroEyebrow: ".NET 10 modular application framework",
+    heroEyebrow: ".NET 10 framework · built for coding agents and teams",
     heroLines: [
-      "Give business code",
-      "a clear structure.",
+      "Build .NET apps",
+      "with coding agents.",
       "Compose infrastructure.",
       "See the running system.",
     ],
     heroDescription:
-      "Monica adds ProjectUnit conventions, composable infrastructure modules, and inspectable runtime surfaces to ASP.NET Core—without replacing your domain model or deployment choices.",
+      "Monica gives coding agents a clear map of your .NET application: ProjectUnit conventions, composable infrastructure, and a runtime you can inspect together.",
     heroPrimary: "Start with Monica",
-    heroSecondary: "Explore the order example",
+    heroSecondary: "Explore Agent Skills",
     facts: [
       "Builder-scoped composition",
       "Explicit package maturity",
@@ -294,15 +294,15 @@ export const homeCopy: Record<Locale, HomeCopy> = {
   },
   "zh-CN": {
     skip: "跳转到正文",
-    nav: ["快速开始", "核心概念", "模块", "示例", "文档"],
+    nav: ["快速开始", "核心概念", "技能", "示例", "文档"],
     languageLabel: "Read in English",
     demoLabel: "在线演示",
-    heroEyebrow: ".NET 10 模块化应用框架",
-    heroLines: ["让业务代码", "各归其位。", "让基础设施自由组合。", "让运行系统清晰可见。"],
+    heroEyebrow: ".NET 10 框架 · 为 Coding Agent 和团队而设计",
+    heroLines: ["让 Coding Agent", "理解你的应用。", "让基础设施自由组合。", "让运行系统清晰可见。"],
     heroDescription:
-      "Monica 在 ASP.NET Core 之上提供 ProjectUnit 约定、可组合的基础设施模块与可检查的运行时界面，同时保留你的领域模型与部署选择。",
+      "Monica 为 Coding Agent 提供清晰的 .NET 应用地图：ProjectUnit 约定、可组合的基础设施，以及可共同检查的运行时。",
     heroPrimary: "开始使用 Monica",
-    heroSecondary: "查看订单示例",
+    heroSecondary: "浏览 Agent Skills",
     facts: ["Builder 作用域组合", "明确的包成熟度", "可观测性内建"],
     trace: {
       label: "交互式架构演练 · 示意",

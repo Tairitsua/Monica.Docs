@@ -69,14 +69,7 @@ type LaunchCopy = {
     searchHint: string;
     noResults: string;
     catalog: string;
-    fallbackTitle: string;
-    fallbackBody: string;
-    apiTitle: string;
-    apiBody: string;
-    unavailableTitle: string;
     unavailableBody: string;
-    articleUnavailable: string;
-    articleUnavailableBody: string;
     onThisPage: string;
     previous: string;
     next: string;
@@ -133,23 +126,16 @@ type LaunchCopy = {
 export const launchCopy: Record<Locale, LaunchCopy> = {
   en: {
     docs: {
-      eyebrow: "Documentation / executable guidance",
-      title: "Build with the architecture in view.",
-      description: "Start from an executable host, understand the application model, then adopt only the modules your boundary needs.",
+      eyebrow: "Guides / concepts and adoption",
+      title: "Understand the system. Build with skills.",
+      description: "Read the stable concepts and adoption guides here. Open Skills for source-owned infrastructure contracts, examples, and agent workflows.",
       searchLabel: "Search documentation",
       searchPlaceholder: "Search concepts, modules, APIs…",
       searchAction: "Search",
-      searchHint: "Searches the public documentation API when connected.",
+      searchHint: "Search stable guides and canonical skill resources.",
       noResults: "No matching documentation found.",
       catalog: "Documentation map",
-      fallbackTitle: "Curated launch preview",
-      fallbackBody: "The documentation API is not configured in this build. These launch-critical guides remain available locally.",
-      apiTitle: "Live documentation catalog",
-      apiBody: "Navigation and article content are being served by Monica.Docs Public API.",
-      unavailableTitle: "Catalog temporarily unavailable",
-      unavailableBody: "The public documentation source could not be reached. Try again when the API is available.",
-      articleUnavailable: "This document is not available yet.",
-      articleUnavailableBody: "The requested slug is outside the local launch preview and the documentation API did not return an article.",
+      unavailableBody: "No guides are available in this edition.",
       onThisPage: "On this page",
       previous: "Previous",
       next: "Next",
@@ -231,23 +217,16 @@ export const launchCopy: Record<Locale, LaunchCopy> = {
   },
   "zh-CN": {
     docs: {
-      eyebrow: "使用文档 / 可执行指南",
-      title: "让架构始终处于视野之内。",
-      description: "从可执行主机开始，理解应用模型，然后只采用当前边界真正需要的模块。",
+      eyebrow: "稳定指南 / 概念与采用",
+      title: "理解系统，用 Skills 研发。",
+      description: "在这里阅读稳定的概念与采用指南；在 Skills 中查阅与源码共同维护的基础设施契约、示例和 Agent 工作流。",
       searchLabel: "搜索文档",
       searchPlaceholder: "搜索概念、模块、API…",
       searchAction: "搜索",
-      searchHint: "连接后将搜索 Monica.Docs 公开 API。",
+      searchHint: "搜索稳定指南与规范 Skills 资源。",
       noResults: "没有找到匹配的文档。",
       catalog: "文档地图",
-      fallbackTitle: "发布内容预览",
-      fallbackBody: "当前构建没有配置文档 API。发布所需的核心指南仍可从本地内容读取。",
-      apiTitle: "实时文档目录",
-      apiBody: "导航与文章内容正由 Monica.Docs Public API 提供。",
-      unavailableTitle: "文档目录暂时不可用",
-      unavailableBody: "无法连接公开文档源，请在 API 恢复后重试。",
-      articleUnavailable: "这篇文档尚不可用。",
-      articleUnavailableBody: "请求的路径不在本地发布预览中，文档 API 也没有返回对应文章。",
+      unavailableBody: "当前版本没有可用指南。",
       onThisPage: "本页内容",
       previous: "上一篇",
       next: "下一篇",

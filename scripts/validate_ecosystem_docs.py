@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the bilingual third-party ecosystem documentation contract."""
+"""Validate stable bilingual documentation and ecosystem navigation."""
 
 from __future__ import annotations
 
@@ -25,11 +25,10 @@ REQUIRED_ECOSYSTEM_FILES = {
 EXPECTED_TOP_LEVEL_POSITIONS = {
     "getting-started": 1,
     "concepts": 2,
-    "modules": 3,
-    "packages": 4,
-    "ecosystem": 5,
-    "scenarios": 6,
-    "guides": 7,
+    "packages": 3,
+    "ecosystem": 4,
+    "scenarios": 5,
+    "guides": 6,
 }
 REQUIRED_FRONTMATTER = {"title", "description", "sidebar_position"}
 MARKDOWN_LINK = re.compile(r"!?\[[^\]]*]\(([^)]+)\)")
@@ -157,12 +156,17 @@ def main() -> int:
     category_paths = validate_top_level_positions(failures)
     validate_frontmatter(ecosystem_paths, failures)
 
-    link_paths = ecosystem_paths + [
-        DOCS_ROOT / locale / relative_path
+    stable_paths = [
+        path
         for locale in LOCALES
-        for relative_path in ("index.md", "modules/index.md", "packages/index.md")
+        for path in (DOCS_ROOT / locale).rglob("*.md")
     ]
-    validate_local_links(link_paths, failures)
+    validate_local_links(stable_paths, failures)
+
+    for locale in LOCALES:
+        retired_modules = DOCS_ROOT / locale / "modules"
+        if any(retired_modules.rglob("*.md")):
+            failures.append(f"{locale}/modules: retired module pages must be owned by canonical skills")
 
     if failures:
         print("Ecosystem documentation validation failed:", file=sys.stderr)
@@ -171,8 +175,8 @@ def main() -> int:
         return 1
 
     print(
-        f"Validated {len(ecosystem_paths)} bilingual ecosystem pages and "
-        f"{len(category_paths)} top-level categories."
+        f"Validated {len(stable_paths)} stable pages, {len(ecosystem_paths)} bilingual "
+        f"ecosystem pages, and {len(category_paths)} top-level categories."
     )
     return 0
 

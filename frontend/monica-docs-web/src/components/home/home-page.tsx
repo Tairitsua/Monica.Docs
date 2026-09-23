@@ -32,7 +32,7 @@ export function HomePage({ locale }: { locale: Locale }) {
             <p className="hero-description hero-reveal">{copy.heroDescription}</p>
             <div className="hero-actions hero-reveal">
               <a className="button button-primary" href="#start"><span>{copy.heroPrimary}</span><ArrowDownRight aria-hidden="true" size={17} /></a>
-              <Link className="button button-quiet" href={localizedPath(locale, "/reference")}><span>{copy.heroSecondary}</span><ArrowRight aria-hidden="true" size={17} /></Link>
+              <Link className="button button-quiet" href={localizedPath(locale, "/skills")}><span>{copy.heroSecondary}</span><ArrowRight aria-hidden="true" size={17} /></Link>
             </div>
             <dl className="hero-facts hero-reveal">
               {copy.facts.map((fact, index) => <div key={fact}><dt>0{index + 1}</dt><dd>{fact}</dd></div>)}

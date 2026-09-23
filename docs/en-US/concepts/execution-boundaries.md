@@ -60,6 +60,6 @@ Equal-order behaviors must be semantically independent. Monica uses the implemen
 
 ## Related pages
 
-- [Execution Pipeline](../modules/execution-pipeline/index.md)
-- [Unit of Work](../modules/unit-of-work/index.md)
+- [Execution Pipeline](/skills/monica-infra-web)
+- [Unit of Work](/skills/monica-infra-persistence)
 - [ProjectUnits](./project-units.md)
