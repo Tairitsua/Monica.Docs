@@ -72,8 +72,7 @@ builder.AddMonica(monica =>
         .ConfigDomainInfoProvider(new MonicaDocsRpcClientDomainInfoProvider())
         .UseLocalTransport();
     monica.AddJobScheduler()
-        .UseInMemoryProvider()
-        .UseInMemoryMetadataRepository()
+        .UseInMemoryStore()
         .UseSchedulerScope("monica-docs-demo");
     monica.AddJobSchedulerUI();
     monica.AddObservableInstanceUI();
@@ -101,6 +100,9 @@ builder.AddMonica(monica =>
     monica.AddModuleSystemUI();
     monica.AddDependencyInjection();
 });
+
+// Register after the scheduler so its background publisher can run before startup synchronization waits.
+builder.Services.AddHostedService<HostedServiceDocumentationCatalogSyncBootstrapper>();
 
 var app = builder.Build();
 await EnsureConfigurationDatabaseCreatedAsync(app.Services);

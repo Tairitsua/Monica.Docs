@@ -1,4 +1,5 @@
 using Monica.Modules;
+using Monica.WebApi.RpcClient.Models;
 using Platform.Protocol.RpcClient;
 
 namespace Platform.Infrastructure.RpcClient;
@@ -15,8 +16,8 @@ public sealed class MonicaDocsRpcClientDomainInfoProvider : IRpcClientDomainInfo
     }
 
     /// <inheritdoc />
-    public string GetDomainRelatedAppId(Enum domain)
+    public RpcServiceDescriptor GetDomain(Enum domain)
     {
-        return domain.ToString();
+        return new RpcServiceDescriptor(domain.ToString(), domain.ToString());
     }
 }

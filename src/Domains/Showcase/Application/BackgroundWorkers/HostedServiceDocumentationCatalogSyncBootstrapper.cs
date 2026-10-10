@@ -6,7 +6,10 @@ using Microsoft.Extensions.Options;
 using Monica.Core.HostedService.Abstractions;
 using Monica.Core.HostedService.Models;
 using Monica.Core.ObservableInstance.Abstractions;
-using Monica.JobScheduler.Abstractions;
+using Monica.Core.Results;
+using Monica.JobScheduler.Facades;
+using Monica.JobScheduler.Models;
+using Monica.JobScheduler.Models.Definitions;
 using Monica.Modules;
 
 namespace Domains.Showcase.Application.BackgroundWorkers;
@@ -16,7 +19,8 @@ namespace Domains.Showcase.Application.BackgroundWorkers;
 /// </summary>
 public sealed class HostedServiceDocumentationCatalogSyncBootstrapper(
     DomainDocumentationCatalogSync domainService,
-    IJobDefinitionCacheService jobDefinitionCacheService,
+    JobSchedulerFacade jobScheduler,
+    IOptions<ModuleJobSchedulerOption> schedulerOptions,
     IObservableInstanceRegistry observableManager,
     IOptions<ModuleHostedServiceOption> hostedServiceOptions,
     IServiceScopeFactory serviceScopeFactory,
@@ -56,17 +60,11 @@ public sealed class HostedServiceDocumentationCatalogSyncBootstrapper(
             HostedServiceState.WaitingDependency,
             logLevel: Microsoft.Extensions.Logging.LogLevel.Information);
 
-        var jobDefinition = await jobDefinitionCacheService.GetDefinitionAsync(jobKey, cancellationToken);
-        if (jobDefinition is null)
-        {
-            RecordState(
-                $"Unable to find the docs sync job definition '{jobKey}' during startup bootstrap.",
-                HostedServiceState.Degraded,
-                logLevel: Microsoft.Extensions.Logging.LogLevel.Warning);
-            return;
-        }
+        var ownerKey = schedulerOptions.Value.GetProjectName();
+        var jobDefinition = await WaitForRecurringJobDefinitionAsync(
+            new JobId(ownerKey, jobKey), cancellationToken);
 
-        if (string.Equals(jobDefinition.CronExpression, _options.DocsSyncCronExpression, StringComparison.Ordinal))
+        if (string.Equals(jobDefinition.EffectiveConfiguration.Schedule?.CronExpression, _options.DocsSyncCronExpression, StringComparison.Ordinal))
         {
             RecordState(
                 $"Docs sync job definition already uses cron '{_options.DocsSyncCronExpression}'.",
@@ -76,14 +74,56 @@ public sealed class HostedServiceDocumentationCatalogSyncBootstrapper(
         }
 
         RecordState(
-            $"Updating docs sync job cron expression from '{jobDefinition.CronExpression}' to '{_options.DocsSyncCronExpression}'.",
+            $"Updating docs sync job cron expression from '{jobDefinition.EffectiveConfiguration.Schedule?.CronExpression}' to '{_options.DocsSyncCronExpression}'.",
             HostedServiceState.Executing,
             logLevel: Microsoft.Extensions.Logging.LogLevel.Information);
 
-        jobDefinition.CronExpression = _options.DocsSyncCronExpression;
-        await jobDefinitionCacheService.SaveDefinitionAsync(
-            jobDefinition,
-            publishChangeEvent: true,
-            cancellationToken: cancellationToken);
+        var scheduleOverride = jobDefinition.Policy.Overrides.ScheduleOverride ?? new JobScheduleOverride();
+        var updateResult = await jobScheduler.UpdatePolicyAsync(
+            ownerKey,
+            jobKey,
+            new JobPolicyChange
+            {
+                ExpectedConcurrencyStamp = jobDefinition.Policy.ConcurrencyStamp,
+                Overrides = jobDefinition.Policy.Overrides with
+                {
+                    ScheduleOverride = scheduleOverride with { CronExpression = _options.DocsSyncCronExpression }
+                }
+            },
+            cancellationToken);
+        if (updateResult.IsFailed(out var updateError))
+        {
+            throw new InvalidOperationException($"Unable to update the docs sync job policy: {updateError}");
+        }
+    }
+
+    private async Task<JobDefinition> WaitForRecurringJobDefinitionAsync(
+        JobId jobId,
+        CancellationToken cancellationToken)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(30));
+        try
+        {
+            while (true)
+            {
+                var result = await jobScheduler.GetDefinitionAsync(jobId, timeout.Token);
+                if (result.IsFailed(out var error, out var definition))
+                {
+                    throw new InvalidOperationException($"Unable to load the docs sync job definition: {error}");
+                }
+
+                if (definition is not null)
+                {
+                    return definition;
+                }
+
+                await Task.Delay(TimeSpan.FromMilliseconds(100), timeout.Token);
+            }
+        }
+        catch (OperationCanceledException exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new TimeoutException($"The docs sync job definition '{jobId}' was not published within 30 seconds.", exception);
+        }
     }
 }

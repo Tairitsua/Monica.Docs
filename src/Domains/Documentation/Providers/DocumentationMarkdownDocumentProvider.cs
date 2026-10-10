@@ -1,5 +1,5 @@
 using Domains.Documentation.Utilities;
-using Microsoft.Extensions.Options;
+using Monica.Core.Localization.Models;
 using Monica.Markdown.Abstractions;
 using Monica.Markdown.Models;
 using Monica.Markdown.Providers.FileSystem;
@@ -12,12 +12,12 @@ namespace Domains.Documentation.Providers;
 /// </summary>
 public sealed class DocumentationMarkdownDocumentProvider(
     IMarkdownDocumentTitleResolver titleResolver,
-    IOptions<ModuleLocalizationOption> localizationOptions)
+    LocalizationProfile localizationProfile)
     : IMarkdownDocumentProvider
 {
     private readonly FileSystemMarkdownDocumentProvider _fileSystemProvider = new(
         titleResolver,
-        localizationOptions);
+        localizationProfile);
 
     /// <inheritdoc />
     public Task<MarkdownDocumentGroup> ScanGroupAsync(
