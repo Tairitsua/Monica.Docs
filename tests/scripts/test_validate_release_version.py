@@ -485,8 +485,8 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
                 "that changes my user-level skill directory happens only if I explicitly "
                 "ask for one. Verify with $monica-guide status --workspace <this "
                 "repository>; restart the host only if discovery still fails. Then invoke "
-                "$monica-guide, introduce its toolbox, global state, and the Monica and "
-                "Monica.Docs source bindings, and ask what I want to do next. After that "
+                "$monica-guide, introduce its toolbox, global state, and the Monica "
+                "framework source binding, and ask what I want to do next. After that "
                 "installation, these restrictions apply until I choose an operation and "
                 "approve its preview: Do not initialize another repository, select a "
                 "different profile, install further Monica skills, bind or unbind source "
@@ -500,8 +500,8 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
                 "configure --workspace <本仓库>（先审阅打印的预览，再用批准的计划摘要应"
                 "用）。除非我明确要求整机安装，这次安装只写入本仓库内部。用 "
                 "$monica-guide status --workspace <本仓库> 验证；只有发现仍失败时才重启宿"
-                "主。随后调用 $monica-guide，介绍其工具箱、全局状态以及 Monica 和 "
-                "Monica.Docs 源码绑定，并询问我下一步想做什么。完成这次安装后，在我选"
+                "主。随后调用 $monica-guide，介绍其工具箱、全局状态以及 Monica 框架"
+                "源码绑定，并询问我下一步想做什么。完成这次安装后，在我选"
                 "择操作并批准其预览之前，以下限制适用：不要初始化其他仓库、选择其他 "
                 "profile、安装后续 Monica Skill、绑定或解绑源码、不要再修改其他文件或"
                 "执行远程变更。"
@@ -569,6 +569,8 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
                 ("windows executable", lambda text: text + " Monica.Guide.exe"),
                 ("single platform", lambda text: text + " win-x64"),
                 ("machine-wide default", lambda text: text + " --environment"),
+                ("removed Docs binding", lambda text: text + " Monica.Docs"),
+                ("removed Docs profile", lambda text: text + " docs-contributor"),
             ):
                 with self.subTest(label=label):
                     write_prompt(mutate)
