@@ -9,10 +9,21 @@ import { StarterCode } from "@/components/home/starter-code";
 import { SiteFooter } from "@/components/site/site-footer";
 import { homeCopy, type Locale } from "@/content/home";
 import { MONICA_GITHUB_URL } from "@/lib/external-links";
+import { getDocumentationSlugs } from "@/lib/documentation-api";
+import { knowledge } from "@/lib/knowledge";
 import { localizedPath } from "@/lib/routes";
 
 export function HomePage({ locale }: { locale: Locale }) {
   const copy = homeCopy[locale];
+  const isChinese = locale === "zh-CN";
+  const editorialLines = isChinese
+    ? ["工程，自有章法。", "让 Agent", "与团队同频。"]
+    : ["Engineering,", "in good", "company."];
+  const readingPaths = [
+    { title: isChinese ? "先为 Agent 准备好上下文" : "Give your agent the right context", body: isChinese ? "安装 Monica Guide，选择工作区，审核并验证变更。" : "Install Monica Guide, choose your workspace, then review and verify.", path: "/docs/getting-started/agent-setup" },
+    { title: isChinese ? "找到适合你的工程路径" : "Find your engineering path", body: isChinese ? "从应用开发、模块扩展到框架贡献，在清晰的边界内工作。" : "From applications to extensions and framework contributions, work within clear boundaries.", path: "/docs/getting-started" },
+    { title: isChinese ? "让 Skills 成为共同约定" : "Turn Skills into shared practice", body: isChinese ? "阅读真实的工程 Skills 与参考资料，让约定进入工作流。" : "Explore canonical engineering Skills and their references, directly from Monica.", path: "/skills" },
+  ];
 
   return (
     <>
@@ -21,39 +32,42 @@ export function HomePage({ locale }: { locale: Locale }) {
       <SiteHeader locale={locale} nav={copy.nav} languageLabel={copy.languageLabel} demoLabel={copy.demoLabel} />
 
       <main id="main-content">
-        <section className="hero hero-redesign shell" id="top" aria-labelledby="hero-title">
+        <section className="hero editorial-hero shell" id="top" aria-labelledby="hero-title">
           <div className="hero-copy">
-            <p className="eyebrow hero-reveal">{copy.heroEyebrow}</p>
+            <p className="eyebrow hero-reveal">{isChinese ? "面向 Agent 协作的 .NET 工程手册" : "A FIELD GUIDE TO BETTER ENGINEERING"}</p>
             <h1 id="hero-title" className="hero-title">
-              {copy.heroLines.map((line, index) => (
+              {editorialLines.map((line, index) => (
                 <span className={`hero-line hero-reveal${index > 1 ? " accent-line" : ""}`} key={line}>{line}</span>
               ))}
             </h1>
-            <p className="hero-description hero-reveal">{copy.heroDescription}</p>
+            <p className="hero-description hero-reveal">{isChinese ? "把架构约定、工程知识与实践，写成可阅读、可执行、可持续演进的共同语言。为开发者，也为编码 Agent。" : "A shared language for architecture, engineering knowledge, and practice. Built for .NET developers and the coding agents beside them."}</p>
             <div className="hero-actions hero-reveal">
               <a className="button button-primary" href="#start"><span>{copy.heroPrimary}</span><ArrowDownRight aria-hidden="true" size={17} /></a>
               <Link className="button button-quiet" href={localizedPath(locale, "/skills")}><span>{copy.heroSecondary}</span><ArrowRight aria-hidden="true" size={17} /></Link>
             </div>
-            <dl className="hero-facts hero-reveal">
-              {copy.facts.map((fact, index) => <div key={fact}><dt>0{index + 1}</dt><dd>{fact}</dd></div>)}
-            </dl>
           </div>
 
-          <div className="hero-model hero-reveal" aria-label={locale === "en" ? "Monica application model" : "Monica 应用模型"}>
-            <div className="hero-model-header">
-              <span>MONICA / APPLICATION MODEL</span>
-              <i>{locale === "en" ? "ASP.NET Core remains visible" : "保留原生 ASP.NET Core"}</i>
+          <div className="editorial-system" aria-label={isChinese ? "文档、Skills 与框架共同组成 Monica 工程知识体系" : "Documentation, Skills, and the framework form the Monica engineering system"}>
+            <div className="editorial-system-meta"><span>THE MONICA SYSTEM</span><span>FIG. 01 / 03</span></div>
+            <div className="editorial-system-grid">
+              <Link className="editorial-tile editorial-tile-read" href={localizedPath(locale, "/docs")}><strong>Read.</strong><span>{isChinese ? "文档 / 理解设计与约定" : "DOCS / UNDERSTAND THE DESIGN"}</span></Link>
+              <Link className="editorial-tile editorial-tile-act" href={localizedPath(locale, "/skills")}><strong>Act.</strong><span>{isChinese ? "SKILLS / 让知识进入工作流" : "SKILLS / PUT KNOWLEDGE TO WORK"}</span></Link>
+              <a className="editorial-tile editorial-tile-build" href="#example"><strong>Build<br />together.</strong><span>.NET FRAMEWORK<br />{isChinese ? "连接团队与 AGENT" : "CONNECTING TEAMS & AGENTS"}</span></a>
             </div>
-            <ModelLayer index="01" label={locale === "en" ? "Business behavior" : "业务行为"} value="ProjectUnits" detail="ApplicationService · DomainEvent · Job" />
-            <ModelLayer index="02" label={locale === "en" ? "Infrastructure" : "基础设施"} value="Module graph" detail="Configuration · Repository · EventBus" />
-            <ModelLayer index="03" label={locale === "en" ? "Runtime evidence" : "运行证据"} value="Inspectable host" detail="Health · Telemetry · Diagnostics" />
-            <div className="hero-model-footer"><span />{locale === "en" ? "One vocabulary from source to runtime" : "从源码到运行时使用同一套语言"}</div>
+            <p className="editorial-system-caption"><span>01 — {isChinese ? "共同语言" : "SHARED LANGUAGE"}</span>{isChinese ? "给人清晰的文档，给 Agent 明确的上下文。从同一套工程知识开始。" : "Clear documentation for people. Precise context for agents. One foundation to build on."}</p>
           </div>
         </section>
 
-        <div className="proof-ribbon" aria-label={locale === "en" ? "Release properties" : "发布属性"}>
-          <div className="ticker-track"><span>.NET 10</span><i /><span>MIT LICENSE</span><i /><span>BUILDER-SCOPED</span><i /><span>OPEN TELEMETRY</span><i /><span>BILINGUAL DOCS</span><i /><span>ZERO WARNINGS</span><i /></div>
+        <div className="editorial-stats shell" aria-label={isChinese ? "当前知识目录" : "Current knowledge catalog"}>
+          <div><strong>{knowledge.skills.length}</strong><span>Agent Skills<small>{isChinese ? "源自 Monica 的工程约定" : "Canonical Monica engineering practices"}</small></span></div>
+          <div><strong>{getDocumentationSlugs(locale).length}</strong><span>{isChinese ? "篇中文指南" : "English guides"}<small>{isChinese ? "当前版本的工程知识" : "Engineering knowledge for this version"}</small></span></div>
+          <div><strong>中 / EN</strong><span>{isChinese ? "双语文档" : "Bilingual documentation"}<small>{isChinese ? "为人与 Agent 编写" : "Written for people and agents"}</small></span></div>
         </div>
+
+        <section className="editorial-reading-room shell" aria-labelledby="reading-room-title">
+          <div className="editorial-reading-heading"><h2 id="reading-room-title">{isChinese ? "从理解，到实践。" : "From understanding to practice."}</h2><span>THE READING ROOM / 01</span></div>
+          <div className="editorial-reading-list">{readingPaths.map((item, index) => <Link key={item.path} href={localizedPath(locale, item.path)}><span className="editorial-reading-number">0{index + 1}</span><div><h3>{item.title}</h3><p>{item.body}</p></div><ArrowUpRight aria-hidden="true" size={22} /></Link>)}</div>
+        </section>
 
         <section className="section starter-section starter-redesign shell reveal-section" id="start" aria-labelledby="start-title">
           <div className="starter-intro">
@@ -136,10 +150,6 @@ export function HomePage({ locale }: { locale: Locale }) {
       <SiteFooter locale={locale} />
     </>
   );
-}
-
-function ModelLayer({ index, label, value, detail }: { index: string; label: string; value: string; detail: string }) {
-  return <div className="model-layer"><span>{index}</span><div><small>{label}</small><strong>{value}</strong><i>{detail}</i></div><b aria-hidden="true">↗</b></div>;
 }
 
 function SectionHeading({ number, folio, title, description, titleId, compact = false }: { number: string; folio: string; title: string; description?: string; titleId: string; compact?: boolean }) {

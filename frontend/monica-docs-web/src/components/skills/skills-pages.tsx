@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { DocsMarkdown } from "@/components/docs/docs-markdown";
+import { ReadingNavigation } from "@/components/docs/reading-navigation";
 import { LaunchShell } from "@/components/site/launch-shell";
 import { remarkSkillMentions } from "@/components/skills/skill-mentions";
 import type { Locale } from "@/content/home";
@@ -180,14 +181,16 @@ export function SkillArticlePage({ locale, skillName, filePath }: { locale: Loca
       <div className="skills-article-shell shell">
         <aside className="skills-sidebar">
           <Link className="docs-back-link" href={localizedPath(locale, "/skills")}><ArrowLeft aria-hidden="true" size={15} />{copy.back}</Link>
-          <div className="skills-sidebar-title"><BookOpen aria-hidden="true" size={18} /><span>{skill.name}</span></div>
-          <nav aria-label={locale === "en" ? "Skill files" : "技能文件"}>
-            {files.map((item) => (
-              <Link key={item.path} href={skillFileRoute(locale, skill.name, item.path)} aria-current={item.path === file.path ? "page" : undefined}>
-                <FileText aria-hidden="true" size={15} /><span>{item.title}</span><small>{item.path}</small>
-              </Link>
-            ))}
-          </nav>
+          <ReadingNavigation resetKey={`${skill.name}/${file.path}`} label={locale === "en" ? "Browse skill files" : "浏览技能文件"}>
+            <div className="skills-sidebar-title"><BookOpen aria-hidden="true" size={18} /><span>{skill.name}</span></div>
+            <nav aria-label={locale === "en" ? "Skill files" : "技能文件"}>
+              {files.map((item) => (
+                <Link key={item.path} href={skillFileRoute(locale, skill.name, item.path)} aria-current={item.path === file.path ? "page" : undefined}>
+                  <FileText aria-hidden="true" size={15} /><span>{item.title}</span><small>{item.path}</small>
+                </Link>
+              ))}
+            </nav>
+          </ReadingNavigation>
         </aside>
 
         <article className="skills-article">

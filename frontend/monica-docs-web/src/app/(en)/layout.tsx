@@ -6,6 +6,9 @@ import "@fontsource/ibm-plex-sans/400.css";
 import "@fontsource/ibm-plex-sans/500.css";
 import "@fontsource/ibm-plex-sans/600.css";
 import "../globals.css";
+import "../editorial.css";
+import "../editorial-sections.css";
+import "../editorial-reading.css";
 
 import type { Metadata, Viewport } from "next";
 
