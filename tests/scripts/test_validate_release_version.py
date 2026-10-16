@@ -37,6 +37,59 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
 
         self._verify(fixture)
 
+    def _add_knowledge_asset(self, fixture: dict[str, object]) -> str:
+        release = self._json(fixture, "release")
+        url = f"https://downloads.example/{fixture['tag']}/monica-knowledge.json"
+        release["assets"].append({"name": "monica-knowledge.json", "browser_download_url": url})
+        fixture["payloads"][fixture["urls"]["release"]] = self._json_bytes(release)
+        fixture["payloads"][url] = self._json_bytes({"schemaVersion": 1, "frameworkVersion": fixture["version"]})
+        self._refresh_sums(fixture)
+        return url
+
+    def test_accepts_knowledge_asset_and_setup_layout_for_all_platforms(self) -> None:
+        fixture = self._fixture()
+        self._add_knowledge_asset(fixture)
+        for rid in VALIDATOR.GUIDE_PLATFORMS:
+            self._write_guide_bundle(fixture, fixture["tag"], fixture["version"], rid, directory="setup")
+        self._refresh_sums(fixture)
+        self._verify(fixture)
+
+    def test_rejects_knowledge_bytes_that_drift_from_checksum(self) -> None:
+        fixture = self._fixture()
+        url = self._add_knowledge_asset(fixture)
+        fixture["payloads"][url] += b"tampered"
+        with self.assertRaisesRegex(ValueError, "digest mismatch: monica-knowledge.json"):
+            self._verify(fixture)
+
+    def test_requires_checksum_for_published_knowledge(self) -> None:
+        fixture = self._fixture()
+        original_sums = fixture["payloads"][fixture["urls"]["sums"]]
+        self._add_knowledge_asset(fixture)
+        fixture["payloads"][fixture["urls"]["sums"]] = original_sums
+        with self.assertRaisesRegex(ValueError, "does not cover exactly"):
+            self._verify(fixture)
+
+    def test_rejects_unknown_or_unpublished_checksum_assets(self) -> None:
+        for name in ("unexpected.json", "monica-knowledge.json"):
+            with self.subTest(name=name):
+                fixture = self._fixture()
+                fixture["payloads"][fixture["urls"]["sums"]] += f"{'0' * 64}  {name}\n".encode()
+                with self.assertRaisesRegex(ValueError, "does not cover exactly"):
+                    self._verify(fixture)
+
+    def test_setup_layout_preserves_entrypoint_and_digest_checks(self) -> None:
+        for options, error in (
+            ({"directory": "../setup"}, "inconsistent release manifest"),
+            ({"directory": "setup", "entry_mode": 0o644}, "entry point is not executable"),
+            ({"directory": "setup", "tamper_entry": True}, "file digest mismatch"),
+        ):
+            with self.subTest(options=options):
+                fixture = self._fixture()
+                self._write_guide_bundle(fixture, fixture["tag"], fixture["version"], "linux-x64", **options)
+                self._refresh_sums(fixture)
+                with self.assertRaisesRegex(ValueError, error):
+                    self._verify(fixture)
+
     def test_skill_tree_digest_uses_posix_utf8_order_for_prefix_colliding_skills(
         self,
     ) -> None:
@@ -790,11 +843,12 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
         rid: str,
         *,
         entry_mode: int = 0o755,
+        directory: str = "app",
         manifest_updates: Callable[[dict[str, object]], None] | None = None,
         tamper_entry: bool = False,
     ) -> None:
         entry = VALIDATOR.GUIDE_PLATFORMS[rid]
-        entry_point = f"app/{entry}"
+        entry_point = f"{directory}/{entry}"
         projected_catalog = self._json_bytes(
             {
                 "schemaVersion": 1,
@@ -830,7 +884,7 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
             "programFiles": [
                 record
                 for record in files
-                if record["relativePath"].startswith("app/")
+                if record["relativePath"].startswith(f"{directory}/")
             ],
             "skillCatalogDigest": hashlib.sha256(projected_catalog).hexdigest(),
             "skills": [
@@ -867,6 +921,8 @@ class AgentSkillReleaseValidationTests(unittest.TestCase):
             f"monica-guide-{fixture['tag']}-{rid}.zip"
             for rid in VALIDATOR.GUIDE_PLATFORMS
         ]
+        if "monica-knowledge.json" in url_by_name:
+            archive_names.append("monica-knowledge.json")
         lines = "".join(
             f"{hashlib.sha256(fixture['payloads'][url_by_name[name]]).hexdigest()}  {name}\n"
             for name in sorted(archive_names)

@@ -188,7 +188,7 @@ export const homeCopy: Record<Locale, HomeCopy> = {
       capabilities: [
         "Explore Monica and choose a development path",
         "Initialize or configure a repository when you are ready",
-        "Bind Monica and Monica.Docs source globally, separately or together",
+        "Bind exact Monica framework source for read-only lookup",
         "Check status, diagnose drift, and update Monica skills",
         "Prepare framework, documentation, or upstream contributions safely",
       ],
@@ -361,7 +361,7 @@ export const homeCopy: Record<Locale, HomeCopy> = {
       capabilities: [
         "了解 Monica 并选择开发路线",
         "准备好后再初始化或配置仓库",
-        "全局绑定 Monica 与 Monica.Docs 源码，可单独或同时绑定",
+        "绑定精确版本的 Monica 框架源码，用于只读查找",
         "查看状态、诊断漂移并更新 Monica Skills",
         "安全准备框架、文档或上游贡献",
       ],

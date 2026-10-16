@@ -222,7 +222,7 @@ export function StarterCode({ locale, copy }: StarterCodeProps) {
         </div>
 
         <div className="code-panel" id={`${instanceId}-manual-panel-cli`} role="tabpanel" aria-labelledby={manualId("cli")} hidden={manualTab !== "cli"}>
-          <pre><code><span className="code-comment"># Install the template</span>{"\n"}<span className="code-prompt">$</span> dotnet new install {monicaRelease.templatePackage}{"\n\n"}<span className="code-comment"># Create a modular API</span>{"\n"}<span className="code-prompt">$</span> dotnet new monica-api -n Orders{"\n"}<span className="code-prompt">$</span> cd Orders &amp;&amp; dotnet run{"\n\n"}<span className="code-output">✓ Monica is running</span>{"\n"}<span className="code-output">→ /healthz</span>{"\n"}<span className="code-output">→ /metrics</span></code></pre>
+          <pre><code><span className="code-comment"># Install the template</span>{"\n"}<span className="code-prompt">$</span> dotnet new install {monicaRelease.templatePackage}{"\n\n"}<span className="code-comment"># Create a modular API</span>{"\n"}<span className="code-prompt">$</span> dotnet new monica-api -n Orders{"\n"}<span className="code-prompt">$</span> cd Orders &amp;&amp; dotnet run{"\n\n"}<span className="code-output">✓ Monica is running</span>{"\n"}<span className="code-output">→ /health · /alive</span>{"\n"}<span className="code-output">→ /metrics</span></code></pre>
         </div>
 
         <div className="code-panel" id={`${instanceId}-manual-panel-csharp`} role="tabpanel" aria-labelledby={manualId("csharp")} hidden={manualTab !== "csharp"}>
