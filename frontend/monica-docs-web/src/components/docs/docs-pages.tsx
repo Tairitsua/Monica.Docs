@@ -5,6 +5,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { DocsMarkdown } from "@/components/docs/docs-markdown";
 import { DocsSearch } from "@/components/docs/docs-search";
 import { DocsTree } from "@/components/docs/docs-tree";
+import { ReadingNavigation } from "@/components/docs/reading-navigation";
 import { LaunchShell } from "@/components/site/launch-shell";
 import type { Locale } from "@/content/home";
 import { launchCopy } from "@/content/launch";
@@ -111,7 +112,9 @@ export async function DocsArticlePage({ locale, slug }: { locale: Locale; slug: 
             hint={copy.searchHint}
             noResults={copy.noResults}
           />
-          <DocsTree locale={locale} items={tree.data} activeSlug={document.slug} compact />
+          <ReadingNavigation resetKey={document.slug} label={locale === "en" ? "Browse documentation" : "浏览文档目录"}>
+            <DocsTree locale={locale} items={tree.data} activeSlug={document.slug} compact />
+          </ReadingNavigation>
         </aside>
 
         <article className="docs-article">
@@ -134,6 +137,20 @@ export async function DocsArticlePage({ locale, slug }: { locale: Locale; slug: 
               <time dateTime={document.lastModifiedUtc}>{copy.updated}: {updatedDate}</time>
             </div>
           </header>
+          {document.headings.some((heading) => heading.level >= 2 && heading.level <= 3) && (
+            <details className="docs-mobile-toc">
+              <summary>{copy.onThisPage}</summary>
+              <nav aria-label={copy.onThisPage}>
+                <ol>
+                  {document.headings.filter((heading) => heading.level >= 2 && heading.level <= 3).map((heading) => (
+                    <li className={heading.level === 3 ? "is-nested" : undefined} key={`${heading.id}-${heading.title}`}>
+                      <a href={`#${heading.id}`}>{heading.title}</a>
+                    </li>
+                  ))}
+                </ol>
+              </nav>
+            </details>
+          )}
           <DocsMarkdown markdown={document.markdown} locale={locale} currentSlug={document.relativePath.split("/").slice(1).join("/")} />
           <nav className="docs-pagination" aria-label={locale === "en" ? "Adjacent documentation" : "相邻文档"}>
             {document.previous

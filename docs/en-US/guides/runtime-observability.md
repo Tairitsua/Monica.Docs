@@ -16,7 +16,7 @@ builder.AddMonica(monica =>
 });
 ```
 
-The reference application exposes `/metrics` and a small `/healthz` endpoint. Operational UI modules can then add focused human-readable views without replacing OpenTelemetry as the machine-facing signal path.
+The reference application exposes `/metrics`, a `/health` readiness endpoint, and an `/alive` liveness endpoint. Operational UI modules can then add focused human-readable views without replacing OpenTelemetry as the machine-facing signal path.
 
 ## Keep diagnostic surfaces intentional
 

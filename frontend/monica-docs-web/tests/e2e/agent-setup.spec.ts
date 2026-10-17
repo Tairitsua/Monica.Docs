@@ -18,7 +18,7 @@ test("installs one universal Guide before asking for a repository or profile", a
     "Codex",
     "Claude Code",
   ]);
-  await expect(page.getByText("Bind Monica and Monica.Docs source globally, separately or together")).toBeVisible();
+  await expect(page.getByText("Bind exact Monica framework source for read-only lookup")).toBeVisible();
 
   const fullPrompt = page.locator("details.full-prompt-details");
   await expect(fullPrompt).not.toHaveAttribute("open", "");
@@ -27,7 +27,7 @@ test("installs one universal Guide before asking for a repository or profile", a
   await expect(fullPrompt).toContainText("$monica-guide configure --workspace");
   await expect(fullPrompt).toContainText("{rid}");
   await expect(fullPrompt).toContainText("SHA256SUMS");
-  await expect(fullPrompt).toContainText("Monica.Docs");
+  await expect(fullPrompt).not.toContainText("Monica.Docs");
   await expect(fullPrompt).not.toContainText("--apply");
   await expect(fullPrompt).not.toContainText("--agent");
   await expect(fullPrompt).not.toContainText("--profile application");
@@ -106,27 +106,27 @@ test("makes clipboard failure recoverable without losing the instruction", async
 test("keeps bilingual Guide onboarding and fallback documentation aligned", async ({ page }) => {
   await page.goto("/docs/getting-started/agent-setup");
   await expect(page.getByRole("heading", { name: "Agent setup", level: 1 })).toHaveCount(1);
-  await expect(page.getByRole("heading", { name: "Install before choosing a repository", level: 2 })).toBeVisible();
-  await expect(page.getByText("Monica and Monica.Docs bindings live in global user state", { exact: false })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Start with the release installer", level: 2 })).toBeVisible();
+  await expect(page.getByText("Monica.Docs is an ordinary documentation repository and has no Guide-specific docs profile or source binding.", { exact: false })).toBeVisible();
 
   await page.goto("/zh-CN");
   await expect(page.getByRole("tab", { name: "Agent 设置" })).toHaveAttribute("aria-selected", "true");
   await expect(page.getByRole("button", { name: "复制 Monica Guide 指令" })).toBeVisible();
   await expect(page.getByRole("radio")).toHaveCount(0);
-  await expect(page.getByText("全局绑定 Monica 与 Monica.Docs 源码，可单独或同时绑定")).toBeVisible();
+  await expect(page.getByText("绑定精确版本的 Monica 框架源码，用于只读查找")).toBeVisible();
   await expect(page.getByRole("link", { name: "打开完整快速开始" })).toHaveAttribute("href", "/zh-CN/docs/getting-started/agent-setup");
 
   await page.goto("/zh-CN/docs/getting-started/agent-setup");
   await expect(page.getByRole("heading", { name: "Agent 设置", level: 1 })).toHaveCount(1);
-  await expect(page.getByRole("heading", { name: "选定仓库之前就可以安装", level: 2 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "从发布版安装", level: 2 })).toBeVisible();
 });
 
-test("uses six primary sections and remains contained with reduced motion", async ({ page }) => {
+test("uses seven editorial and product sections and remains contained with reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await expect(page.locator("main > section")).toHaveCount(6);
+  await expect(page.locator("main > section")).toHaveCount(7);
   await expect(page.getByRole("link", { name: "Start with Monica" })).toHaveAttribute("href", "#start");
-  await expect(page.getByRole("link", { name: "Explore the order example" })).toHaveAttribute("href", "/reference");
+  await expect(page.locator(".editorial-tile-build")).toHaveAttribute("href", "#example");
   await expect(page.getByLabel("Illustrative order request flow")).toBeVisible();
   await expect.poll(() => page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches)).toBe(true);
   await expect(page.locator(".hero-reveal").first()).toHaveCSS("opacity", "1");

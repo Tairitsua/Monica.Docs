@@ -542,9 +542,13 @@ def verify_published_guide_bundles(
         fetch_bytes(str(assets[sums_name])), sums_label
     )
     expected_archives = set(guide_archives.values()) | {skills_archive_name}
+    # Older releases predate the knowledge projection. When it is published,
+    # require its checksum and verify its bytes alongside every archive.
+    if "monica-knowledge.json" in assets:
+        expected_archives.add("monica-knowledge.json")
     if set(sums_entries) != expected_archives:
         raise ValueError(
-            f"{sums_label} does not cover exactly the published archives"
+            f"{sums_label} does not cover exactly the published archives and knowledge assets"
         )
 
     fetched: dict[str, bytes] = {skills_archive_name: skills_archive_bytes}
@@ -586,7 +590,7 @@ def verify_published_guide_bundle(
     archive_bytes: bytes,
 ) -> None:
     label = f"GitHub release {tag} guide bundle {archive_name}"
-    entry_point = f"app/{GUIDE_PLATFORMS[rid]}"
+    allowed_entry_points = {f"{directory}/{GUIDE_PLATFORMS[rid]}" for directory in ("app", "setup")}
     try:
         with zipfile.ZipFile(io.BytesIO(archive_bytes)) as bundle:
             entries = {
@@ -605,6 +609,7 @@ def verify_published_guide_bundle(
         raise ValueError(f"{label} has no release manifest")
     manifest = parse_json_object(entries["release-manifest.json"], f"{label} manifest")
     files = manifest.get("files")
+    entry_point = manifest.get("programEntryPoint")
     if (
         manifest.get("schemaVersion") != GUIDE_BUNDLE_MANIFEST_SCHEMA_VERSION
         or manifest.get("productId") != "Tairitsua.Monica"
@@ -614,7 +619,8 @@ def verify_published_guide_bundle(
         or manifest.get("runtimeIdentifier") != rid
         or manifest.get("distributionKind") != f"portable-{rid}"
         or manifest.get("selfContained") is not False
-        or manifest.get("programEntryPoint") != entry_point
+        or not isinstance(entry_point, str)
+        or entry_point not in allowed_entry_points
         or not isinstance(files, list)
         or not files
         or any(not isinstance(record, dict) for record in files)

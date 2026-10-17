@@ -105,7 +105,7 @@ export function ReferencePage({ locale }: { locale: Locale }) {
           <CodeEvidence label={copy.runLabel} command={`dotnet new install ${monicaRelease.templatePackage}\ndotnet new monica-api --name Acme.Orders\ncd Acme.Orders\ndotnet run`} />
           <div className="endpoint-proof">
             <span>{copy.proofLabel}</span>
-            <ul><li><code>/</code><small>application identity</small></li><li><code>/healthz</code><small>ASP.NET Core health checks</small></li><li><code>/metrics</code><small>OpenTelemetry metrics</small></li></ul>
+            <ul><li><code>/</code><small>application identity</small></li><li><code>/health</code><small>readiness</small></li><li><code>/alive</code><small>liveness</small></li><li><code>/metrics</code><small>OpenTelemetry metrics</small></li></ul>
           </div>
         </div>
       </section>
@@ -132,7 +132,7 @@ export function ReferencePage({ locale }: { locale: Locale }) {
             <CodeEvidence label={copy.runLabel} command="dotnet run --project examples/Monica.ReferenceApplication/src/AppHost/Monica.Reference.Api/Monica.Reference.Api.csproj" />
             <div className="reference-endpoints">
               <span>{copy.endpoints}</span>
-              <div>{["/api/v1/Ordering/orders", "/swagger", "/framework/units", "/metrics", "/healthz"].map((endpoint) => <code key={endpoint}>{endpoint}</code>)}</div>
+              <div>{["/api/v1/Ordering/orders", "/swagger", "/framework/units", "/metrics", "/health", "/alive"].map((endpoint) => <code key={endpoint}>{endpoint}</code>)}</div>
             </div>
           </div>
         </div>

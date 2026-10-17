@@ -68,6 +68,11 @@ jobs:
       - name: Verify pristine composite release context
         run: node Monica.Docs/deploy/public/verify-release-context.mjs .
 
+      - name: Validate published Guide smoke contracts
+        run: |
+          python3 Monica.Docs/scripts/test_release_workflow.py
+          python3 -m unittest discover -s Monica.Docs/tests -v
+
       - name: Build Monica.Docs against the tagged Monica source
         run: |
           dotnet restore Monica.Docs/Monica.Docs.slnx
@@ -75,7 +80,9 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: Monica.Docs/frontend/monica-docs-web
-        run: npm ci
+        run: |
+          npm ci
+          npm audit --omit=dev
 
       - name: Install browser
         working-directory: Monica.Docs/frontend/monica-docs-web
@@ -102,9 +109,10 @@ jobs:
             --output "${ARCHIVE}" "${BASE}/${ARCHIVE}"
           grep " ${ARCHIVE}\$" SHA256SUMS | sha256sum --check -
           python3 -m zipfile --extract "${ARCHIVE}" extracted
-          ENTRY="extracted/app/Monica.Guide"
+          ENTRY="$(python3 -c 'import json; from pathlib import Path; root = Path("extracted"); manifest = json.loads((root / "release-manifest.json").read_text(encoding="utf-8-sig")); print((root / manifest["programEntryPoint"]).as_posix())')"
+          test -f "${ENTRY}"
           chmod +x "${ENTRY}"
-          digest() { python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['plan']['planDigest'])" "$1"; }
+          digest() { python3 -c "import json,sys;print(json.load(open(sys.argv[1], encoding='utf-8-sig'))['plan']['planDigest'])" "$1"; }
 
           "${ENTRY}" configure --product monica --environment linux --target shared --json > smoke-configure-preview.json
           PLAN_DIGEST="$(digest smoke-configure-preview.json)"

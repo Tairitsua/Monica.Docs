@@ -9,13 +9,13 @@ type BrandProps = {
 
 export function Brand({ homeHref, compact = false }: BrandProps) {
   return (
-    <Link className="brand" href={homeHref} aria-label="Monica home">
+    <Link className="brand" href={homeHref} aria-label="Monica.Docs home">
       <span className={`monica-mark${compact ? " small-mark" : ""}`} aria-hidden="true">
         <span className="mark-plane mark-plane-violet" />
         <span className="mark-plane mark-plane-ink" />
         <span className="mark-cut" />
       </span>
-      <span className="brand-name">monica</span>
+      <span className="brand-name">Monica<span className="brand-docs">.Docs</span></span>
       {!compact && <span className="release-stamp">{monicaRelease.label}</span>}
     </Link>
   );

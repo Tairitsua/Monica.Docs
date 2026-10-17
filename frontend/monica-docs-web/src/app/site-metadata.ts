@@ -36,7 +36,7 @@ export const sharedMetadata: Metadata = {
 export const sharedViewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#f2eee5",
+  themeColor: "#f4f1e8",
   colorScheme: "light",
 };
 
