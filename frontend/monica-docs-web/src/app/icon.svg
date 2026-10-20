@@ -1,4 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" fill="#161713"/>
-  <path d="M10 14h11l11 18 11-18h11v36H43V31L32 48 21 31v19H10z" fill="#b8f36b"/>
+  <rect width="64" height="64" fill="#f4f1e8"/>
+  <g transform="translate(7 8) scale(1.6667)">
+    <polygon points="0,0 12.24,0 18,15.39 18,27 12.6,27 0,11.34" fill="#a53b30"/>
+    <polygon points="30,0 17.76,0 12,15.39 12,27 17.4,27 30,11.34" fill="#252820"/>
+    <polygon points="17,0 21.4,0 13.4,20 9,20" fill="#f4f1e8"/>
+  </g>
 </svg>
